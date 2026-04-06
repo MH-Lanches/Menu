@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cardápio Digital</title>
+    <title>Delivery Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --cor-brand: #ea1d2c; }
         .text-brand { color: var(--cor-brand); }
         .bg-brand { background-color: var(--cor-brand); }
-        .border-brand { border-color: var(--cor-brand); }
         body { padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        .anim-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .anim-up { animation: up 0.3s ease-out; }
+        @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
@@ -22,394 +21,196 @@
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="p-4 flex justify-between items-center">
             <div>
-                <h1 id="loja-nome" class="text-2xl font-black tracking-tight">Carregando...</h1>
-                <div id="loja-status" class="text-[11px] font-black uppercase tracking-widest mt-1"></div>
+                <h1 id="loja-nome" class="text-xl font-black">Carregando...</h1>
+                <div id="loja-status" class="text-[10px] font-black uppercase mt-1"></div>
             </div>
-            <button onclick="abrirCarrinho()" class="relative p-2">
-                <i class="fa-solid fa-bag-shopping text-2xl text-gray-800"></i>
-                <span id="badge-top" class="absolute top-0 right-0 bg-brand text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold hidden border-2 border-white">0</span>
-            </button>
+            <button onclick="abrirCarrinho()" class="relative p-2"><i class="fa-solid fa-bag-shopping text-2xl"></i><span id="badge" class="absolute top-0 right-0 bg-brand text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span></button>
         </div>
-        <div class="flex overflow-x-auto hide-scroll px-4 py-3 gap-3 border-t" id="nav-categorias"></div>
+        <div class="flex overflow-x-auto hide-scroll px-4 py-2 gap-2 border-t" id="nav-categorias"></div>
     </header>
 
-    <main class="p-4 space-y-8" id="vitrine"></main>
+    <section id="sessao-ads" class="px-4 pt-4 hidden">
+        <div id="carousel-ads" class="flex overflow-x-auto snap-x snap-mandatory gap-4 hide-scroll rounded-2xl"></div>
+    </section>
+
+    <main class="p-4 space-y-6" id="vitrine"></main>
 
     <div id="modal-produto" class="fixed inset-0 bg-black/60 z-50 hidden flex-col justify-end backdrop-blur-sm">
-        <div class="bg-white rounded-t-[2rem] h-[90vh] flex flex-col relative overflow-hidden anim-slide-up">
-            <button onclick="fecharProduto()" class="absolute top-4 right-4 bg-white/90 backdrop-blur w-10 h-10 rounded-full flex items-center justify-center z-10 shadow-lg text-gray-800"><i class="fa-solid fa-chevron-down text-lg"></i></button>
-            <img id="mp-img" class="w-full h-64 object-cover bg-gray-100">
-            <div class="p-6 flex-1 overflow-y-auto pb-32">
-                <h2 id="mp-nome" class="text-2xl font-black leading-tight"></h2>
-                <p id="mp-desc" class="text-gray-500 mt-2 text-sm leading-relaxed"></p>
-                <div class="text-brand font-black text-2xl mt-4" id="mp-preco-base"></div>
-                
-                <div id="area-opcionais" class="mt-8 space-y-6"></div>
-                
-                <div class="mt-8 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <label class="font-black text-sm block mb-2 text-gray-700"><i class="fa-regular fa-comment-dots mr-1"></i> Alguma observação?</label>
-                    <textarea id="mp-obs" rows="2" class="w-full bg-white border border-gray-200 p-3 rounded-xl outline-none focus:border-brand text-sm" placeholder="Ex: Tirar cebola, ponto da carne..."></textarea>
-                </div>
+        <div class="bg-white rounded-t-[2rem] h-[90vh] flex flex-col anim-up overflow-hidden">
+            <button onclick="fecharProduto()" class="absolute top-4 right-4 bg-white/80 w-10 h-10 rounded-full z-10 shadow flex items-center justify-center"><i class="fa-solid fa-chevron-down"></i></button>
+            <img id="mp-img" class="w-full h-56 object-cover bg-gray-100">
+            <div class="p-6 flex-1 overflow-y-auto pb-24">
+                <h2 id="mp-nome" class="text-2xl font-black"></h2>
+                <p id="mp-desc" class="text-gray-500 text-sm mt-1"></p>
+                <div id="area-opcionais" class="mt-6 space-y-6"></div>
+                <div class="mt-6"><label class="font-bold text-xs uppercase text-gray-400">Observações</label><textarea id="mp-obs" class="w-full bg-gray-50 border p-3 rounded-xl mt-2 text-sm" placeholder="Ex: Sem cebola..."></textarea></div>
             </div>
-            
-            <div class="absolute bottom-0 w-full p-4 border-t bg-white flex gap-4 items-center shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-                <div class="flex items-center gap-4 bg-gray-100 rounded-2xl px-5 py-3">
-                    <button onclick="mudarQtd(-1)" class="text-gray-500"><i class="fa-solid fa-minus"></i></button>
-                    <span id="mp-qtd" class="font-black text-lg w-4 text-center">1</span>
-                    <button onclick="mudarQtd(1)" class="text-brand"><i class="fa-solid fa-plus"></i></button>
-                </div>
-                <button onclick="addCarrinho()" id="btn-add-cart" class="flex-1 bg-brand text-white py-4 rounded-2xl font-black flex justify-between px-6 shadow-lg shadow-brand/30 transition-transform active:scale-95">
-                    <span>Adicionar</span>
-                    <span id="mp-total">R$ 0,00</span>
-                </button>
+            <div class="absolute bottom-0 w-full p-4 border-t bg-white flex gap-4 shadow-lg">
+                <div class="flex items-center gap-4 bg-gray-100 rounded-xl px-4"><button onclick="mudarQtd(-1)"><i class="fa-solid fa-minus"></i></button><span id="mp-qtd" class="font-black">1</span><button onclick="mudarQtd(1)" class="text-brand"><i class="fa-solid fa-plus"></i></button></div>
+                <button onclick="addCarrinho()" id="btn-add" class="flex-1 bg-brand text-white py-4 rounded-xl font-black flex justify-between px-6"><span>Adicionar</span><span id="mp-total"></span></button>
             </div>
         </div>
     </div>
 
-    <div id="drawer-carrinho" class="fixed inset-0 bg-black/60 z-50 hidden justify-end backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md h-full flex flex-col ml-auto shadow-2xl anim-slide-up">
-            <div class="p-6 border-b flex justify-between items-center bg-white z-10">
-                <h2 class="text-2xl font-black"><i class="fa-solid fa-bag-shopping text-brand mr-2"></i> Seu Pedido</h2>
-                <button onclick="fecharCarrinho()" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="lista-carrinho" class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50"></div>
-            
-            <div class="p-6 bg-white border-t space-y-4 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-                <div class="space-y-2 text-sm font-bold text-gray-500">
-                    <div class="flex justify-between"><span>Subtotal</span><span id="c-sub">R$ 0,00</span></div>
-                    <div class="flex justify-between"><span>Taxa de Entrega</span><span id="c-taxa">R$ 0,00</span></div>
-                </div>
-                <div class="flex justify-between font-black text-2xl pt-4 border-t"><span>Total</span><span id="c-total" class="text-brand">R$ 0,00</span></div>
-                
-                <div class="pt-4 space-y-3">
-                    <input type="text" id="c-nome" placeholder="Seu Nome Completo" class="w-full bg-gray-50 border p-4 rounded-xl outline-none focus:border-brand font-bold text-sm">
-                    <input type="text" id="c-end" placeholder="Endereço de Entrega (Rua, Número, Bairro)" class="w-full bg-gray-50 border p-4 rounded-xl outline-none focus:border-brand font-bold text-sm">
-                    <select id="c-pgto" class="w-full bg-gray-50 border p-4 rounded-xl outline-none font-bold text-sm text-gray-700">
-                        <option value="" disabled selected>Escolha o Pagamento</option>
-                        <option>Pix (Enviar Chave)</option>
-                        <option>Cartão (Levar Maquininha)</option>
-                        <option>Dinheiro (Precisa de troco?)</option>
-                    </select>
-                </div>
-                
-                <div id="box-agendamento" class="hidden bg-orange-50 border border-orange-200 p-4 rounded-xl mt-4">
-                    <p class="text-orange-800 font-black text-[11px] uppercase tracking-widest mb-2"><i class="fa-solid fa-moon"></i> Loja fechada. Agendar entrega:</p>
-                    <input type="time" id="c-hora" class="w-full bg-white border border-orange-200 p-3 rounded-lg font-bold text-sm">
-                </div>
-
-                <button onclick="enviarWhatsApp()" id="btn-enviar" class="w-full bg-brand text-white py-4 rounded-2xl font-black text-lg mt-4 shadow-lg shadow-brand/30 transition-transform active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-whatsapp text-xl"></i> ENVIAR PEDIDO
-                </button>
+    <div id="drawer-carrinho" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm">
+        <div class="bg-white w-full h-full max-w-md ml-auto flex flex-col anim-up">
+            <div class="p-6 border-b flex justify-between items-center font-black"><h2>SEU PEDIDO</h2><button onclick="fecharCarrinho()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div id="lista-carrinho" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50"></div>
+            <div class="p-6 bg-white border-t space-y-3">
+                <div class="flex justify-between font-bold text-sm text-gray-400"><span>Subtotal</span><span id="c-sub"></span></div>
+                <div class="flex justify-between font-black text-xl border-t pt-3"><span>Total</span><span id="c-total" class="text-brand"></span></div>
+                <input type="text" id="c-nome" placeholder="Seu Nome" class="w-full bg-gray-50 border p-3 rounded-xl outline-none">
+                <input type="text" id="c-end" placeholder="Endereço" class="w-full bg-gray-50 border p-3 rounded-xl outline-none">
+                <select id="c-pgto" class="w-full bg-gray-50 border p-3 rounded-xl"><option value="Pix">Pix</option><option value="Cartão">Cartão</option></select>
+                <div id="box-age" class="hidden bg-orange-50 p-3 rounded-xl border border-orange-100 text-xs font-bold text-orange-800"><p class="mb-1">Loja fechada. Agende para:</p><input type="time" id="c-hora" class="w-full p-2 rounded"></div>
+                <button onclick="enviar()" id="btn-enviar" class="w-full bg-brand text-white py-4 rounded-xl font-black mt-2">ENVIAR WHATSAPP</button>
             </div>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 pb-6 z-30 text-gray-400 text-[10px] font-black uppercase tracking-widest shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        <button onclick="renderVitrine()" class="flex flex-col items-center gap-1 p-2 text-brand"><i class="fa-solid fa-house text-xl mb-1"></i> Início</button>
-        <button onclick="renderFavoritos()" class="flex flex-col items-center gap-1 p-2 hover:text-brand transition-colors"><i class="fa-solid fa-heart text-xl mb-1"></i> Favoritos</button>
+    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 pb-6 z-30 text-[9px] font-black uppercase text-gray-400">
+        <button onclick="renderVitrine()" class="flex flex-col items-center gap-1 p-2 text-brand"><i class="fa-solid fa-house text-lg"></i>Início</button>
+        <button onclick="renderVitrine(true)" class="flex flex-col items-center gap-1 p-2"><i class="fa-solid fa-heart text-lg"></i>Favoritos</button>
     </nav>
 
-    <footer id="loja-rodape" class="text-center text-xs font-bold text-gray-300 mt-10 mb-24"></footer>
-
     <script>
-        let DATA = null;
-        let carrinho = [];
-        let pAtual = null;
-        let qtdAtual = 1;
-        
-        // Controles de estado do modal
-        let stateSabores = []; // { index, selecionado: bool }
-        let stateG1 = []; // qtds
-        let stateG2 = []; // qtds
-        
-        let lojaAberta = false;
-        let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
+        let DATA, carrinho = [], pAt, qtd = 1, stSab = [], stG1 = [], stG2 = [], aberta = false, favs = JSON.parse(localStorage.getItem('f')) || [];
 
         window.onload = async () => {
             try {
-                const res = await fetch('produtos.json');
-                DATA = await res.json();
-                
-                document.documentElement.style.setProperty('--cor-brand', DATA.config.corPrincipal || '#ea1d2c');
+                const r = await fetch('produtos.json', {cache:'no-store'}); DATA = await r.json();
+                document.documentElement.style.setProperty('--cor-brand', DATA.config.corPrincipal);
                 document.getElementById('loja-nome').innerText = DATA.config.nomeLoja;
-                document.getElementById('loja-rodape').innerText = DATA.config.rodapeTexto || '';
-                
-                verificarHorario();
-                renderCategorias();
-                renderVitrine();
-            } catch(e) { document.getElementById('vitrine').innerHTML = '<p class="text-center p-8">Banco de dados não encontrado.</p>'; }
+                verificar(); renderAnuncios(); renderCats(); renderVitrine();
+            } catch(e) {}
         };
 
-        function verificarHorario() {
-            const d = new Date(); const hInfo = DATA.config.horarios[d.getDay()] || {aberto:true, inicio:"00:00", fim:"23:59"};
-            const horaAtual = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-            lojaAberta = hInfo.aberto && horaAtual >= hInfo.inicio && horaAtual <= hInfo.fim;
-            
-            const st = document.getElementById('loja-status');
-            if(lojaAberta) {
-                st.innerHTML = '<span class="text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">● Aberto</span>';
-                document.getElementById('box-agendamento').classList.add('hidden');
-                document.getElementById('btn-enviar').innerHTML = '<i class="fa-brands fa-whatsapp text-xl"></i> ENVIAR PEDIDO';
-            } else {
-                st.innerHTML = '<span class="text-orange-500 bg-orange-50 px-2 py-1 rounded-md">● Fechado (Agende)</span>';
-                document.getElementById('box-agendamento').classList.remove('hidden');
-                document.getElementById('btn-enviar').innerHTML = '<i class="fa-regular fa-calendar-check text-xl"></i> AGENDAR PEDIDO';
+        function verificar() {
+            const d = new Date(), h = DATA.config.horarios[d.getDay()], n = d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
+            aberta = h.aberto && n >= h.inicio && n <= h.fim;
+            document.getElementById('loja-status').innerHTML = aberta ? '<span class="text-emerald-500">● Aberto</span>' : '<span class="text-orange-500">● Fechado</span>';
+            if(!aberta) { document.getElementById('box-age').classList.remove('hidden'); document.getElementById('btn-enviar').innerText = "AGENDAR PEDIDO"; }
+        }
+
+        function renderAnuncios() {
+            const ads = (DATA.config.ads || []).filter(a => a.ativo && a.imagem);
+            if(ads.length) {
+                document.getElementById('sessao-ads').classList.remove('hidden');
+                document.getElementById('carousel-ads').innerHTML = ads.map(a => `<a href="${a.link || '#'}" class="min-w-full snap-center"><img src="${a.imagem}" class="w-full h-40 object-cover rounded-2xl shadow"></a>`).join('');
             }
         }
 
-        function renderCategorias() {
-            document.getElementById('nav-categorias').innerHTML = DATA.config.categorias.map(c => `
-                <button onclick="scrollToCat('${c}')" class="whitespace-nowrap px-6 py-2 bg-gray-50 border border-gray-200 rounded-full font-black text-xs text-gray-600 shadow-sm hover:border-brand hover:text-brand transition-colors">${c}</button>
-            `).join('');
-        }
+        function renderCats() { document.getElementById('nav-categorias').innerHTML = DATA.config.categorias.map(c => `<button onclick="scrollToCat('${c}')" class="whitespace-nowrap px-4 py-2 bg-white border rounded-full text-xs font-bold">${c}</button>`).join(''); }
+        function scrollToCat(c) { const el = document.getElementById('cat-'+c.replace(/\s/g,'')); if(el) window.scrollTo({top: el.offsetTop - 100, behavior:'smooth'}); }
+        function toggleFav(id, e) { e.stopPropagation(); if(favs.includes(id)) favs = favs.filter(x => x!==id); else favs.push(id); localStorage.setItem('f', JSON.stringify(favs)); renderVitrine(); }
 
-        function scrollToCat(cat) {
-            const el = document.getElementById('cat-' + cat.replace(/\s/g, ''));
-            if(el) { window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 130, behavior: 'smooth'}); }
-        }
-
-        function toggleFav(id, ev) {
-            ev.stopPropagation();
-            if(favoritos.includes(id)) favoritos = favoritos.filter(f => f !== id); else favoritos.push(id);
-            localStorage.setItem('favs', JSON.stringify(favoritos));
-            renderVitrine(); // Atualiza a tela para refletir o coração
-        }
-
-        function renderVitrine(mostrarApenasFavs = false) {
+        function renderVitrine(fOnly = false) {
             const v = document.getElementById('vitrine'); v.innerHTML = '';
-            let temItem = false;
-
-            DATA.config.categorias.forEach(cat => {
-                const itens = DATA.items.filter(i => i.categoria === cat && i.ativo && (!mostrarApenasFavs || favoritos.includes(i.id)));
-                if(itens.length === 0) return;
-                temItem = true;
-
-                v.innerHTML += `
-                    <div id="cat-${cat.replace(/\s/g, '')}" class="pt-2">
-                        <h2 class="text-xl font-black mb-4 text-gray-800">${cat}</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${itens.map(p => `
-                                <div onclick="abrirProduto(${p.id})" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 active:scale-[0.98] transition-transform relative cursor-pointer group">
-                                    <button onclick="toggleFav(${p.id}, event)" class="absolute top-2 right-2 p-2 z-10 text-xl transition-transform active:scale-75 ${favoritos.includes(p.id) ? 'text-brand' : 'text-gray-200 hover:text-gray-300'}"><i class="fa-${favoritos.includes(p.id) ? 'solid' : 'heart'} fa-heart"></i></button>
-                                    <img src="${p.imagem}" class="w-28 h-28 rounded-[1rem] object-cover bg-gray-50">
-                                    <div class="flex-1 pr-6 flex flex-col justify-center">
-                                        <h3 class="font-black text-gray-800 leading-tight">${p.nome}</h3>
-                                        <p class="text-[11px] text-gray-400 mt-1 line-clamp-2 font-bold">${p.descricao}</p>
-                                        <p class="text-brand font-black mt-2 text-lg">R$ ${p.preco.toFixed(2)}</p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+            DATA.config.categorias.forEach(c => {
+                const it = DATA.items.filter(i => i.categoria === c && i.ativo && (!fOnly || favs.includes(i.id)));
+                if(it.length) {
+                    v.innerHTML += `<div id="cat-${c.replace(/\s/g,'')}"><h2 class="font-black text-lg mb-3">${c}</h2><div class="space-y-4">
+                        ${it.map(p => `<div onclick="abrirProd(${p.id})" class="bg-white p-3 rounded-2xl border flex gap-4 relative">
+                            <button onclick="toggleFav(${p.id}, event)" class="absolute top-2 right-2 text-lg ${favs.includes(p.id)?'text-brand':'text-gray-200'}"><i class="fa-solid fa-heart"></i></button>
+                            <img src="${p.imagem}" class="w-24 h-24 rounded-xl object-cover">
+                            <div class="flex-1"><h3 class="font-black text-sm">${p.nome}</h3><p class="text-[10px] text-gray-400 line-clamp-2 mt-1">${p.descricao}</p><p class="text-brand font-black mt-2">R$ ${p.preco.toFixed(2)}</p></div>
+                        </div>`).join('')}</div></div>`;
+                }
             });
-            if(!temItem && mostrarApenasFavs) v.innerHTML = '<div class="text-center p-10 font-bold text-gray-400"><i class="fa-regular fa-heart text-4xl mb-4 block"></i>Nenhum favorito ainda.</div>';
         }
 
-        function renderFavoritos() { renderVitrine(true); }
-
-        function abrirProduto(id) {
-            pAtual = DATA.items.find(x => x.id === id);
-            qtdAtual = 1; document.getElementById('mp-qtd').innerText = 1;
-            document.getElementById('mp-obs').value = '';
+        function abrirProd(id) {
+            pAt = DATA.items.find(x => x.id === id); qtd = 1; 
+            document.getElementById('mp-qtd').innerText = 1; document.getElementById('mp-obs').value = '';
+            document.getElementById('mp-img').src = pAt.imagem; document.getElementById('mp-nome').innerText = pAt.nome;
+            document.getElementById('mp-desc').innerText = pAt.descricao;
             
-            document.getElementById('mp-img').src = pAtual.imagem;
-            document.getElementById('mp-nome').innerText = pAtual.nome;
-            document.getElementById('mp-desc').innerText = pAtual.descricao;
-            document.getElementById('mp-preco-base').innerText = pAtual.meio_a_meio ? "Monte sua Pizza" : `R$ ${pAtual.preco.toFixed(2)}`;
-
             const area = document.getElementById('area-opcionais'); area.innerHTML = '';
-            
-            if(pAtual.meio_a_meio && pAtual.sabores) {
-                stateSabores = pAtual.sabores.map(() => false);
-                area.innerHTML += `
-                    <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-                        <div class="flex justify-between items-center border-b border-orange-100 pb-3 mb-3">
-                            <div><h3 class="font-black text-orange-900">Sabores (Meio a Meio)</h3><p class="text-xs text-orange-600 font-bold">Escolha EXATAMENTE 2 metades</p></div>
-                            <span class="bg-orange-600 text-white text-[10px] font-black px-2 py-1 rounded">OBRIGATÓRIO</span>
-                        </div>
-                        <div class="space-y-3" id="box-sabor-list">
-                            ${pAtual.sabores.map((s, i) => `
-                                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-orange-100 shadow-sm">
-                                    <div><p class="font-black text-sm text-gray-800">${s.nome}</p><p class="text-xs text-brand font-bold">${s.preco > 0 ? '+ R$ '+(s.preco/2).toFixed(2)+' (Metade)' : 'Sem custo extra'}</p></div>
-                                    <input type="checkbox" id="sab-${i}" onchange="checkSabor(${i})" class="w-6 h-6 accent-brand rounded cursor-pointer">
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            } else if (pAtual.grupos) {
-                pAtual.grupos.forEach((g, gIndex) => {
-                    if(!g.nome || !g.itens || g.itens.length === 0) return;
-                    if(gIndex === 0) stateG1 = g.itens.map(() => 0);
-                    if(gIndex === 1) stateG2 = g.itens.map(() => 0);
-                    
-                    area.innerHTML += `
-                        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                            <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
-                                <div><h3 class="font-black text-gray-800">${g.nome}</h3><p class="text-xs text-gray-400 font-bold">Escolha até ${g.limite} opções</p></div>
-                                <span class="bg-gray-100 text-gray-500 text-[10px] font-black px-2 py-1 rounded">MÁX: ${g.limite}</span>
-                            </div>
-                            <div class="space-y-3">
-                                ${g.itens.map((item, i) => `
-                                    <div class="flex justify-between items-center border-b border-gray-50 pb-3 last:border-0 last:pb-0">
-                                        <div><p class="font-black text-sm text-gray-800">${item.nome}</p><p class="text-xs text-brand font-bold">+ R$ ${item.preco.toFixed(2)}</p></div>
-                                        <div class="flex items-center gap-3 bg-gray-50 rounded-xl px-2 py-1 border border-gray-200">
-                                            <button onclick="calcExtra(${gIndex}, ${i}, -1, ${g.limite})" class="w-6 h-6 flex items-center justify-center text-gray-400"><i class="fa-solid fa-minus text-xs"></i></button>
-                                            <span id="g${gIndex}-i${i}-qtd" class="font-black text-sm w-4 text-center">0</span>
-                                            <button onclick="calcExtra(${gIndex}, ${i}, 1, ${g.limite})" class="w-6 h-6 flex items-center justify-center text-brand"><i class="fa-solid fa-plus text-xs"></i></button>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
+            if(pAt.meio_a_meio) {
+                stSab = pAt.sabores.map(() => false);
+                area.innerHTML = `<div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                    <p class="font-black text-xs text-orange-800 mb-3 uppercase">Escolha 2 Sabores</p>
+                    <div class="space-y-2">${pAt.sabores.map((s,i) => `<div class="flex justify-between bg-white p-2 rounded-lg border text-xs font-bold"><span>${s.nome} (+ R$ ${(s.preco/2).toFixed(2)})</span><input type="checkbox" id="sab-${i}" onchange="checkS(${i})" class="w-5 h-5"></div>`).join('')}</div>
+                </div>`;
+            } else {
+                pAt.grupos.forEach((g,gi) => {
+                    if(!g.nome) return;
+                    if(gi===0) stG1 = g.itens.map(()=>0); else stG2 = g.itens.map(()=>0);
+                    area.innerHTML += `<div class="bg-white p-4 rounded-xl border">
+                        <p class="font-black text-xs text-gray-400 mb-3 uppercase">${g.nome} (Até ${g.limite})</p>
+                        <div class="space-y-3">${g.itens.map((it,ii) => `<div class="flex justify-between text-xs font-bold"><span>${it.nome} (+ R$ ${it.preco.toFixed(2)})</span>
+                            <div class="flex gap-2 bg-gray-50 rounded px-1"><button onclick="calcG(${gi},${ii},-1,${g.limite})">-</button><span id="g${gi}-i${ii}">${0}</span><button onclick="calcG(${gi},${ii},1,${g.limite})" class="text-brand">+</button></div>
+                        </div>`).join('')}</div>
+                    </div>`;
                 });
             }
-            atualizarTotal();
-            document.getElementById('modal-produto').classList.replace('hidden', 'flex');
+            upTotal(); document.getElementById('modal-produto').classList.replace('hidden', 'flex');
         }
 
+        function checkS(i) {
+            stSab[i] = document.getElementById('sab-'+i).checked;
+            if(stSab.filter(Boolean).length > 2) { stSab[i] = false; document.getElementById('sab-'+i).checked = false; alert("Máximo 2 metades!"); }
+            upTotal();
+        }
+
+        function calcG(gi, ii, d, l) {
+            const st = gi===0 ? stG1 : stG2;
+            if(d===1 && st.reduce((a,b)=>a+b,0) >= l) return;
+            if(st[ii]+d >= 0) { st[ii]+=d; document.getElementById(`g${gi}-i${ii}`).innerText = st[ii]; upTotal(); }
+        }
+
+        function upTotal() {
+            let t = pAt.preco, b = document.getElementById('btn-add');
+            if(pAt.meio_a_meio) {
+                if(stSab.filter(Boolean).length === 2) { 
+                    pAt.sabores.forEach((s,i) => { if(stSab[i]) t += (s.preco/2); });
+                    b.classList.remove('opacity-50');
+                } else { b.classList.add('opacity-50'); }
+            } else {
+                pAt.grupos.forEach((g,gi) => { const st = gi===0 ? stG1 : stG2; g.itens.forEach((it,ii) => t += (it.preco*st[ii])); });
+            }
+            document.getElementById('mp-total').innerText = "R$ " + (t*qtd).toFixed(2);
+        }
+
+        function mudarQtd(d) { if(qtd+d > 0) { qtd+=d; document.getElementById('mp-qtd').innerText = qtd; upTotal(); } }
         function fecharProduto() { document.getElementById('modal-produto').classList.replace('flex', 'hidden'); }
 
-        function checkSabor(index) {
-            stateSabores[index] = document.getElementById(`sab-${index}`).checked;
-            const selecionados = stateSabores.filter(Boolean).length;
-            if(selecionados > 2) {
-                document.getElementById(`sab-${index}`).checked = false;
-                stateSabores[index] = false;
-                alert("Você só pode escolher 2 sabores para a pizza meio a meio!");
-            }
-            atualizarTotal();
-        }
-
-        function calcExtra(gIndex, iIndex, dir, limite) {
-            const state = gIndex === 0 ? stateG1 : stateG2;
-            const totalDoGrupo = state.reduce((a, b) => a + b, 0);
-            
-            if (dir === 1 && totalDoGrupo >= limite) return alert(`Limite máximo de ${limite} atingido neste grupo.`);
-            if (state[iIndex] + dir >= 0) {
-                state[iIndex] += dir;
-                document.getElementById(`g${gIndex}-i${iIndex}-qtd`).innerText = state[iIndex];
-                atualizarTotal();
-            }
-        }
-
-        function mudarQtd(dir) { if(qtdAtual + dir > 0) { qtdAtual += dir; document.getElementById('mp-qtd').innerText = qtdAtual; atualizarTotal(); } }
-
-        function atualizarTotal() {
-            let totalUnitario = pAtual.preco;
-            const btnCart = document.getElementById('btn-add-cart');
-            
-            if(pAtual.meio_a_meio) {
-                const selecionados = stateSabores.filter(Boolean).length;
-                if(selecionados !== 2) {
-                    btnCart.classList.add('opacity-50', 'pointer-events-none');
-                    document.getElementById('mp-total').innerText = "Escolha 2 metades";
-                    return;
-                } else {
-                    btnCart.classList.remove('opacity-50', 'pointer-events-none');
-                    let somaMetades = 0;
-                    pAtual.sabores.forEach((s, i) => { if(stateSabores[i]) somaMetades += (s.preco / 2); });
-                    totalUnitario += somaMetades;
-                }
-            } else {
-                btnCart.classList.remove('opacity-50', 'pointer-events-none');
-                if(pAtual.grupos && pAtual.grupos[0]) pAtual.grupos[0].itens.forEach((it, i) => totalUnitario += (it.preco * stateG1[i]));
-                if(pAtual.grupos && pAtual.grupos[1]) pAtual.grupos[1].itens.forEach((it, i) => totalUnitario += (it.preco * stateG2[i]));
-            }
-
-            document.getElementById('mp-total').innerText = `R$ ${(totalUnitario * qtdAtual).toFixed(2)}`;
-        }
-
         function addCarrinho() {
-            let configDesc = []; let precoUnFinal = pAtual.preco;
-
-            if(pAtual.meio_a_meio) {
-                let saboresSc = [];
-                pAtual.sabores.forEach((s, i) => { 
-                    if(stateSabores[i]) { saboresSc.push(`1/2 ${s.nome}`); precoUnFinal += (s.preco/2); } 
-                });
-                configDesc.push("Sabor: " + saboresSc.join(" + "));
+            let desc = [], prFinal = pAt.preco;
+            if(pAt.meio_a_meio) {
+                let sc = []; pAt.sabores.forEach((s,i) => { if(stSab[i]) { sc.push(s.nome); prFinal += (s.preco/2); } });
+                desc.push("Sabores: "+sc.join(" / "));
             } else {
-                if(pAtual.grupos) {
-                    if(pAtual.grupos[0]) pAtual.grupos[0].itens.forEach((it, i) => { if(stateG1[i]>0) { configDesc.push(`${stateG1[i]}x ${it.nome}`); precoUnFinal += (it.preco*stateG1[i]); }});
-                    if(pAtual.grupos[1]) pAtual.grupos[1].itens.forEach((it, i) => { if(stateG2[i]>0) { configDesc.push(`${stateG2[i]}x ${it.nome}`); precoUnFinal += (it.preco*stateG2[i]); }});
-                }
+                pAt.grupos.forEach((g,gi) => { const st = gi===0 ? stG1 : stG2; g.itens.forEach((it,ii) => { if(st[ii]>0){ desc.push(st[ii]+"x "+it.nome); prFinal+=(it.preco*st[ii]); } }); });
             }
-
-            carrinho.push({ item: pAtual, qtd: qtdAtual, obs: document.getElementById('mp-obs').value, descTexto: configDesc.join(' | '), precoFinal: precoUnFinal });
-            fecharProduto(); atualizarBadge();
+            carrinho.push({ n: pAt.nome, q: qtd, pr: prFinal, d: desc.join(" | "), o: document.getElementById('mp-obs').value });
+            fecharProduto(); upBadge();
         }
 
-        function atualizarBadge() {
-            const b = document.getElementById('badge-top'); b.innerText = carrinho.length;
-            carrinho.length > 0 ? b.classList.remove('hidden') : b.classList.add('hidden');
-        }
+        function upBadge() { const b = document.getElementById('badge'); b.innerText = carrinho.length; b.classList.toggle('hidden', !carrinho.length); }
+        function fecharCarrinho() { document.getElementById('drawer-carrinho').classList.replace('flex', 'hidden'); }
 
         function abrirCarrinho() {
             document.getElementById('drawer-carrinho').classList.replace('hidden', 'flex');
-            const lista = document.getElementById('lista-carrinho'); lista.innerHTML = '';
-            
-            if(carrinho.length === 0) {
-                lista.innerHTML = '<div class="text-center text-gray-400 mt-10 font-bold"><i class="fa-solid fa-basket-shopping text-4xl mb-4 block"></i>Sua sacola está vazia</div>';
-                document.getElementById('c-total').innerText = 'R$ 0,00';
-                return;
-            }
-
+            const l = document.getElementById('lista-carrinho'); l.innerHTML = '';
             let sub = 0;
-            carrinho.forEach((c, i) => {
-                const totalLinha = c.qtd * c.precoFinal; sub += totalLinha;
-                lista.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex gap-3 relative">
-                        <span class="bg-gray-100 text-gray-700 h-8 w-8 flex items-center justify-center rounded-xl text-sm font-black">${c.qtd}x</span>
-                        <div class="flex-1">
-                            <h4 class="font-black text-gray-800">${c.item.nome}</h4>
-                            ${c.descTexto ? `<p class="text-[10px] text-gray-400 font-bold mt-1 uppercase">${c.descTexto}</p>` : ''}
-                            ${c.obs ? `<p class="text-xs text-orange-500 font-bold mt-1 bg-orange-50 p-2 rounded-lg">Obs: ${c.obs}</p>` : ''}
-                            <p class="text-brand font-black text-sm mt-2">R$ ${totalLinha.toFixed(2)}</p>
-                        </div>
-                        <button onclick="removerCart(${i})" class="absolute top-4 right-4 text-gray-300 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
+            carrinho.forEach((c,i) => {
+                const tot = c.q * c.pr; sub += tot;
+                l.innerHTML += `<div class="bg-white p-3 rounded-xl border flex justify-between"><div><p class="font-black text-xs">${c.q}x ${c.n}</p><p class="text-[9px] text-gray-400">${c.d}</p></div><span class="font-black text-brand text-xs">R$ ${tot.toFixed(2)}</span></div>`;
             });
-            
-            document.getElementById('c-sub').innerText = `R$ ${sub.toFixed(2)}`;
-            document.getElementById('c-taxa').innerText = `R$ ${DATA.config.taxaEntrega.toFixed(2)}`;
-            document.getElementById('c-total').innerText = `R$ ${(sub + DATA.config.taxaEntrega).toFixed(2)}`;
+            document.getElementById('c-sub').innerText = "R$ " + sub.toFixed(2);
+            document.getElementById('c-total').innerText = "R$ " + (sub + DATA.config.taxaEntrega).toFixed(2);
         }
 
-        function removerCart(i) { carrinho.splice(i, 1); abrirCarrinho(); atualizarBadge(); }
-        function fecharCarrinho() { document.getElementById('drawer-carrinho').classList.replace('flex', 'hidden'); }
-
-        function enviarWhatsApp() {
-            if(carrinho.length === 0) return alert("Adicione algo à sacola.");
-            const nome = document.getElementById('c-nome').value.trim();
-            const end = document.getElementById('c-end').value.trim();
-            const pgto = document.getElementById('c-pgto').value;
-            
-            if(!nome || !end || !pgto) return alert("Preencha Nome, Endereço e Pagamento.");
-
-            let msg = `*NOVO PEDIDO* 🚀\n\n*👤 Cliente:* ${nome}\n*📍 Endereço:* ${end}\n\n*🛒 ITENS:*\n`;
+        function enviar() {
+            const n = document.getElementById('c-nome').value, e = document.getElementById('c-end').value, p = document.getElementById('c-pgto').value;
+            if(!n || !e) return alert("Preencha os dados!");
+            let msg = `*PEDIDO* 🚀\nCliente: ${n}\nEnd: ${e}\n\n`;
             let sub = 0;
-            
-            carrinho.forEach(c => {
-                const tot = c.qtd * c.precoFinal; sub += tot;
-                msg += `▪️ ${c.qtd}x *${c.item.nome}* (R$ ${tot.toFixed(2)})\n`;
-                if(c.descTexto) msg += `   ↳ _${c.descTexto}_\n`;
-                if(c.obs) msg += `   ↳ ⚠️ Obs: _${c.obs}_\n`;
-            });
-
-            msg += `\n*💵 Subtotal:* R$ ${sub.toFixed(2)}\n*🛵 Taxa:* R$ ${DATA.config.taxaEntrega.toFixed(2)}`;
-            msg += `\n*💰 TOTAL:* R$ ${(sub + DATA.config.taxaEntrega).toFixed(2)}\n\n*💳 Pagamento:* ${pgto}`;
-
-            if(!lojaAberta) {
-                const hr = document.getElementById('c-hora').value;
-                if(!hr) return alert("Selecione um horário de agendamento.");
-                msg = `*(⏰ AGENDAMENTO PARA: ${hr})*\n\n` + msg;
-            }
-
-            window.open(`https://wa.me/${DATA.config.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+            carrinho.forEach(c => { sub += (c.q*c.pr); msg += `${c.q}x ${c.n} (R$ ${(c.q*c.pr).toFixed(2)})\n${c.d?' - '+c.d:''}\n`; });
+            msg += `\nSubtotal: R$ ${sub.toFixed(2)}\nTaxa: R$ ${DATA.config.taxaEntrega.toFixed(2)}\nTotal: R$ ${(sub + DATA.config.taxaEntrega).toFixed(2)}\nPagto: ${p}`;
+            if(!aberta) msg = `*AGENDA: ${document.getElementById('c-hora').value}*\n` + msg;
+            window.open(`https://wa.me/${DATA.config.whatsapp}?text=${encodeURIComponent(msg)}`);
         }
     </script>
 </body>
