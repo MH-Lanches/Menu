@@ -1,15 +1,16 @@
-<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Admin — Delivery Autônomo</title>
+<title>Admin — Delivery Autônomo (Corrigido)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root{ --prim:#b24b39; --accent:#ff6b4a; }
   .btn-prim{background:var(--prim);color:white}
   .btn-accent{background:var(--accent);color:white}
+  .small{font-size:.9rem}
+  .muted{color:#6b7280}
 </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-900">
@@ -17,11 +18,11 @@
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <div>
         <h1 class="text-lg font-bold">Painel Admin — Delivery Autônomo</h1>
-        <p class="text-sm opacity-90">Edição rápida, exporte o products.json para publicar</p>
+        <p class="text-sm muted">Edição local. Exportar JSON para publicar no GitHub.</p>
       </div>
       <div class="flex gap-2">
-        <button id="btnImportFile" class="px-3 py-2 border rounded">Importar JSON</button>
-        <button id="btnLoadRemote" class="px-3 py-2 border rounded">Carregar products.json</button>
+        <button id="btnImportFile" class="px-3 py-2 border rounded bg-white/10">Importar JSON</button>
+        <button id="btnLoadRemote" class="px-3 py-2 border rounded bg-white/10">Carregar products.json</button>
         <button id="btnExport" class="btn-accent px-3 py-2 rounded">Exportar JSON</button>
       </div>
     </div>
@@ -47,6 +48,7 @@
       <h3 class="font-semibold mt-4">Horário de Funcionamento</h3>
       <div id="hoursContainer" class="mt-2 text-sm space-y-2"></div>
       <button id="saveMeta" class="btn-prim px-3 py-2 rounded mt-3 w-full">Salvar Configurações</button>
+      <div class="mt-3 text-xs muted">Dica: após salvar, clique em Exportar JSON e substitua o arquivo no repositório.</div>
     </section>
 
     <!-- Categorias & Produtos -->
@@ -71,21 +73,37 @@
   </footer>
 
 <script>
-/* Admin JS (resumido e eficiente) */
-/* UID */
-const uid = (p='id')=> p+'-'+Math.random().toString(36).slice(2,9);
+/* admin.html — versão corrigida e robusta
+   - Salva em localStorage (LS_KEY)
+   - Carrega products.json via fetch (mesmo host)
+   - Exporta JSON para download
+   - Importa JSON via arquivo
+   - Evita referências indefinidas e trata erros
+*/
 
-/* Load/save local */
+/* ---------- Utilitários ---------- */
 const LS_KEY = 'delivery_brain';
-function saveLocal(obj){ localStorage.setItem(LS_KEY, JSON.stringify(obj)); }
-function loadLocal(){ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }
+const uid = (p='id') => p + '-' + Math.random().toString(36).slice(2,9);
+const $ = id => document.getElementById(id);
 
-/* Default structure */
+/* ---------- Estrutura padrão ---------- */
 function defaultBrain(){
   return {
-    meta:{ storeName:'Minha Loja', footerText:'© Minha Loja', whatsapp:'5582999999999', deliveryFee:6.00, primaryColor:'#b24b39', accentColor:'#ff6b4a' },
-    settings:{ defaultExtrasLimit:5, defaultExtrasPoolLimit:10, allowHalfPizza:true, pizzaHalfBehavior:'average' },
-    openHours:{
+    meta: {
+      storeName: 'Minha Loja',
+      footerText: '© Minha Loja',
+      whatsapp: '5582999999999',
+      deliveryFee: 6.00,
+      primaryColor: '#b24b39',
+      accentColor: '#ff6b4a'
+    },
+    settings: {
+      defaultExtrasLimit: 5,
+      defaultExtrasPoolLimit: 10,
+      allowHalfPizza: true,
+      pizzaHalfBehavior: 'average'
+    },
+    openHours: {
       monday:{open:'11:00',close:'22:00',active:true},
       tuesday:{open:'11:00',close:'22:00',active:true},
       wednesday:{open:'11:00',close:'22:00',active:true},
@@ -94,213 +112,156 @@ function defaultBrain(){
       saturday:{open:'11:00',close:'23:00',active:true},
       sunday:{open:'11:00',close:'21:00',active:true}
     },
-    categories:[ {id:'cat-fav',name:'Favoritos',order:0,products:[]} ]
+    categories: [
+      { id:'cat-fav', name:'Favoritos', order:0, products:[] }
+    ]
   };
 }
 
-/* Brain in memory */
-let brain = loadLocal() || defaultBrain();
-applyColors();
+/* ---------- Estado em memória ---------- */
+let brain = null;
 
-/* UI helpers */
-function $(id){ return document.getElementById(id); }
-
-/* Render hours inputs */
-function renderHours(){
-  const container = $('hoursContainer'); container.innerHTML='';
-  const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-  const labels = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
-  days.forEach((d,i)=>{
-    const cfg = brain.openHours[d] || {open:'11:00',close:'22:00',active:true};
-    const row = document.createElement('div'); row.className='flex gap-2 items-center';
-    row.innerHTML = `<label class="w-20 text-sm">${labels[i]}</label>
-      <input data-day="${d}" class="border rounded px-2 py-1 w-24" value="${cfg.open}" />
-      <input data-day="${d}" class="border rounded px-2 py-1 w-24" value="${cfg.close}" />
-      <label class="ml-2 text-sm"><input type="checkbox" data-day-active="${d}" ${cfg.active? 'checked':''}/> Aberto</label>`;
-    container.appendChild(row);
-  });
+/* ---------- Carregar / Salvar local ---------- */
+function saveLocal(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(brain));
+    console.log('Brain salvo no localStorage');
+  }catch(e){
+    console.error('Erro ao salvar localStorage', e);
+    alert('Erro ao salvar localStorage: ' + e.message);
+  }
+}
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){
+    console.error('Erro ao ler localStorage', e);
+  }
+  return null;
 }
 
-/* Apply colors */
+/* ---------- Inicialização ---------- */
+function init(){
+  brain = loadLocal() || defaultBrain();
+  applyColors();
+  renderMeta();
+  renderHours();
+  renderCategories();
+}
+
+/* ---------- Paleta e meta ---------- */
 function applyColors(){
-  document.documentElement.style.setProperty('--prim', brain.meta.primaryColor || '#b24b39');
-  document.documentElement.style.setProperty('--accent', brain.meta.accentColor || '#ff6b4a');
-  if($('colorPrim')) $('colorPrim').value = brain.meta.primaryColor || '#b24b39';
-  if($('colorAccent')) $('colorAccent').value = brain.meta.accentColor || '#ff6b4a';
+  const prim = brain.meta.primaryColor || '#b24b39';
+  const accent = brain.meta.accentColor || '#ff6b4a';
+  document.documentElement.style.setProperty('--prim', prim);
+  document.documentElement.style.setProperty('--accent', accent);
+  if($('colorPrim')) $('colorPrim').value = prim;
+  if($('colorAccent')) $('colorAccent').value = accent;
 }
-
-/* Render meta fields */
 function renderMeta(){
   $('metaStoreName').value = brain.meta.storeName || '';
   $('metaFooter').value = brain.meta.footerText || '';
   $('metaWhats').value = brain.meta.whatsapp || '';
   $('metaDelivery').value = brain.meta.deliveryFee || 0;
-  applyColors();
-  renderHours();
 }
 
-/* Render categories & products */
+/* ---------- Horários ---------- */
+function renderHours(){
+  const container = $('hoursContainer');
+  container.innerHTML = '';
+  const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const labels = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+  days.forEach((d,i)=>{
+    const cfg = brain.openHours[d] || {open:'11:00',close:'22:00',active:true};
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    row.innerHTML = `
+      <label class="w-20 text-sm">${labels[i]}</label>
+      <input data-day-open="${d}" class="border rounded px-2 py-1 w-24" value="${cfg.open}" />
+      <input data-day-close="${d}" class="border rounded px-2 py-1 w-24" value="${cfg.close}" />
+      <label class="ml-2 text-sm"><input type="checkbox" data-day-active="${d}" ${cfg.active ? 'checked' : ''}/> Aberto</label>
+    `;
+    container.appendChild(row);
+  });
+}
+
+/* ---------- Categorias & Produtos (render) ---------- */
 function renderCategories(){
-  const container = $('categoriesList'); container.innerHTML='';
+  const container = $('categoriesList');
+  container.innerHTML = '';
+  // ordenar por order
   brain.categories.sort((a,b)=> (a.order||0)-(b.order||0));
   brain.categories.forEach((cat, idx)=>{
-    const wrap = document.createElement('div'); wrap.className='border rounded p-3';
-    wrap.innerHTML = `<div class="flex justify-between items-center">
-      <div class="flex items-center gap-3"><strong>${cat.name}</strong>
-        <button class="px-2 py-1 border rounded" data-act="rename">Renomear</button>
-        <button class="px-2 py-1 border rounded" data-act="remove">Remover</button>
-        <button class="px-2 py-1 border rounded" data-act="up" ${idx===0?'disabled':''}>↑</button>
-        <button class="px-2 py-1 border rounded" data-act="down" ${idx===brain.categories.length-1?'disabled':''}>↓</button>
+    const card = document.createElement('div');
+    card.className = 'border rounded p-3';
+    card.innerHTML = `
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <strong class="text-lg">${escapeHtml(cat.name)}</strong>
+          <button class="text-sm px-2 py-1 border rounded" data-act="rename">Renomear</button>
+          <button class="text-sm px-2 py-1 border rounded" data-act="remove">Remover</button>
+          <button class="text-sm px-2 py-1 border rounded" data-act="up" ${idx===0?'disabled':''}>↑</button>
+          <button class="text-sm px-2 py-1 border rounded" data-act="down" ${idx===brain.categories.length-1?'disabled':''}>↓</button>
+        </div>
+        <div>
+          <button class="px-2 py-1 border rounded" data-act="addProduct">+ Produto</button>
+        </div>
       </div>
-      <div><button class="px-2 py-1 border rounded" data-act="addProd">+ Produto</button></div>
-    </div>
-    <div class="mt-3" id="cat-${cat.id}-prods"></div>`;
-    container.appendChild(wrap);
+      <div class="mt-3 space-y-2" id="cat-${cat.id}-products"></div>
+    `;
+    container.appendChild(card);
 
-    // attach actions
-    wrap.querySelectorAll('button').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        const act = b.getAttribute('data-act');
-        if(act==='rename'){ const n = prompt('Novo nome', cat.name); if(n){ cat.name=n; saveAndRender(); } }
-        if(act==='remove'){ if(confirm('Remover categoria e produtos?')){ brain.categories = brain.categories.filter(c=>c.id!==cat.id); saveAndRender(); } }
-        if(act==='up' && idx>0){ swapOrder(idx, idx-1); }
-        if(act==='down' && idx<brain.categories.length-1){ swapOrder(idx, idx+1); }
-        if(act==='addProd'){ openProductEditor(cat.id); }
+    // actions
+    card.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        const act = btn.getAttribute('data-act');
+        if(act==='rename'){ const n = prompt('Novo nome da categoria', cat.name); if(n){ cat.name = n; saveLocal(); renderCategories(); } }
+        if(act==='remove'){ if(confirm('Remover categoria e todos os produtos?')){ brain.categories = brain.categories.filter(c=>c.id!==cat.id); saveLocal(); renderCategories(); } }
+        if(act==='up' && idx>0){ swapCategoryOrder(idx, idx-1); }
+        if(act==='down' && idx<brain.categories.length-1){ swapCategoryOrder(idx, idx+1); }
+        if(act==='addProduct'){ openProductEditor(cat.id); }
       });
     });
 
     // products list
-    const pcont = wrap.querySelector(`#cat-${cat.id}-prods`);
+    const prodContainer = card.querySelector(`#cat-${cat.id}-products`);
     if(cat.products && cat.products.length){
       cat.products.forEach(prod=>{
-        const p = document.createElement('div'); p.className='flex items-center justify-between border rounded p-2 mb-2';
-        p.innerHTML = `<div class="flex items-center gap-3">
-            <img src="${prod.image||''}" class="w-16 h-12 object-cover rounded" alt="">
-            <div><div class="font-semibold">${prod.name} ${prod.active? '':'(Pausado)'}</div><div class="text-sm text-gray-600">${prod.description||''}</div></div>
+        const p = document.createElement('div');
+        p.className = 'flex items-center justify-between border rounded p-2';
+        p.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${escapeAttr(prod.image||'')}" class="w-16 h-12 object-cover rounded" alt="">
+            <div>
+              <div class="font-semibold">${escapeHtml(prod.name)} ${prod.active? '':'(Pausado)'}</div>
+              <div class="text-sm muted">${escapeHtml(prod.description||'')}</div>
+            </div>
           </div>
-          <div class="text-right">
+          <div class="flex flex-col items-end gap-2">
             <div class="font-bold">R$ ${Number(prod.price).toFixed(2)}</div>
-            <div class="flex gap-2 mt-2">
+            <div class="flex gap-2">
               <button class="px-2 py-1 border rounded" data-act="toggle">${prod.active? 'Pausar':'Ativar'}</button>
               <button class="px-2 py-1 border rounded" data-act="edit">Editar</button>
               <button class="px-2 py-1 border rounded text-red-600" data-act="del">Excluir</button>
             </div>
-          </div>`;
-        pcont.appendChild(p);
+          </div>
+        `;
+        prodContainer.appendChild(p);
+
         p.querySelectorAll('button').forEach(b=>{
           b.addEventListener('click', ()=>{
             const a = b.getAttribute('data-act');
-            if(a==='toggle'){ prod.active = !prod.active; saveAndRender(); }
+            if(a==='toggle'){ prod.active = !prod.active; saveLocal(); renderCategories(); }
             if(a==='edit'){ openProductEditor(cat.id, prod.id); }
-            if(a==='del'){ if(confirm('Excluir produto?')){ cat.products = cat.products.filter(x=>x.id!==prod.id); saveAndRender(); } }
+            if(a==='del'){ if(confirm('Excluir produto?')){ cat.products = cat.products.filter(x=>x.id!==prod.id); saveLocal(); renderCategories(); } }
           });
         });
       });
     } else {
-      pcont.innerHTML = '<div class="text-sm text-gray-500">Nenhum produto</div>';
+      prodContainer.innerHTML = '<div class="text-sm muted">Nenhum produto</div>';
     }
   });
 }
 
-/* Swap category order */
-function swapOrder(i,j){
-  const a = brain.categories[i], b = brain.categories[j];
-  const tmp = a.order; a.order = b.order; b.order = tmp;
-  saveAndRender();
-}
-
-/* Open product editor (prompt-based for velocidade) */
-function openProductEditor(catId, prodId=null){
-  const cat = brain.categories.find(c=>c.id===catId);
-  if(!cat) return alert('Categoria não encontrada');
-  let prod = prodId ? cat.products.find(p=>p.id===prodId) : null;
-  const name = prompt('Nome do produto', prod ? prod.name : '');
-  if(!name) return;
-  const desc = prompt('Descrição', prod ? prod.description : '');
-  const price = parseFloat(prompt('Preço (ex: 12.50)', prod ? prod.price : '0')) || 0;
-  const image = prompt('URL da imagem (ou deixe em branco)', prod ? prod.image : '');
-  const isPizza = confirm('Este produto é uma pizza (meio-a-meio disponível)? OK = Sim, Cancel = Não');
-  // extras pools (até 2)
-  const pools = [];
-  for(let i=0;i<2;i++){
-    const title = prompt(`Nome do grupo de adicionais #${i+1} (deixe vazio para pular)`, prod && prod.extrasPools && prod.extrasPools[i] ? prod.extrasPools[i].title : '');
-    if(!title) break;
-    const limit = parseInt(prompt(`Limite de seleção para "${title}" (ex: 2)`, prod && prod.extrasPools && prod.extrasPools[i] ? prod.extrasPools[i].limit : '2')) || 0;
-    const optsRaw = prompt(`Opções separadas por ; (ex: Bacon +R$3; Ovo +R$2)`, prod && prod.extrasPools && prod.extrasPools[i] ? prod.extrasPools[i].options.join(';') : '');
-    const options = optsRaw ? optsRaw.split(';').map(s=>s.trim()).filter(Boolean) : [];
-    pools.push({ title, limit, options });
-  }
-
-  if(prodId){
-    prod.name = name; prod.description = desc; prod.price = price; prod.image = image; prod.extrasPools = pools; prod.isPizza = isPizza; prod.active = prod.active ?? true;
-  } else {
-    const newProd = { id: uid('p'), name, description: desc, price, image, active:true, extrasPools: pools, isPizza };
-    cat.products.push(newProd);
-  }
-  saveAndRender();
-}
-
-/* Save and render */
-function saveAndRender(){ saveLocal(brain); renderMeta(); renderCategories(); }
-
-/* Export JSON */
-$('btnExport').addEventListener('click', ()=>{
-  const data = JSON.stringify(brain, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'products.json'; a.click();
-  URL.revokeObjectURL(url);
-});
-
-/* Load remote products.json (same repo) */
-$('btnLoadRemote').addEventListener('click', async ()=>{
-  try{
-    const res = await fetch('products.json', {cache:'no-store'});
-    if(!res.ok) throw new Error('products.json não encontrado');
-    brain = await res.json();
-    saveLocal(brain); renderMeta(); renderCategories(); alert('products.json carregado e salvo no localStorage.');
-  }catch(e){ alert('Erro: '+e.message); }
-});
-
-/* Import file */
-$('btnImportFile').addEventListener('click', ()=>{
-  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
-  input.onchange = e=>{
-    const f = e.target.files[0]; if(!f) return;
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      try{ brain = JSON.parse(ev.target.result); saveLocal(brain); renderMeta(); renderCategories(); alert('JSON importado com sucesso.'); }
-      catch(err){ alert('JSON inválido'); }
-    };
-    reader.readAsText(f);
-  };
-  input.click();
-});
-
-/* Save meta */
-$('saveMeta').addEventListener('click', ()=>{
-  brain.meta.storeName = $('metaStoreName').value || brain.meta.storeName;
-  brain.meta.footerText = $('metaFooter').value || brain.meta.footerText;
-  brain.meta.whatsapp = $('metaWhats').value || brain.meta.whatsapp;
-  brain.meta.deliveryFee = parseFloat($('metaDelivery').value || brain.meta.deliveryFee);
-  brain.meta.primaryColor = $('colorPrim').value; brain.meta.accentColor = $('colorAccent').value;
-  // hours
-  document.querySelectorAll('#hoursContainer input').forEach(inp=>{
-    const day = inp.getAttribute('data-day');
-    const dayActive = inp.getAttribute('data-day-active');
-    if(dayActive!==null){
-      brain.openHours[day].active = inp.checked;
-    } else if(day){
-      // find both inputs for day (open/close)
-      const all = Array.from(document.querySelectorAll(`#hoursContainer input[data-day="${day}"]`));
-      if(all.length>=2){ brain.openHours[day].open = all[0].value; brain.openHours[day].close = all[1].value; }
-    }
-  });
-  saveAndRender(); alert('Configurações salvas no localStorage.');
-});
-
-/* Init */
-renderMeta(); renderCategories();
-</script>
-</body>
-</html>
+/* ---------- Helpers: swap order ----------
