@@ -13,10 +13,10 @@
         <h2 class="text-2xl font-black text-emerald-400 mb-8">GESTOR PRO</h2>
         <nav class="flex-1 space-y-2">
             <button onclick="showTab('produtos')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3"><i class="fa-solid fa-burger w-5"></i> Cardápio</button>
-            <button onclick="showTab('config')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3"><i class="fa-solid fa-sliders w-5"></i> Operação</button>
+            <button onclick="showTab('config')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3"><i class="fa-solid fa-sliders w-5"></i> Operação / Ads</button>
             <button onclick="showTab('sync')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 text-blue-400"><i class="fa-brands fa-github w-5"></i> Servidor</button>
         </nav>
-        <button onclick="salvarNoGitHub()" class="mt-auto bg-emerald-600 hover:bg-emerald-700 py-4 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95"><i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR SITE</button>
+        <button onclick="salvarNoGitHub(event)" class="mt-auto bg-emerald-600 hover:bg-emerald-700 py-4 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95"><i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR SITE</button>
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto relative">
@@ -25,29 +25,25 @@
             <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div>
                     <h2 class="text-3xl font-black">Gestão de Cardápio</h2>
-                    <p class="text-slate-500 text-sm mt-1">Organize categorias e produtos de forma visual.</p>
                 </div>
                 <button onclick="abrirModal()" class="bg-slate-900 text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-md">+ Adicionar Produto</button>
             </div>
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Ordem das Categorias na Vitrine</h3>
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Categorias (Arraste para ordenar)</h3>
                 <div class="flex gap-2 mb-4 max-w-xl">
-                    <input type="text" id="in-cat" placeholder="Nova categoria (Ex: Pizzas Salgadas)" class="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none focus:border-blue-500">
-                    <button onclick="addCat()" class="bg-blue-600 text-white px-6 rounded-xl font-bold hover:bg-blue-700">Criar</button>
+                    <input type="text" id="in-cat" placeholder="Nova categoria..." class="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none">
+                    <button onclick="addCat()" class="bg-blue-600 text-white px-6 rounded-xl font-bold">Criar</button>
                 </div>
                 <div id="lista-cats" class="flex flex-wrap gap-2"></div>
             </div>
 
             <div class="flex gap-4">
-                <div class="flex-1 relative">
-                    <i class="fa-solid fa-search absolute left-4 top-4 text-slate-400"></i>
-                    <input type="text" id="busca" oninput="renderApp()" placeholder="Buscar por nome ou preço..." class="w-full pl-12 border border-slate-200 p-3 rounded-xl outline-none focus:border-blue-500 shadow-sm">
-                </div>
-                <select id="filtro-status" onchange="renderApp()" class="border border-slate-200 p-3 rounded-xl font-bold bg-white shadow-sm outline-none">
-                    <option value="all">Todos os Status</option>
-                    <option value="active">🟢 Apenas Ativos</option>
-                    <option value="paused">🔴 Apenas Pausados</option>
+                <input type="text" id="busca" oninput="renderApp()" placeholder="Buscar..." class="flex-1 border border-slate-200 p-3 rounded-xl outline-none bg-white">
+                <select id="filtro-status" onchange="renderApp()" class="border border-slate-200 p-3 rounded-xl font-bold bg-white outline-none">
+                    <option value="all">Todos</option>
+                    <option value="active">Ativos</option>
+                    <option value="paused">Pausados</option>
                 </select>
             </div>
 
@@ -55,120 +51,94 @@
         </section>
 
         <section id="tab-config" class="tab-content hidden space-y-6">
-            <h2 class="text-3xl font-black">Operação e Visual</h2>
+            <h2 class="text-3xl font-black">Operação e Anúncios</h2>
             <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-5">
                     <h3 class="font-black text-lg border-b pb-2">Identidade Visual</h3>
-                    <div><label class="font-bold text-sm text-slate-600">Nome da Loja</label><input type="text" id="cfg-nome" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500"></div>
-                    <div><label class="font-bold text-sm text-slate-600">WhatsApp (com DDD, sem espaços)</label><input type="text" id="cfg-wpp" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500"></div>
-                    <div><label class="font-bold text-sm text-slate-600">Taxa de Entrega (R$)</label><input type="number" step="0.01" id="cfg-taxa" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500"></div>
-                    <div><label class="font-bold text-sm text-slate-600">Cor Principal do Site</label><input type="color" id="cfg-cor" class="w-full h-14 rounded-xl cursor-pointer border mt-1"></div>
-                    <div><label class="font-bold text-sm text-slate-600">Texto do Rodapé</label><input type="text" id="cfg-rodape" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500"></div>
+                    <div><label class="font-bold text-xs text-slate-500 uppercase">Nome da Loja</label><input type="text" id="cfg-nome" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500 uppercase">WhatsApp</label><input type="text" id="cfg-wpp" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500 uppercase">Taxa de Entrega (R$)</label><input type="number" step="0.01" id="cfg-taxa" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500 uppercase">Cor do Site</label><input type="color" id="cfg-cor" class="w-full h-12 rounded-xl mt-1"></div>
+                    
+                    <h3 class="font-black text-lg border-b pb-2 pt-6"><i class="fa-solid fa-rectangle-ad mr-2"></i>Banners de Anúncio</h3>
+                    <div id="lista-ads" class="space-y-3"></div>
+                    <button onclick="addNovoAd()" class="w-full bg-blue-50 text-blue-600 py-3 rounded-xl font-bold border-2 border-dashed border-blue-200">+ Adicionar Banner</button>
                 </div>
                 <div class="space-y-5">
                     <h3 class="font-black text-lg border-b pb-2">Horários de Funcionamento</h3>
-                    <p class="text-xs text-slate-500 mb-4">Marque a caixa para indicar que a loja abre naquele dia.</p>
                     <div id="horarios-box" class="space-y-3"></div>
+                    <div class="pt-4"><label class="font-bold text-xs text-slate-500 uppercase">Rodapé</label><input type="text" id="cfg-rodape" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
                 </div>
-                <button onclick="salvarConfig()" class="col-span-1 md:col-span-2 bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg hover:bg-slate-800 transition-colors">SALVAR CONFIGURAÇÕES LOCAIS</button>
+                <button onclick="salvarConfig()" class="col-span-full bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg">SALVAR CONFIGURAÇÕES LOCAIS</button>
             </div>
         </section>
 
         <section id="tab-sync" class="tab-content hidden space-y-6">
-            <h2 class="text-3xl font-black">Conexão com Banco de Dados</h2>
-            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl">
-                <div class="space-y-4">
-                    <div><label class="text-[10px] font-black text-slate-400 uppercase ml-1">Personal Access Token</label><input type="password" id="gh-token" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none"></div>
-                    <div><label class="text-[10px] font-black text-slate-400 uppercase ml-1">Repositório (usuario/repo)</label><input type="text" id="gh-repo" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none"></div>
-                    <button onclick="salvarCredenciais()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black mt-4 shadow-md hover:bg-blue-700">CONECTAR</button>
-                </div>
+            <h2 class="text-3xl font-black">Conexão Servidor</h2>
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl space-y-4">
+                <div><label class="text-[10px] font-black text-slate-400 uppercase">GitHub Token</label><input type="password" id="gh-token" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                <div><label class="text-[10px] font-black text-slate-400 uppercase">Repositório (usuario/repo)</label><input type="text" id="gh-repo" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                <button onclick="salvarCredenciais()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black">CONECTAR</button>
             </div>
         </section>
-
     </main>
 
     <div id="modal-item" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white w-full max-w-3xl rounded-[2rem] shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-[2rem] sticky top-0 z-10">
-                <h3 class="text-2xl font-black text-slate-800" id="modal-title">Novo Produto</h3>
-                <button onclick="fecharModal()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-[2rem]">
+                <h3 class="text-2xl font-black" id="modal-title">Novo Produto</h3>
+                <button onclick="fecharModal()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="p-8 overflow-y-auto flex-1 bg-slate-50">
                 <input type="hidden" id="p-id">
-                
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Nome do Produto</label><input type="text" id="p-nome" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500" placeholder="Ex: Hambúrguer Artesanal"></div>
-                    <div><label class="text-xs font-bold text-slate-500">Preço Base (R$)</label><input type="number" step="0.01" id="p-preco" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500" placeholder="0.00"></div>
-                    <div><label class="text-xs font-bold text-slate-500">Categoria</label><select id="p-cat" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500"></select></div>
-                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Link da Foto</label><input type="text" id="p-img" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500" placeholder="https://..."></div>
-                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Descrição</label><textarea id="p-desc" rows="2" class="w-full bg-slate-50 border p-3 rounded-xl mt-1 outline-none focus:border-blue-500" placeholder="Ingredientes, detalhes..."></textarea></div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 grid grid-cols-2 gap-4">
+                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Nome</label><input type="text" id="p-nome" class="w-full bg-slate-50 border p-3 rounded-xl"></div>
+                    <div><label class="text-xs font-bold text-slate-500">Preço Base (R$)</label><input type="number" step="0.01" id="p-preco" class="w-full bg-slate-50 border p-3 rounded-xl"></div>
+                    <div><label class="text-xs font-bold text-slate-500">Categoria</label><select id="p-cat" class="w-full bg-slate-50 border p-3 rounded-xl"></select></div>
+                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Link da Foto</label><input type="text" id="p-img" class="w-full bg-slate-50 border p-3 rounded-xl"></div>
+                    <div class="col-span-2"><label class="text-xs font-bold text-slate-500">Descrição</label><textarea id="p-desc" class="w-full bg-slate-50 border p-3 rounded-xl"></textarea></div>
                 </div>
 
-                <div class="bg-orange-50 border border-orange-200 p-6 rounded-2xl shadow-sm mb-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h4 class="font-black text-orange-800 text-lg"><i class="fa-solid fa-pizza-slice mr-2"></i> Formato "Meio a Meio"</h4>
-                            <p class="text-xs text-orange-600 mt-1">O cliente deverá escolher exatamente 2 sabores. O preço final será a soma das metades.</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="p-is-meio" class="sr-only peer" onchange="toggleMeioAMeio()">
-                            <div class="w-14 h-7 bg-orange-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
-                        </label>
+                <div class="bg-orange-50 border border-orange-200 p-6 rounded-2xl mb-6">
+                    <div class="flex items-center justify-between">
+                        <div><h4 class="font-black text-orange-800 text-lg">Habilitar "Meio a Meio"</h4><p class="text-xs text-orange-600">Soma das metades no preço final</p></div>
+                        <input type="checkbox" id="p-is-meio" class="w-6 h-6" onchange="toggleMeioAMeio()">
                     </div>
                     <div id="box-sabores" class="hidden mt-4 pt-4 border-t border-orange-200">
-                        <button onclick="addSabor()" class="mb-4 bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-orange-700">+ Adicionar Sabor</button>
+                        <button onclick="addSabor()" class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold mb-3">+ Adicionar Sabor</button>
                         <div id="lista-sabores" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
-                    <div class="flex justify-between items-end mb-4 border-b pb-2">
-                        <div class="flex-1 mr-4">
-                            <label class="text-xs font-bold text-slate-500">Título do Grupo 1</label>
-                            <input type="text" id="g1-nome" placeholder="Ex: Escolha suas Carnes" class="w-full font-bold text-lg border-b outline-none focus:border-blue-500 py-1">
-                        </div>
-                        <div class="w-32">
-                            <label class="text-xs font-bold text-slate-500">Limite Máximo</label>
-                            <input type="number" id="g1-limite" value="1" min="1" class="w-full bg-slate-50 border p-2 rounded-lg outline-none text-center font-bold">
-                        </div>
+                    <div class="flex justify-between items-end border-b pb-2 mb-4">
+                        <div class="flex-1 mr-4"><label class="text-xs font-bold text-slate-500">Título Grupo 1</label><input type="text" id="g1-nome" class="w-full font-bold border-b p-1"></div>
+                        <div class="w-20"><label class="text-xs font-bold text-slate-500">Limite</label><input type="number" id="g1-limite" value="1" class="w-full border p-1 rounded"></div>
                     </div>
-                    <button onclick="addAdicional(1)" class="mb-4 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-200">+ Adicionar Opção ao Grupo 1</button>
+                    <button onclick="addAdicional(1)" class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-bold mb-2">+ Opção G1</button>
                     <div id="lista-g1" class="space-y-2"></div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex justify-between items-end mb-4 border-b pb-2">
-                        <div class="flex-1 mr-4">
-                            <label class="text-xs font-bold text-slate-500">Título do Grupo 2</label>
-                            <input type="text" id="g2-nome" placeholder="Ex: Adicionais Extras" class="w-full font-bold text-lg border-b outline-none focus:border-blue-500 py-1">
-                        </div>
-                        <div class="w-32">
-                            <label class="text-xs font-bold text-slate-500">Limite Máximo</label>
-                            <input type="number" id="g2-limite" value="1" min="1" class="w-full bg-slate-50 border p-2 rounded-lg outline-none text-center font-bold">
-                        </div>
+                    <div class="flex justify-between items-end border-b pb-2 mb-4">
+                        <div class="flex-1 mr-4"><label class="text-xs font-bold text-slate-500">Título Grupo 2</label><input type="text" id="g2-nome" class="w-full font-bold border-b p-1"></div>
+                        <div class="w-20"><label class="text-xs font-bold text-slate-500">Limite</label><input type="number" id="g2-limite" value="1" class="w-full border p-1 rounded"></div>
                     </div>
-                    <button onclick="addAdicional(2)" class="mb-4 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-200">+ Adicionar Opção ao Grupo 2</button>
+                    <button onclick="addAdicional(2)" class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-bold mb-2">+ Opção G2</button>
                     <div id="lista-g2" class="space-y-2"></div>
                 </div>
-
             </div>
             
-            <div class="p-6 border-t border-slate-100 bg-white rounded-b-[2rem] flex justify-end gap-4">
-                <button onclick="fecharModal()" class="px-6 py-3 font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors">Cancelar</button>
-                <button onclick="salvarProduto()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg hover:bg-blue-700 transition-transform active:scale-95">Salvar Produto</button>
+            <div class="p-6 border-t bg-white rounded-b-[2rem] flex justify-end gap-4">
+                <button onclick="fecharModal()" class="font-bold text-slate-400 px-4">Cancelar</button>
+                <button onclick="salvarProduto()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-black shadow-lg">Salvar Produto</button>
             </div>
         </div>
     </div>
 
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
-
     <script>
-        let DATA = { config: { categorias: [], horarios: {} }, items: [] };
+        let DATA = { config: { categorias: [], horarios: {}, ads: [] }, items: [] };
         const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
         window.onload = async () => {
@@ -178,7 +148,7 @@
                 const res = await fetch('produtos.json', { cache: 'no-store' });
                 DATA = await res.json();
                 renderApp();
-            } catch(e) { console.log("Iniciando banco vazio."); }
+            } catch(e) { console.log("Erro ao carregar banco."); }
         };
 
         function showTab(id) {
@@ -187,182 +157,140 @@
         }
 
         function renderApp() {
-            // Render Categorias
-            document.getElementById('lista-cats').innerHTML = DATA.config.categorias.map((c, i) => `
-                <div class="bg-white border shadow-sm px-4 py-2 rounded-xl flex items-center gap-3 text-sm font-bold text-slate-700">
+            // Categorias
+            document.getElementById('lista-cats').innerHTML = (DATA.config.categorias || []).map((c, i) => `
+                <div class="bg-white border px-3 py-1 rounded-lg flex items-center gap-2 text-sm font-bold">
                     ${c}
-                    <div class="flex gap-1 ml-2 pl-2 border-l">
-                        <button onclick="moverCat(${i}, -1)" class="w-6 h-6 bg-slate-100 rounded hover:bg-slate-200"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
-                        <button onclick="moverCat(${i}, 1)" class="w-6 h-6 bg-slate-100 rounded hover:bg-slate-200"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
-                        <button onclick="removeCat(${i})" class="w-6 h-6 bg-red-50 text-red-500 rounded hover:bg-red-100 ml-1"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
+                    <button onclick="moverCat(${i}, -1)" class="text-slate-300 hover:text-slate-600"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="moverCat(${i}, 1)" class="text-slate-300 hover:text-slate-600"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button onclick="removeCat(${i})" class="text-red-400 hover:text-red-600 ml-1"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `).join('');
-            
-            document.getElementById('p-cat').innerHTML = DATA.config.categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('p-cat').innerHTML = (DATA.config.categorias || []).map(c => `<option value="${c}">${c}</option>`).join('');
 
-            // Filtros e Render Vitrine
+            // Banners
+            const boxAds = document.getElementById('lista-ads');
+            boxAds.innerHTML = (DATA.config.ads || []).map((ad, i) => `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+                        <span>Banner #${i+1}</span>
+                        <button onclick="removerAd(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <input type="text" placeholder="URL Imagem" value="${ad.imagem}" onchange="updateAd(${i}, 'imagem', this.value)" class="w-full p-2 border rounded-lg text-xs">
+                    <input type="text" placeholder="Link (opcional)" value="${ad.link || ''}" onchange="updateAd(${i}, 'link', this.value)" class="w-full p-2 border rounded-lg text-xs">
+                    <label class="flex items-center gap-2 text-[10px] font-bold"><input type="checkbox" ${ad.ativo ? 'checked' : ''} onchange="updateAd(${i}, 'ativo', this.checked)"> ATIVO</label>
+                </div>
+            `).join('');
+
+            // Grid de Produtos
             const q = document.getElementById('busca').value.toLowerCase();
             const st = document.getElementById('filtro-status').value;
-            const filtrados = DATA.items.filter(p => {
-                const mt = p.nome.toLowerCase().includes(q) || p.preco.toString().includes(q);
+            const filtrados = (DATA.items || []).filter(p => {
+                const mt = p.nome.toLowerCase().includes(q);
                 const ms = st === 'all' ? true : (st === 'active' ? p.ativo : !p.ativo);
                 return mt && ms;
             });
 
             document.getElementById('grid-items').innerHTML = filtrados.map(p => `
-                <div class="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col relative transition-all ${!p.ativo ? 'opacity-60 bg-slate-50' : 'hover:shadow-md'}">
-                    ${p.meio_a_meio ? '<span class="absolute top-0 right-0 bg-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-[1.5rem] uppercase tracking-widest">Meio a Meio</span>' : ''}
+                <div class="bg-white p-4 rounded-2xl border shadow-sm flex flex-col transition-all ${!p.ativo ? 'opacity-50 grayscale' : ''}">
                     <div class="flex gap-4">
-                        <img src="${p.imagem}" class="w-24 h-24 rounded-2xl object-cover bg-slate-100 border border-slate-100">
+                        <img src="${p.imagem}" class="w-20 h-20 rounded-xl object-cover">
                         <div class="flex-1">
                             <h4 class="font-black text-slate-800 leading-tight">${p.nome}</h4>
-                            <p class="text-xs text-slate-400 mt-1 font-semibold">${p.categoria}</p>
-                            <p class="text-blue-600 font-black mt-2 text-lg">R$ ${p.preco.toFixed(2)}</p>
+                            <p class="text-blue-600 font-black text-sm mt-1">R$ ${p.preco.toFixed(2)}</p>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-                        <button onclick="toggleActive(${p.id})" class="text-sm font-black flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${p.ativo ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'text-slate-500 bg-slate-200 hover:bg-slate-300'}">
-                            ${p.ativo ? '<i class="fa-solid fa-eye"></i> Visível' : '<i class="fa-solid fa-eye-slash"></i> Pausado'}
-                        </button>
+                    <div class="flex justify-between items-center mt-4 pt-4 border-t">
+                        <button onclick="toggleActive(${p.id})" class="text-xs font-black px-2 py-1 rounded bg-slate-100">${p.ativo ? '🟢 ATIVO' : '🔴 PAUSADO'}</button>
                         <div class="flex gap-2">
-                            <button onclick="editarProduto(${p.id})" class="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl hover:bg-blue-600 hover:text-white transition-colors"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="apagarProduto(${p.id})" class="w-10 h-10 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            <button onclick="editarProduto(${p.id})" class="p-2 bg-slate-50 rounded-lg hover:bg-blue-500 hover:text-white transition-colors"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="apagarProduto(${p.id})" class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
             `).join('');
 
-            // Render Configs
-            document.getElementById('cfg-nome').value = DATA.config.nomeLoja;
-            document.getElementById('cfg-wpp').value = DATA.config.whatsapp;
-            document.getElementById('cfg-taxa').value = DATA.config.taxaEntrega;
+            // Configs Gerais e Horários
+            document.getElementById('cfg-nome').value = DATA.config.nomeLoja || '';
+            document.getElementById('cfg-wpp').value = DATA.config.whatsapp || '';
+            document.getElementById('cfg-taxa').value = DATA.config.taxaEntrega || 0;
             document.getElementById('cfg-cor').value = DATA.config.corPrincipal || '#ea1d2c';
             document.getElementById('cfg-rodape').value = DATA.config.rodapeTexto || '';
             
             document.getElementById('horarios-box').innerHTML = dias.map((d, i) => {
                 const h = DATA.config.horarios[i] || { aberto: true, inicio: "18:00", fim: "23:59" };
-                return `<div class="flex gap-3 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="h-ab-${i}" class="sr-only peer" ${h.aberto ? 'checked' : ''}>
-                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                    </label>
-                    <span class="w-10 font-black text-sm text-slate-700">${d}</span>
-                    <input type="time" id="h-in-${i}" value="${h.inicio}" class="border border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-blue-500 bg-white">
-                    <span class="text-slate-400 font-bold">às</span>
-                    <input type="time" id="h-fi-${i}" value="${h.fim}" class="border border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-blue-500 bg-white">
+                return `<div class="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border">
+                    <input type="checkbox" id="h-ab-${i}" ${h.aberto ? 'checked' : ''}>
+                    <span class="w-8 font-black text-xs text-slate-600">${d}</span>
+                    <input type="time" id="h-in-${i}" value="${h.inicio}" class="text-xs border p-1 rounded">
+                    <span class="text-slate-400">às</span>
+                    <input type="time" id="h-fi-${i}" value="${h.fim}" class="text-xs border p-1 rounded">
                 </div>`;
             }).join('');
         }
 
-        // Funções de Categoria e Visibilidade
+        // Funções Auxiliares
         function addCat() { const v = document.getElementById('in-cat').value.trim(); if(v && !DATA.config.categorias.includes(v)){ DATA.config.categorias.push(v); document.getElementById('in-cat').value=''; renderApp(); } }
         function removeCat(i) { DATA.config.categorias.splice(i,1); renderApp(); }
         function moverCat(i, d) { const n = i+d; if(n>=0 && n<DATA.config.categorias.length) { [DATA.config.categorias[i], DATA.config.categorias[n]] = [DATA.config.categorias[n], DATA.config.categorias[i]]; renderApp(); } }
         function toggleActive(id) { const p = DATA.items.find(x => x.id === id); p.ativo = !p.ativo; renderApp(); }
-        function apagarProduto(id) { if(confirm("Certeza que deseja excluir?")) { DATA.items = DATA.items.filter(x => x.id !== id); renderApp(); } }
-
-        // Gestão do Modal de Produto Profissional
-        function toggleMeioAMeio() {
-            const isChecked = document.getElementById('p-is-meio').checked;
-            document.getElementById('box-sabores').style.display = isChecked ? 'block' : 'none';
-        }
-
-        function criarLinha(nome = '', preco = 0, inputClassPrefix, showTrash = true) {
+        function addNovoAd() { if(!DATA.config.ads) DATA.config.ads = []; DATA.config.ads.push({ id: Date.now(), imagem: '', link: '', ativo: true }); renderApp(); }
+        function updateAd(i, campo, valor) { DATA.config.ads[i][campo] = valor; }
+        function removerAd(i) { DATA.config.ads.splice(i, 1); renderApp(); }
+        function toggleMeioAMeio() { document.getElementById('box-sabores').classList.toggle('hidden', !document.getElementById('p-is-meio').checked); }
+        function addSabor(n='', p=0) { document.getElementById('lista-sabores').appendChild(criarLinha(n, p, 'sab')); }
+        function addAdicional(g, n='', p=0) { document.getElementById(`lista-g${g}`).appendChild(criarLinha(n, p, `g${g}`)); }
+        function criarLinha(n, p, pre) {
             const div = document.createElement('div');
-            div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-200 shadow-sm anim-fade";
-            div.innerHTML = `
-                <div class="flex-1 relative">
-                    <i class="fa-solid fa-tag absolute left-3 top-3.5 text-slate-300 text-xs"></i>
-                    <input type="text" placeholder="Nome da opção..." value="${nome}" class="${inputClassPrefix}-n w-full pl-8 border-none bg-transparent outline-none text-sm font-bold">
-                </div>
-                <div class="w-28 relative border-l border-slate-100 pl-2">
-                    <span class="absolute left-3 top-3 text-slate-400 text-xs font-bold">R$</span>
-                    <input type="number" step="0.01" placeholder="0.00" value="${preco}" class="${inputClassPrefix}-p w-full pl-8 border-none bg-transparent outline-none text-sm font-bold text-blue-600">
-                </div>
-                ${showTrash ? `<button onclick="this.parentElement.remove()" class="w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"><i class="fa-solid fa-trash text-sm"></i></button>` : ''}
-            `;
+            div.className = "flex gap-2 items-center bg-white p-2 rounded-lg border";
+            div.innerHTML = `<input type="text" value="${n}" class="${pre}-n flex-1 text-sm outline-none" placeholder="Nome">
+                             <input type="number" step="0.01" value="${p}" class="${pre}-p w-20 text-sm outline-none" placeholder="Preço">
+                             <button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-trash"></i></button>`;
             return div;
         }
 
-        function addSabor(nome='', preco=0) { document.getElementById('lista-sabores').appendChild(criarLinha(nome, preco, 'sab')); }
-        function addAdicional(grupoId, nome='', preco=0) { document.getElementById(`lista-g${grupoId}`).appendChild(criarLinha(nome, preco, `g${grupoId}`)); }
-
         function abrirModal() {
-            if(DATA.config.categorias.length === 0) return alert("Crie pelo menos uma categoria primeiro!");
-            document.getElementById('modal-title').innerText = "Novo Produto";
-            document.getElementById('p-id').value = '';
-            document.getElementById('p-nome').value = '';
-            document.getElementById('p-preco').value = '';
-            document.getElementById('p-img').value = '';
-            document.getElementById('p-desc').value = '';
-            document.getElementById('p-is-meio').checked = false;
-            document.getElementById('g1-nome').value = ''; document.getElementById('g1-limite').value = '1';
-            document.getElementById('g2-nome').value = ''; document.getElementById('g2-limite').value = '1';
-            document.getElementById('lista-sabores').innerHTML = '';
-            document.getElementById('lista-g1').innerHTML = '';
-            document.getElementById('lista-g2').innerHTML = '';
-            toggleMeioAMeio();
+            document.getElementById('p-id').value = ''; document.getElementById('p-nome').value = '';
+            document.getElementById('p-preco').value = ''; document.getElementById('p-img').value = '';
+            document.getElementById('p-desc').value = ''; document.getElementById('p-is-meio').checked = false;
+            document.getElementById('lista-sabores').innerHTML = ''; document.getElementById('lista-g1').innerHTML = '';
+            document.getElementById('lista-g2').innerHTML = ''; toggleMeioAMeio();
             document.getElementById('modal-item').classList.remove('hidden');
         }
 
         function editarProduto(id) {
             const p = DATA.items.find(x => x.id === id);
-            document.getElementById('modal-title').innerText = "Editando: " + p.nome;
-            document.getElementById('p-id').value = p.id;
-            document.getElementById('p-nome').value = p.nome;
-            document.getElementById('p-preco').value = p.preco;
-            document.getElementById('p-cat').value = p.categoria;
-            document.getElementById('p-img').value = p.imagem;
-            document.getElementById('p-desc').value = p.descricao;
-            
+            document.getElementById('p-id').value = p.id; document.getElementById('p-nome').value = p.nome;
+            document.getElementById('p-preco').value = p.preco; document.getElementById('p-cat').value = p.categoria;
+            document.getElementById('p-img').value = p.imagem; document.getElementById('p-desc').value = p.descricao;
             document.getElementById('p-is-meio').checked = !!p.meio_a_meio;
             toggleMeioAMeio();
-            document.getElementById('lista-sabores').innerHTML = '';
             if(p.sabores) p.sabores.forEach(s => addSabor(s.nome, s.preco));
-
-            const g1 = p.grupos && p.grupos[0] ? p.grupos[0] : {nome:'', limite:1, itens:[]};
-            document.getElementById('g1-nome').value = g1.nome; document.getElementById('g1-limite').value = g1.limite;
-            document.getElementById('lista-g1').innerHTML = ''; g1.itens.forEach(i => addAdicional(1, i.nome, i.preco));
-
-            const g2 = p.grupos && p.grupos[1] ? p.grupos[1] : {nome:'', limite:1, itens:[]};
-            document.getElementById('g2-nome').value = g2.nome; document.getElementById('g2-limite').value = g2.limite;
-            document.getElementById('lista-g2').innerHTML = ''; g2.itens.forEach(i => addAdicional(2, i.nome, i.preco));
-
+            if(p.grupos && p.grupos[0]) p.grupos[0].itens.forEach(i => addAdicional(1, i.nome, i.preco));
+            if(p.grupos && p.grupos[1]) p.grupos[1].itens.forEach(i => addAdicional(2, i.nome, i.preco));
             document.getElementById('modal-item').classList.remove('hidden');
         }
 
-        function extrairLista(prefix) {
-            const nomes = document.querySelectorAll(`.${prefix}-n`);
-            const precos = document.querySelectorAll(`.${prefix}-p`);
-            let arr = [];
-            nomes.forEach((el, i) => { if(el.value.trim()) arr.push({ nome: el.value.trim(), preco: parseFloat(precos[i].value)||0 }); });
-            return arr;
+        function extrair(pre) {
+            const n = document.querySelectorAll(`.${pre}-n`), p = document.querySelectorAll(`.${pre}-p`);
+            return Array.from(n).map((el, i) => ({ nome: el.value, preco: parseFloat(p[i].value) || 0 })).filter(x => x.nome);
         }
 
         function salvarProduto() {
-            const nome = document.getElementById('p-nome').value.trim();
-            if(!nome) return alert("O produto precisa de um nome.");
-
-            const item = {
-                id: document.getElementById('p-id').value ? parseInt(document.getElementById('p-id').value) : Date.now(),
-                nome: nome,
-                preco: parseFloat(document.getElementById('p-preco').value)||0,
-                categoria: document.getElementById('p-cat').value,
-                imagem: document.getElementById('p-img').value,
-                descricao: document.getElementById('p-desc').value,
-                ativo: true,
+            const id = document.getElementById('p-id').value ? parseInt(document.getElementById('p-id').value) : Date.now();
+            const p = {
+                id, nome: document.getElementById('p-nome').value, preco: parseFloat(document.getElementById('p-preco').value)||0,
+                categoria: document.getElementById('p-cat').value, imagem: document.getElementById('p-img').value,
+                descricao: document.getElementById('p-desc').value, ativo: true,
                 meio_a_meio: document.getElementById('p-is-meio').checked,
-                sabores: document.getElementById('p-is-meio').checked ? extrairLista('sab') : [],
+                sabores: document.getElementById('p-is-meio').checked ? extrair('sab') : [],
                 grupos: [
-                    { nome: document.getElementById('g1-nome').value.trim(), limite: parseInt(document.getElementById('g1-limite').value)||1, itens: extrairLista('g1') },
-                    { nome: document.getElementById('g2-nome').value.trim(), limite: parseInt(document.getElementById('g2-limite').value)||1, itens: extrairLista('g2') }
+                    { nome: document.getElementById('g1-nome').value, limite: parseInt(document.getElementById('g1-limite').value)||1, itens: extrair('g1') },
+                    { nome: document.getElementById('g2-nome').value, limite: parseInt(document.getElementById('g2-limite').value)||1, itens: extrair('g2') }
                 ]
             };
-
-            const idx = DATA.items.findIndex(x => x.id === item.id);
-            if(idx > -1) DATA.items[idx] = item; else DATA.items.push(item);
-            
+            const idx = DATA.items.findIndex(x => x.id === id);
+            if(idx > -1) DATA.items[idx] = p; else DATA.items.push(p);
             fecharModal(); renderApp();
         }
 
@@ -377,33 +305,29 @@
             dias.forEach((_, i) => {
                 DATA.config.horarios[i] = { aberto: document.getElementById(`h-ab-${i}`).checked, inicio: document.getElementById(`h-in-${i}`).value, fim: document.getElementById(`h-fi-${i}`).value };
             });
-            alert("Configurações atualizadas no painel! Não esqueça de Publicar no Servidor.");
+            alert("Configurações locais salvas! Publique para aplicar no site.");
         }
 
         function salvarCredenciais() {
             localStorage.setItem('gh_token', document.getElementById('gh-token').value);
             localStorage.setItem('gh_repo', document.getElementById('gh-repo').value);
-            alert("✅ Credenciais salvas no seu navegador!");
+            alert("Credenciais salvas no navegador!");
         }
 
-        async function salvarNoGitHub() {
-            const btn = event.currentTarget; const textoOriginal = btn.innerHTML;
-            const token = localStorage.getItem('gh_token'), repo = localStorage.getItem('gh_repo');
-            if(!token || !repo) return alert("Configure a aba Servidor com seu Token e Repositório.");
-            
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PUBLICANDO...';
-            
+        async function salvarNoGitHub(e) {
+            const btn = e.currentTarget; const token = localStorage.getItem('gh_token'), repo = localStorage.getItem('gh_repo');
+            if(!token || !repo) return alert("Configure o Servidor.");
+            btn.innerHTML = "... Salvando ...";
             try {
                 const url = `https://api.github.com/repos/${repo}/contents/produtos.json`;
-                const getRes = await fetch(url, { headers: { 'Authorization': `token ${token}` }, cache: 'no-store' });
-                const getJson = await getRes.json();
-                
-                const putRes = await fetch(url, { method: 'PUT', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: "Atualização Automática (Painel Pro)", content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))), sha: getJson.sha || null })
+                const gRes = await fetch(url, { headers: { 'Authorization': `token ${token}` }, cache: 'no-store' });
+                const gJ = await gRes.json();
+                const pRes = await fetch(url, { method: 'PUT', headers: { 'Authorization': `token ${token}` },
+                    body: JSON.stringify({ message: "Update", content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))), sha: gJ.sha || null })
                 });
-                if(putRes.ok) alert("🚀 SUCESSO! Site do cliente atualizado com as novas informações."); else alert("Erro. Verifique as credenciais.");
+                if(pRes.ok) alert("🚀 SITE PUBLICADO COM SUCESSO!");
             } catch(e) { alert("Erro de conexão."); }
-            btn.innerHTML = textoOriginal;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR SITE';
         }
     </script>
 </body>
