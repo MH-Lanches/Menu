@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="titulo-loja">Delivery Profissional</title>
+    <title>Delivery Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style id="estilo-dinamico"></style>
+    <style>
+        :root {
+            --cor-primaria: #E74C3C;
+            --cor-secundaria: #25D366;
+            --cor-fundo: #F8F9FA;
+        }
+        .bg-primary { background: var(--cor-primaria) !important; }
+        .bg-secundaria { background: var(--cor-secundaria) !important; }
+        header { background: var(--cor-primaria) !important; }
+        .categoria-btn { background: var(--cor-primaria); color: white; }
+        body { background-color: var(--cor-fundo); }
+    </style>
 </head>
 <body class="bg-gray-50">
 
-<!-- HEADER -->
-<header id="header" class="text-white p-4 shadow-md sticky top-0 z-50">
+<header class="text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold" id="nome-loja">Carregando...</h1>
+        <h1 class="text-2xl font-bold" id="nome-loja">Seu Delivery</h1>
         <div class="flex gap-4 items-center">
             <button onclick="abrirFavoritos()" class="relative">
                 <i class="fas fa-heart text-xl"></i>
@@ -27,13 +37,202 @@
     </div>
 </header>
 
-<!-- AREA DE ANUNCIOS / BANNERS -->
-<section id="area-anuncios" class="max-w-6xl mx-auto mt-4 px-4">
-    <!-- Carregado via JS -->
-</section>
-
-<!-- MENU DE CATEGORIAS -->
+<section id="area-anuncios" class="max-w-6xl mx-auto mt-4 px-4"></section>
 <nav class="max-w-6xl mx-auto mt-6 px-4 overflow-x-auto whitespace-nowrap pb-2">
+    <button onclick="filtrar('todos')" class="categoria-btn px-4 py-2 rounded-full mr-2 font-bold">Todos</button>
+</nav>
+
+<main class="max-w-6xl mx-auto p-4" id="lista-produtos"></main>
+
+<!-- MODAL FAVORITOS -->
+<div id="modal-favoritos" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full">
+        <div class="p-4">
+            <span onclick="fecharFavoritos()" class="float-right text-2xl cursor-pointer">&times;</span>
+            <h2 class="text-xl font-bold mb-4">❤️ Meus Favoritos</h2>
+            <div id="lista-fav"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div id="modal-produto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full">
+        <div class="p-4">
+            <span onclick="fecharModal()" class="float-right text-2xl cursor-pointer">&times;</span>
+            <h2 id="modal-nome" class="text-xl font-bold"></h2>
+            <img id="modal-img" class="w-full h-48 object-cover rounded my-2">
+            <p id="modal-desc" class="text-gray-500"></p>
+            <div id="area-opcoes" class="mt-4"></div>
+            <button onclick="adicionarCarrinho()" class="mt-4 w-full bg-secundaria text-white py-3 rounded font-bold">Adicionar</button>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO -->
+<div id="carrinho" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform z-50">
+    <div class="p-4 h-full flex flex-col">
+        <h3 class="text-xl font-bold mb-4">🛒 Carrinho</h3>
+        <div id="itens-carrinho" class="flex-1 overflow-y-auto"></div>
+        <div class="border-t pt-4 mt-4">
+            <p class="text-xl font-bold">Total: <span id="total-carrinho">R$ 0,00</span></p>
+            <button onclick="finalizarPedido()" class="w-full bg-secundaria text-white py-3 rounded mt-2 font-bold">Finalizar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let produtos = [];
+let carrinho = [];
+let favoritos = [];
+let produtoAtual;
+
+// CARREGA DADOS
+fetch('products.json')
+.then(res => res.json())
+.then(dados => {
+    produtos = dados;
+    renderizarProdutos();
+    renderizarCategorias();
+})
+.catch(err => {
+    document.getElementById('lista-produtos').innerHTML = "<p class='text-red-500'>ERRO: Verifique se o arquivo products.json está na pasta.</p>";
+});
+
+// RENDERIZA
+function renderizarProdutos(filtro = null) {
+    const container = document.getElementById('lista-produtos');
+    container.innerHTML = '';
+    produtos.filter(p => !filtro || p.categoria == filtro).forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'bg-white rounded-xl shadow overflow-hidden relative';
+        div.innerHTML = `
+            <button onclick="toggleFavorito(${idx})" class="absolute top-2 right-2 z-10 bg-white p-2 rounded-full">
+                <i class="fas fa-heart ${favoritos.includes(idx) ? 'text-red-500' : 'text-gray-400'}"></i>
+            </button>
+            <img src="${item.imagem}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="font-bold">${item.nome}</h3>
+                <p class="text-gray-500 text-sm">${item.descricao}</p>
+                <p class="text-green-600 font-bold text-xl mt-2">R$ ${item.preco.toFixed(2)}</p>
+                <button onclick="abrirModal(${idx})" class="mt-2 w-full bg-primary text-white py-2 rounded">Ver Detalhes</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function renderizarCategorias() {
+    const cats = [...new Set(produtos.map(p => p.categoria))];
+    const nav = document.querySelector('nav');
+    cats.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'categoria-btn px-4 py-2 rounded-full mr-2 font-bold';
+        btn.innerText = cat;
+        btn.onclick = () => filtrar(cat);
+        nav.appendChild(btn);
+    });
+}
+
+function filtrar(cat) { renderizarProdutos(cat == 'todos' ? null : cat); }
+
+// MODAL
+function abrirModal(idx) {
+    produtoAtual = produtos[idx];
+    document.getElementById('modal-nome').innerText = produtoAtual.nome;
+    document.getElementById('modal-img').src = produtoAtual.imagem;
+    document.getElementById('modal-desc').innerText = produtoAtual.descricao;
+    document.getElementById('area-opcoes').innerHTML = '';
+
+    if(produtoAtual.tipo == 'pizza') {
+        document.getElementById('area-opcoes').innerHTML = `
+            <label>Primeira Metade</label>
+            <select id="s1" class="w-full border p-2 my-2">
+                ${produtoAtual.sabores.map(s=>`<option value="${s.nome}|${s.preco}">${s.nome}</option>`).join('')}
+            </select>
+            <label>Segunda Metade</label>
+            <select id="s2" class="w-full border p-2 my-2">
+                ${produtoAtual.sabores.map(s=>`<option value="${s.nome}|${s.preco}">${s.nome}</option>`).join('')}
+            </select>
+        `;
+    }
+
+    if(produtoAtual.adicionais) {
+        produtoAtual.adicionais.forEach(ad => {
+            document.getElementById('area-opcoes').innerHTML += `
+                <label class="flex items-center gap-2 p-2 border rounded mt-1">
+                    <input type="checkbox" class="adic" value="${ad.nome}|${ad.preco}"> ${ad.nome} + R$ ${ad.preco}
+                </label>
+            `;
+        });
+    }
+    document.getElementById('modal-produto').classList.remove('hidden');
+    document.getElementById('modal-produto').classList.add('flex');
+}
+
+function fecharModal() {
+    document.getElementById('modal-produto').classList.add('hidden');
+    document.getElementById('modal-produto').classList.remove('flex');
+}
+
+// CARRINHO
+function adicionarCarrinho() {
+    let item = {...produtoAtual};
+    item.obs = [];
+    if(item.tipo == 'pizza') {
+        const s1 = document.getElementById('s1').value.split('|')[0];
+        const s2 = document.getElementById('s2').value.split('|')[0];
+        item.nome = `${item.nome} - ${s1} / ${s2}`;
+    }
+    document.querySelectorAll('.adic:checked').forEach(c => {
+        let [nome, val] = c.value.split('|');
+        item.obs.push(nome);
+        item.preco += parseFloat(val);
+    });
+    carrinho.push(item);
+    atualizarCarrinho();
+    fecharModal();
+}
+
+function atualizarCarrinho() {
+    document.getElementById('contador-cart').innerText = carrinho.length;
+    const container = document.getElementById('itens-carrinho');
+    container.innerHTML = '';
+    let total = 0;
+    carrinho.forEach(item => {
+        total += item.preco;
+        container.innerHTML += `<p>${item.nome} - R$ ${item.preco.toFixed(2)}</p>`;
+    });
+    document.getElementById('total-carrinho').innerText = 'R$ ' + total.toFixed(2);
+}
+
+function abrirCarrinho() { document.getElementById('carrinho').classList.remove('translate-x-full'); }
+function finalizarPedido() {
+    let texto = "Olá! Segue o pedido:\n";
+    carrinho.forEach(i => texto += `- ${i.nome} R$ ${i.preco.toFixed(2)}\n`);
+    texto += `\nTotal: R$ ${carrinho.reduce((s,i)=>s+i.preco,0).toFixed(2)}`;
+    window.open('https://wa.me/5581999999999?text='+encodeURIComponent(texto));
+}
+
+// FAVORITOS
+function toggleFavorito(idx) {
+    favoritos.includes(idx) ? favoritos.splice(favoritos.indexOf(idx),1) : favoritos.push(idx);
+    document.getElementById('contador-fav').innerText = favoritos.length;
+    renderizarProdutos();
+}
+function abrirFavoritos() {
+    document.getElementById('lista-fav').innerHTML = favoritos.map(i=>`<p>${produtos[i].nome}</p>`).join('');
+    document.getElementById('modal-favoritos').classList.remove('hidden');
+    document.getElementById('modal-favoritos').classList.add('flex');
+}
+function fecharFavoritos() {
+    document.getElementById('modal-favoritos').classList.add('hidden');
+    document.getElementById('modal-favoritos').classList.remove('flex');
+}
+
+</script>
+</body>
+</html>
     <button onclick="filtrar('todos')" class="categoria-btn px-4 py-2 rounded-full mr-2 font-bold">Todos</button>
 </nav>
 
