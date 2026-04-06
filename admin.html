@@ -1,12 +1,445 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Autônomo Delivery • Painel Admin</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Gestor | Delivery Autônomo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 flex h-screen font-sans text-slate-800 overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 text-white p-6 flex flex-col shadow-2xl z-20">
+        <h2 class="text-2xl font-black text-emerald-400 mb-8 tracking-tighter">GESTOR PRO</h2>
+        <nav class="flex-1 space-y-2">
+            <button onclick="showTab('produtos')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3"><i class="fa-solid fa-burger w-5"></i> Cardápio</button>
+            <button onclick="showTab('config')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3"><i class="fa-solid fa-sliders w-5"></i> Operação / Ads</button>
+            <button onclick="showTab('sync')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 text-blue-400"><i class="fa-brands fa-github w-5"></i> Servidor</button>
+        </nav>
+        <button onclick="salvarNoGitHub(event)" class="mt-auto bg-emerald-600 hover:bg-emerald-700 py-4 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
+            <i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR SITE
+        </button>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto relative">
+        
+        <section id="tab-produtos" class="tab-content active space-y-6">
+            <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-3xl font-black italic">Cardápio</h2>
+                <button onclick="abrirModal()" class="bg-slate-900 text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-md">+ Novo Item</button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Categorias (Ordem de Exibição)</h3>
+                <div class="flex gap-2 mb-4 max-w-xl">
+                    <input type="text" id="in-cat" placeholder="Nova categoria..." class="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none">
+                    <button onclick="addCat()" class="bg-blue-600 text-white px-6 rounded-xl font-bold">Criar</button>
+                </div>
+                <div id="lista-cats" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="flex gap-4">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+                    <input type="text" id="busca" oninput="renderApp()" placeholder="Buscar por nome ou preço..." class="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 outline-none focus:ring-2 ring-blue-500 bg-white">
+                </div>
+                <select id="filtro-status" onchange="renderApp()" class="border border-slate-200 p-4 rounded-xl font-bold bg-white outline-none">
+                    <option value="all">Todos Itens</option>
+                    <option value="active">Apenas Ativos</option>
+                    <option value="paused">Apenas Pausados</option>
+                </select>
+            </div>
+
+            <div id="grid-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
+        </section>
+
+        <section id="tab-config" class="tab-content hidden space-y-6">
+            <h2 class="text-3xl font-black">Operação e Anúncios</h2>
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-5">
+                    <h3 class="font-black text-lg border-b pb-2">Identidade & Banners</h3>
+                    <div><label class="font-bold text-xs text-slate-500">NOME DA LOJA</label><input type="text" id="cfg-nome" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500">WHATSAPP (DDD + NÚMERO)</label><input type="text" id="cfg-wpp" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500">TAXA DE ENTREGA (R$)</label><input type="number" step="0.01" id="cfg-taxa" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                    <div><label class="font-bold text-xs text-slate-500">COR DO SITE</label><input type="color" id="cfg-cor" class="w-full h-12 rounded-xl mt-1 cursor-pointer"></div>
+                    
+                    <div class="pt-4">
+                        <label class="font-black text-xs text-blue-500">ANÚNCIOS ROTATIVOS (BANNER TOPO)</label>
+                        <div id="lista-ads" class="space-y-2 mt-2"></div>
+                        <button onclick="addNovoAd()" class="w-full mt-2 bg-blue-50 text-blue-600 py-3 rounded-xl font-bold border-2 border-dashed border-blue-200">+ Adicionar Banner</button>
+                    </div>
+                </div>
+                <div class="space-y-5">
+                    <h3 class="font-black text-lg border-b pb-2">Horários Semanais</h3>
+                    <div id="horarios-box" class="space-y-3"></div>
+                    <div class="pt-4"><label class="font-bold text-xs text-slate-500 uppercase">Texto do Rodapé</label><input type="text" id="cfg-rodape" class="w-full bg-slate-50 border p-3 rounded-xl mt-1"></div>
+                </div>
+                <button onclick="salvarConfig()" class="col-span-full bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg hover:bg-slate-800">SALVAR CONFIGURAÇÕES LOCAIS</button>
+            </div>
+        </section>
+
+        <section id="tab-sync" class="tab-content hidden space-y-6">
+            <h2 class="text-3xl font-black">Conexão Servidor</h2>
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl space-y-4">
+                <p class="text-sm text-slate-500">Insira seu Token do GitHub para que o sistema possa salvar os arquivos automaticamente.</p>
+                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">GitHub Token</label><input type="password" id="gh-token" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1 outline-none"></div>
+                <div><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Repositório (usuario/repositorio)</label><input type="text" id="gh-repo" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1 outline-none"></div>
+                <button onclick="salvarCredenciais()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-700 transition-colors">CONECTAR E VALIDAR</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="modal-item" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl my-8 relative flex flex-col max-h-[90vh]">
+            <div class="p-8 border-b flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-[2.5rem]">
+                <h3 class="text-3xl font-black" id="modal-title">Configurar Item</h3>
+                <button onclick="fecharModal()" class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto flex-1 bg-slate-50">
+                <input type="hidden" id="p-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4 bg-white p-6 rounded-[2rem] border shadow-sm">
+                        <h4 class="font-black text-slate-400 uppercase text-[10px] tracking-widest mb-4">Informações Gerais</h4>
+                        <div><label class="text-xs font-bold text-slate-500">Nome do Produto</label><input type="text" id="p-nome" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-xs font-bold text-slate-500">Preço (R$)</label><input type="number" step="0.01" id="p-preco" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1"></div>
+                            <div><label class="text-xs font-bold text-slate-500">Categoria</label><select id="p-cat" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1"></select></div>
+                        </div>
+                        <div><label class="text-xs font-bold text-slate-500">URL da Foto</label><input type="text" id="p-img" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1"></div>
+                        <div><label class="text-xs font-bold text-slate-500">Descrição/Ingredientes</label><textarea id="p-desc" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl mt-1 h-24"></textarea></div>
+                        
+                        <div class="bg-orange-50 border border-orange-200 p-5 rounded-2xl">
+                            <div class="flex items-center justify-between">
+                                <div><h4 class="font-black text-orange-800">Ativar Meio a Meio</h4><p class="text-[10px] text-orange-600 uppercase font-bold">Ideal para Pizzas</p></div>
+                                <input type="checkbox" id="p-is-meio" class="w-6 h-6 accent-orange-600" onchange="toggleMeioAMeio()">
+                            </div>
+                            <div id="box-sabores" class="hidden mt-4 pt-4 border-t border-orange-200 space-y-2">
+                                <button onclick="addSabor()" class="w-full bg-orange-600 text-white py-2 rounded-lg text-xs font-black">+ Adicionar Sabor</button>
+                                <div id="lista-sabores" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
+                            <div class="flex justify-between items-end border-b pb-3 mb-4">
+                                <div class="flex-1 mr-4"><label class="text-[10px] font-black text-slate-400">TÍTULO GRUPO 1</label><input type="text" id="g1-nome" placeholder="Ex: Escolha o Molho" class="w-full font-black text-slate-700 outline-none border-b-2 border-transparent focus:border-blue-500"></div>
+                                <div class="w-16"><label class="text-[10px] font-black text-slate-400">LIMITE</label><input type="number" id="g1-limite" value="1" class="w-full border p-1 rounded-lg text-center font-black"></div>
+                            </div>
+                            <div id="lista-g1" class="space-y-2 mb-4"></div>
+                            <button onclick="addAdicional(1)" class="w-full bg-slate-100 text-slate-600 py-2 rounded-xl text-xs font-black hover:bg-slate-200">+ Opção G1</button>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-[2rem] border shadow-sm">
+                            <div class="flex justify-between items-end border-b pb-3 mb-4">
+                                <div class="flex-1 mr-4"><label class="text-[10px] font-black text-slate-400">TÍTULO GRUPO 2</label><input type="text" id="g2-nome" placeholder="Ex: Adicionais Extras" class="w-full font-black text-slate-700 outline-none border-b-2 border-transparent focus:border-blue-500"></div>
+                                <div class="w-16"><label class="text-[10px] font-black text-slate-400">LIMITE</label><input type="number" id="g2-limite" value="1" class="w-full border p-1 rounded-lg text-center font-black"></div>
+                            </div>
+                            <div id="lista-g2" class="space-y-2 mb-4"></div>
+                            <button onclick="addAdicional(2)" class="w-full bg-slate-100 text-slate-600 py-2 rounded-xl text-xs font-black hover:bg-slate-200">+ Opção G2</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8 border-t bg-white rounded-b-[2.5rem] flex justify-end gap-4 shadow-inner">
+                <button onclick="fecharModal()" class="font-black text-slate-400 px-6 hover:text-slate-600">CANCELAR</button>
+                <button onclick="salvarProduto()" class="bg-blue-600 text-white px-12 py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 active:scale-95 transition-all">SALVAR PRODUTO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let DATA = { config: { categorias: [], horarios: {}, ads: [] }, items: [] };
+        const dias = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+        window.onload = async () => {
+            document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
+            try {
+                const res = await fetch('produtos.json', { cache: 'no-store' });
+                DATA = await res.json();
+                renderApp();
+            } catch(e) { console.warn("Banco de dados local não encontrado. Configure o servidor."); }
+        };
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + id).classList.remove('hidden');
+        }
+
+        function renderApp() {
+            // Render Categorias com setas de ordem
+            const catBox = document.getElementById('lista-cats');
+            catBox.innerHTML = (DATA.config.categorias || []).map((c, i) => `
+                <div class="bg-white border-2 border-slate-100 px-4 py-2 rounded-2xl flex items-center gap-3 text-sm font-black shadow-sm group">
+                    <span class="text-slate-400 text-xs">#${i+1}</span> ${c}
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="moverCat(${i}, -1)" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button onclick="moverCat(${i}, 1)" class="text-slate-400 hover:text-blue-500"><i class="fa-solid fa-arrow-right"></i></button>
+                        <button onclick="removeCat(${i})" class="text-red-300 hover:text-red-500 ml-2"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('p-cat').innerHTML = (DATA.config.categorias || []).map(c => `<option value="${c}">${c}</option>`).join('');
+
+            // Grid de Itens com filtro de busca e status
+            const query = document.getElementById('busca').value.toLowerCase();
+            const statusFiltro = document.getElementById('filtro-status').value;
+            
+            const filtrados = (DATA.items || []).filter(p => {
+                const matchesBusca = p.nome.toLowerCase().includes(query) || p.preco.toString().includes(query);
+                const matchesStatus = statusFiltro === 'all' ? true : (statusFiltro === 'active' ? p.ativo : !p.ativo);
+                return matchesBusca && matchesStatus;
+            });
+
+            document.getElementById('grid-items').innerHTML = filtrados.map(p => `
+                <div class="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group">
+                    <div class="flex gap-5">
+                        <div class="relative">
+                            <img src="${p.imagem}" class="w-24 h-24 rounded-2xl object-cover bg-slate-100">
+                            ${!p.ativo ? '<div class="absolute inset-0 bg-white/60 flex items-center justify-center font-black text-red-500 text-[10px] uppercase">Pausado</div>' : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-black text-slate-800 text-lg truncate">${p.nome}</h4>
+                            <p class="text-emerald-600 font-black text-sm">R$ ${p.preco.toFixed(2)}</p>
+                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-tighter">${p.categoria}</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-50">
+                        <button onclick="toggleVisibility(${p.id})" class="text-[10px] font-black px-4 py-2 rounded-xl transition-colors ${p.ativo ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}">
+                            ${p.ativo ? '● ONLINE' : '○ PAUSADO'}
+                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="editarProduto(${p.id})" class="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="apagarProduto(${p.id})" class="p-3 bg-red-50 text-red-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Banners Ads
+            document.getElementById('lista-ads').innerHTML = (DATA.config.ads || []).map((ad, i) => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 relative">
+                    <button onclick="removerAd(${i})" class="absolute top-2 right-2 text-red-400 hover:text-red-600"><i class="fa-solid fa-circle-xmark"></i></button>
+                    <input type="text" placeholder="URL da Imagem Banner" value="${ad.imagem}" onchange="updateAd(${i}, 'imagem', this.value)" class="w-full p-2 rounded-lg border text-xs">
+                    <div class="flex gap-2 items-center">
+                        <input type="text" placeholder="Link (Opcional)" value="${ad.link || ''}" onchange="updateAd(${i}, 'link', this.value)" class="flex-1 p-2 rounded-lg border text-[10px]">
+                        <label class="flex items-center gap-2 text-[10px] font-black"><input type="checkbox" ${ad.ativo ? 'checked' : ''} onchange="updateAd(${i}, 'ativo', this.checked)"> ATIVO</label>
+                    </div>
+                </div>
+            `).join('');
+
+            // Configs Gerais e Horários
+            document.getElementById('cfg-nome').value = DATA.config.nomeLoja || '';
+            document.getElementById('cfg-wpp').value = DATA.config.whatsapp || '';
+            document.getElementById('cfg-taxa').value = DATA.config.taxaEntrega || 0;
+            document.getElementById('cfg-cor').value = DATA.config.corPrincipal || '#ea1d2c';
+            document.getElementById('cfg-rodape').value = DATA.config.rodapeTexto || '';
+            
+            document.getElementById('horarios-box').innerHTML = dias.map((d, i) => {
+                const h = DATA.config.horarios[i] || { aberto: true, inicio: "18:00", fim: "23:59" };
+                return `
+                <div class="flex gap-3 items-center bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                    <input type="checkbox" id="h-ab-${i}" ${h.aberto ? 'checked' : ''} class="w-5 h-5 accent-emerald-500">
+                    <span class="flex-1 font-black text-xs text-slate-600">${d}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="time" id="h-in-${i}" value="${h.inicio}" class="text-xs font-bold border-none bg-slate-50 p-1 rounded">
+                        <span class="text-slate-300">às</span>
+                        <input type="time" id="h-fi-${i}" value="${h.fim}" class="text-xs font-bold border-none bg-slate-50 p-1 rounded">
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- FUNÇÕES DE CATEGORIA ---
+        function addCat() { const v = document.getElementById('in-cat').value.trim(); if(v && !DATA.config.categorias.includes(v)){ DATA.config.categorias.push(v); document.getElementById('in-cat').value=''; renderApp(); } }
+        function removeCat(i) { if(confirm("Remover categoria?")) { DATA.config.categorias.splice(i,1); renderApp(); } }
+        function moverCat(i, d) { 
+            const novaPos = i + d;
+            if(novaPos >= 0 && novaPos < DATA.config.categorias.length) {
+                const temp = DATA.config.categorias[i];
+                DATA.config.categorias[i] = DATA.config.categorias[novaPos];
+                DATA.config.categorias[novaPos] = temp;
+                renderApp();
+            }
+        }
+
+        // --- FUNÇÕES DE PRODUTO ---
+        function toggleVisibility(id) {
+            const p = DATA.items.find(x => x.id === id);
+            p.ativo = !p.ativo;
+            renderApp();
+        }
+
+        function toggleMeioAMeio() { document.getElementById('box-sabores').classList.toggle('hidden', !document.getElementById('p-is-meio').checked); }
+        function addSabor(n='', p=0) { document.getElementById('lista-sabores').appendChild(criarLinha(n, p, 'sab')); }
+        function addAdicional(g, n='', p=0) { document.getElementById(`lista-g${g}`).appendChild(criarLinha(n, p, `g${g}`)); }
+
+        function criarLinha(n, p, pre) {
+            const div = document.createElement('div');
+            div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-200";
+            div.innerHTML = `
+                <input type="text" value="${n}" class="${pre}-n flex-1 text-xs font-bold outline-none border-none" placeholder="Nome">
+                <div class="flex items-center gap-1 bg-slate-50 px-2 rounded-lg">
+                    <span class="text-[10px] text-slate-400">R$</span>
+                    <input type="number" step="0.10" value="${p}" class="${pre}-p w-14 text-xs font-black border-none bg-transparent outline-none" placeholder="0.00">
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-red-300 hover:text-red-600 px-1"><i class="fa-solid fa-trash-can"></i></button>`;
+            return div;
+        }
+
+        function abrirModal() {
+            document.getElementById('modal-title').innerText = "Novo Item";
+            document.getElementById('p-id').value = ''; 
+            document.getElementById('p-nome').value = '';
+            document.getElementById('p-preco').value = ''; 
+            document.getElementById('p-img').value = '';
+            document.getElementById('p-desc').value = ''; 
+            document.getElementById('p-is-meio').checked = false;
+            document.getElementById('g1-nome').value = ''; 
+            document.getElementById('g1-limite').value = 1;
+            document.getElementById('g2-nome').value = ''; 
+            document.getElementById('g2-limite').value = 1;
+            document.getElementById('lista-sabores').innerHTML = ''; 
+            document.getElementById('lista-g1').innerHTML = '';
+            document.getElementById('lista-g2').innerHTML = ''; 
+            toggleMeioAMeio();
+            document.getElementById('modal-item').classList.remove('hidden');
+        }
+
+        function editarProduto(id) {
+            const p = DATA.items.find(x => x.id === id);
+            abrirModal();
+            document.getElementById('modal-title').innerText = "Editar " + p.nome;
+            document.getElementById('p-id').value = p.id; 
+            document.getElementById('p-nome').value = p.nome;
+            document.getElementById('p-preco').value = p.preco; 
+            document.getElementById('p-cat').value = p.categoria;
+            document.getElementById('p-img').value = p.imagem; 
+            document.getElementById('p-desc').value = p.descricao;
+            document.getElementById('p-is-meio').checked = !!p.meio_a_meio;
+            toggleMeioAMeio();
+            
+            if(p.sabores) p.sabores.forEach(s => addSabor(s.nome, s.preco));
+            if(p.grupos && p.grupos[0]) {
+                document.getElementById('g1-nome').value = p.grupos[0].nome;
+                document.getElementById('g1-limite').value = p.grupos[0].limite;
+                p.grupos[0].itens.forEach(i => addAdicional(1, i.nome, i.preco));
+            }
+            if(p.grupos && p.grupos[1]) {
+                document.getElementById('g2-nome').value = p.grupos[1].nome;
+                document.getElementById('g2-limite').value = p.grupos[1].limite;
+                p.grupos[1].itens.forEach(i => addAdicional(2, i.nome, i.preco));
+            }
+        }
+
+        function apagarProduto(id) { if(confirm("Apagar produto definitivamente?")){ DATA.items = DATA.items.filter(x => x.id !== id); renderApp(); } }
+
+        function extrairLinhas(pre) {
+            const nomes = document.querySelectorAll(`.${pre}-n`);
+            const precos = document.querySelectorAll(`.${pre}-p`);
+            return Array.from(nomes).map((el, i) => ({
+                nome: el.value,
+                preco: parseFloat(precos[i].value) || 0
+            })).filter(x => x.nome.trim() !== '');
+        }
+
+        function salvarProduto() {
+            const id = document.getElementById('p-id').value ? parseInt(document.getElementById('p-id').value) : Date.now();
+            const p = {
+                id,
+                nome: document.getElementById('p-nome').value,
+                preco: parseFloat(document.getElementById('p-preco').value) || 0,
+                categoria: document.getElementById('p-cat').value,
+                imagem: document.getElementById('p-img').value || 'https://via.placeholder.com/300',
+                descricao: document.getElementById('p-desc').value,
+                ativo: true,
+                meio_a_meio: document.getElementById('p-is-meio').checked,
+                sabores: document.getElementById('p-is-meio').checked ? extrairLinhas('sab') : [],
+                grupos: [
+                    { nome: document.getElementById('g1-nome').value, limite: parseInt(document.getElementById('g1-limite').value) || 1, itens: extrairLinhas('g1') },
+                    { nome: document.getElementById('g2-nome').value, limite: parseInt(document.getElementById('g2-limite').value) || 1, itens: extrairLinhas('g2') }
+                ]
+            };
+
+            const idx = DATA.items.findIndex(x => x.id === id);
+            if(idx > -1) DATA.items[idx] = p; else DATA.items.push(p);
+            
+            fecharModal();
+            renderApp();
+        }
+
+        function fecharModal() { document.getElementById('modal-item').classList.add('hidden'); }
+
+        // --- CONFIGURAÇÕES DE OPERAÇÃO ---
+        function addNovoAd() { 
+            if(!DATA.config.ads) DATA.config.ads = [];
+            DATA.config.ads.push({ imagem: '', link: '', ativo: true });
+            renderApp();
+        }
+        function updateAd(i, c, v) { DATA.config.ads[i][c] = v; }
+        function removerAd(i) { DATA.config.ads.splice(i, 1); renderApp(); }
+
+        function salvarConfig() {
+            DATA.config.nomeLoja = document.getElementById('cfg-nome').value;
+            DATA.config.whatsapp = document.getElementById('cfg-wpp').value;
+            DATA.config.taxaEntrega = parseFloat(document.getElementById('cfg-taxa').value) || 0;
+            DATA.config.corPrincipal = document.getElementById('cfg-cor').value;
+            DATA.config.rodapeTexto = document.getElementById('cfg-rodape').value;
+            dias.forEach((_, i) => {
+                DATA.config.horarios[i] = {
+                    aberto: document.getElementById(`h-ab-${i}`).checked,
+                    inicio: document.getElementById(`h-in-${i}`).value,
+                    fim: document.getElementById(`h-fi-${i}`).value
+                };
+            });
+            alert("Configurações salvas localmente! Não esqueça de publicar.");
+        }
+
+        // --- GITHUB SYNC ---
+        function salvarCredenciais() {
+            localStorage.setItem('gh_token', document.getElementById('gh-token').value);
+            localStorage.setItem('gh_repo', document.getElementById('gh-repo').value);
+            alert("Credenciais salvas no seu navegador!");
+        }
+
+        async function salvarNoGitHub(e) {
+            const btn = e.currentTarget;
+            const token = localStorage.getItem('gh_token');
+            const repo = localStorage.getItem('gh_repo');
+
+            if(!token || !repo) return alert("Por favor, configure o Token e o Repositório na aba 'Servidor'.");
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SINCRONIZANDO...';
+            btn.disabled = true;
+
+            try {
+                const url = `https://api.github.com/repos/${repo}/contents/produtos.json`;
+                const getFile = await fetch(url, { headers: { 'Authorization': `token ${token}` }, cache: 'no-store' });
+                const fileData = await getFile.json();
+                const sha = fileData.sha;
+
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2))));
+                
+                const putFile = await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: "Update Menu", content, sha })
+                });
+
+                if(putFile.ok) alert("🚀 SITE ATUALIZADO COM SUCESSO!");
+                else alert("Erro ao salvar. Verifique o token.");
+            } catch(err) {
+                alert("Erro de conexão com GitHub.");
+                console.error(err);
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> PUBLICAR SITE';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
 </html>
