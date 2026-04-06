@@ -1,0 +1,30 @@
+{
+  "config": {
+    "nomeLoja": "Nome da Sua Lanchonete",
+    "linkLogo": "https://via.placeholder.com/150",
+    "corPrincipal": "#ef4444",
+    "whatsapp": "5511999999999",
+    "taxaEntrega": 5.00,
+    "horaAbre": "18:00",
+    "horaFecha": "23:59",
+    "fechadoManual": false,
+    "categorias": ["lanches", "bebidas"],
+    "footerText": "Lanchonete desde 2021 realizando desejos ✨"
+  },
+  "items": [
+    {
+      "id": 1,
+      "nome": "X-Burger Especial",
+      "preco": 25.90,
+      "categoria": "lanches",
+      "descricao": "Pão, carne artesanal 160g, queijo e molho.",
+      "imagem": "https://via.placeholder.com/300",
+      "ativo": true,
+      "limiteAdicionais": 5,
+      "adicionais": [
+        { "nome": "Bacon", "preco": 4.00, "desc": "3 fatias crocantes", "maxPorItem": 2 },
+        { "nome": "Ovo", "preco": 2.50, "desc": "Gema mole ou dura", "maxPorItem": 1 }
+      ]
+    }
+  ]
+}
