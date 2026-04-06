@@ -2,19 +2,78 @@
   "config": {
     "nomeLoja": "Delivery Pro",
     "whatsapp": "5511999999999",
-    "taxaEntrega": 5.00,
+    "taxaEntrega": 5,
     "corPrincipal": "#ea1d2c",
     "rodapeTexto": "© 2026 Delivery Pro - Feito com dedicação",
-    "categorias": ["Lanches", "Pizzas", "Bebidas"],
+    "categorias": [
+      "Lanches",
+      "Pizzas",
+      "Bebidas"
+    ],
     "horarios": {
-      "0": {"aberto": true, "inicio": "18:00", "fim": "23:59"},
-      "1": {"aberto": false, "inicio": "00:00", "fim": "00:00"},
-      "2": {"aberto": true, "inicio": "18:00", "fim": "23:59"},
-      "3": {"aberto": true, "inicio": "18:00", "fim": "23:59"},
-      "4": {"aberto": true, "inicio": "18:00", "fim": "23:59"},
-      "5": {"aberto": true, "inicio": "18:00", "fim": "23:59"},
-      "6": {"aberto": true, "inicio": "18:00", "fim": "23:59"}
+      "0": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      },
+      "1": {
+        "aberto": false,
+        "inicio": "00:00",
+        "fim": "00:00"
+      },
+      "2": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      },
+      "3": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      },
+      "4": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      },
+      "5": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      },
+      "6": {
+        "aberto": true,
+        "inicio": "18:00",
+        "fim": "23:59"
+      }
     }
   },
-  "items": []
+  "items": [
+    {
+      "id": 1775491209894,
+      "nome": "pastel completo",
+      "preco": 7,
+      "categoria": "Lanches",
+      "descricao": "",
+      "imagem": "",
+      "ativo": true,
+      "extras": [
+        {
+          "nome": "1",
+          "preco": 0,
+          "limite": 1
+        },
+        {
+          "nome": "2",
+          "preco": 0,
+          "limite": 2
+        },
+        {
+          "nome": "3",
+          "preco": 0,
+          "limite": 3
+        }
+      ]
+    }
+  ]
 }
