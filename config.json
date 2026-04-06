@@ -1,0 +1,21 @@
+{
+  "nome": "Delicia Express",
+  "slogan": "O melhor delivery da cidade",
+  "whatsapp": "5511999999999",
+  "taxaEntrega": 8.00,
+  "pedidoMinimo": 25.00,
+  "corPrimaria": "#e11d48",
+  "corSecundaria": "#f43f5e",
+  "corFundo": "#0f172a",
+  "corTexto": "#f8fafc",
+  "rodape": "© 2025 Delicia Express - Todos os direitos reservados",
+  "horarios": {
+    "segunda": { "abertura": "11:00", "fechamento": "23:00", "fechado": false },
+    "terca": { "abertura": "11:00", "fechamento": "23:00", "fechado": false },
+    "quarta": { "abertura": "11:00", "fechamento": "23:00", "fechado": false },
+    "quinta": { "abertura": "11:00", "fechamento": "23:00", "fechado": false },
+    "sexta": { "abertura": "11:00", "fechamento": "00:00", "fechado": false },
+    "sabado": { "abertura": "11:00", "fechamento": "00:00", "fechado": false },
+    "domingo": { "abertura": "17:00", "fechamento": "23:00", "fechado": false }
+  }
+}

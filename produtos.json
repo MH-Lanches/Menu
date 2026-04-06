@@ -1,0 +1,855 @@
+{
+  "categorias": [
+    {
+      "id": "lanches",
+      "nome": "Lanches",
+      "ordem": 1
+    },
+    {
+      "id": "pizzas",
+      "nome": "Pizzas",
+      "ordem": 2
+    },
+    {
+      "id": "bebidas",
+      "nome": "Bebidas",
+      "ordem": 3
+    },
+    {
+      "id": "porcoes",
+      "nome": "Porções",
+      "ordem": 4
+    }
+  ],
+  "produtos": [
+    {
+      "id": "1",
+      "nome": "X-Tudo",
+      "preco": 24.90,
+      "descricao": "Hambúrguer 150g, queijo, presunto, ovo, bacon, alface, tomate, milho e maionese caseira",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/1080/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Extras",
+        "max": 5,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 5.00},
+          {"nome": "Queijo Extra", "preco": 4.00},
+          {"nome": "Ovo Extra", "preco": 3.00},
+          {"nome": "Calabresa", "preco": 6.00},
+          {"nome": "Cebola Crispy", "preco": 4.50}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Barbecue", "preco": 2.00},
+          {"nome": "Maionese Picante", "preco": 2.00},
+          {"nome": "Mostarda e Mel", "preco": 2.00}
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "nome": "X-Bacon",
+      "preco": 19.90,
+      "descricao": "Hambúrguer, queijo cheddar, bacon crocante e molho especial",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 4,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 5.00},
+          {"nome": "Queijo Cheddar", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "3",
+      "nome": "Pizza Margherita",
+      "preco": 42.90,
+      "descricao": "Molho de tomate, muçarela, manjericão fresco e azeite",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/292/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 4,
+        "opcoes": [
+          {"nome": "Muçarela Extra", "preco": 8.00},
+          {"nome": "Presunto", "preco": 7.00},
+          {"nome": "Pepperoni", "preco": 9.00}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Bordas",
+        "max": 1,
+        "opcoes": [
+          {"nome": "Borda de Catupiry", "preco": 6.00},
+          {"nome": "Borda de Cheddar", "preco": 7.00}
+        ]
+      }
+    },
+    {
+      "id": "4",
+      "nome": "Pizza Calabresa",
+      "preco": 46.90,
+      "descricao": "Muçarela, calabresa fatiada, cebola e orégano",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/870/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 5,
+        "opcoes": [
+          {"nome": "Calabresa Extra", "preco": 8.00},
+          {"nome": "Cebola Extra", "preco": 3.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "5",
+      "nome": "Coca-Cola 350ml",
+      "preco": 6.90,
+      "descricao": "Coca-Cola gelada 350ml",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/106/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "6",
+      "nome": "Guaraná Antarctica",
+      "preco": 6.50,
+      "descricao": "Guaraná 350ml",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/133/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "7",
+      "nome": "Porção de Batata Frita",
+      "preco": 18.90,
+      "descricao": "Batata frita crocante com molho cheddar",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/292/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Cheddar", "preco": 4.00},
+          {"nome": "Maionese", "preco": 3.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "8",
+      "nome": "Coxinha de Frango",
+      "preco": 7.90,
+      "descricao": "Coxinha de frango com catupiry, massa crocante",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/431/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "9",
+      "nome": "Milk Shake Chocolate",
+      "preco": 14.90,
+      "descricao": "Milk shake de chocolate com chantilly",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/63/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "10",
+      "nome": "Pizza Meio a Meio",
+      "preco": 49.90,
+      "descricao": "Escolha 2 sabores na mesma pizza (meio a meio)",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/1015/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Primeiro Sabor",
+        "max": 1,
+        "opcoes": [
+          {"nome": "Margherita", "preco": 0},
+          {"nome": "Calabresa", "preco": 4.00},
+          {"nome": "Frango com Catupiry", "preco": 6.00}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Segundo Sabor",
+        "max": 1,
+        "opcoes": [
+          {"nome": "Margherita", "preco": 0},
+          {"nome": "Calabresa", "preco": 4.00},
+          {"nome": "Frango com Catupiry", "preco": 6.00}
+        ]
+      }
+    }
+  ]
+    {
+      "id": "1",
+      "nome": "X-Tudo",
+      "preco": 24.90,
+      "descricao": "Hambúrguer 150g, queijo, presunto, ovo, bacon, alface, tomate, milho e maionese caseira",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/1080/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 4,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 5.00},
+          {"nome": "Queijo Extra", "preco": 4.00},
+          {"nome": "Ovo Extra", "preco": 3.00},
+          {"nome": "Calabresa", "preco": 6.00}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Barbecue", "preco": 2.00},
+          {"nome": "Maionese Picante", "preco": 2.00},
+          {"nome": "Mostarda Mel", "preco": 2.00}
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "nome": "X-Bacon Supreme",
+      "preco": 21.90,
+      "descricao": "Hambúrguer, queijo cheddar, bacon crocante, cebola caramelizada e molho especial",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 3,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 5.00},
+          {"nome": "Queijo Cheddar", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "3",
+      "nome": "Hambúrguer Artesanal",
+      "preco": 26.90,
+      "descricao": "Carne 180g angus, queijo prato, rúcula, tomate seco e molho pesto",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/870/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Queijos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Cheddar", "preco": 4.50},
+          {"nome": "Gorgonzola", "preco": 5.00}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Pesto", "preco": 3.00},
+          {"nome": "Barbecue", "preco": 2.00}
+        ]
+      }
+    },
+    {
+      "id": "4",
+      "nome": "Hot Dog Premium",
+      "preco": 16.90,
+      "descricao": "Salsicha suína, milho, batata palha, queijo, molho especial e orégano",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/292/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 3,
+        "opcoes": [
+          {"nome": "Queijo Ralado", "preco": 3.00},
+          {"nome": "Batata Extra", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "5",
+      "nome": "Coxinha da Casa (6un)",
+      "preco": 19.90,
+      "descricao": "Massa crocante recheada com frango desfiado e catupiry",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/431/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "6",
+      "nome": "Pizza Margherita",
+      "preco": 42.90,
+      "descricao": "Molho de tomate, muçarela, manjericão fresco e azeite",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/63/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 5,
+        "opcoes": [
+          {"nome": "Muçarela Extra", "preco": 8.00},
+          {"nome": "Calabresa", "preco": 10.00},
+          {"nome": "Bacon", "preco": 12.00}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Bordas",
+        "max": 1,
+        "opcoes": [
+          {"nome": "Borda de Catupiry", "preco": 8.00},
+          {"nome": "Borda de Cheddar", "preco": 9.00}
+        ]
+      }
+    },
+    {
+      "id": "7",
+      "nome": "Pizza Pepperoni",
+      "preco": 49.90,
+      "descricao": "Muçarela, pepperoni importado e orégano",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 4,
+        "opcoes": [
+          {"nome": "Muçarela Extra", "preco": 8.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "8",
+      "nome": "Coca-Cola 350ml",
+      "preco": 6.90,
+      "descricao": "Coca-Cola gelada 350ml",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/106/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "9",
+      "nome": "Guaraná Antarctica 350ml",
+      "preco": 6.50,
+      "descricao": "Guaraná geladinho",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/133/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "10",
+      "nome": "Suco de Laranja Natural 500ml",
+      "preco": 12.90,
+      "descricao": "Feito na hora com laranjas selecionadas",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "11",
+      "nome": "Milk Shake de Chocolate",
+      "preco": 14.90,
+      "descricao": "Sorvete, leite e chocolate belga",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/292/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Chantilly", "preco": 3.00},
+          {"nome": "Oreo", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "12",
+      "nome": "Porção de Batata Frita",
+      "preco": 18.90,
+      "descricao": "Batatas cortadas na hora e fritas em óleo novo",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/431/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Ketchup", "preco": 0},
+          {"nome": "Maionese", "preco": 2.00},
+          {"nome": "Barbecue", "preco": 3.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "13",
+      "nome": "X-Frango",
+      "preco": 19.90,
+      "descricao": "Filé de frango grelhado, queijo, alface e tomate",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/870/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "14",
+      "nome": "Pizza Quatro Queijos",
+      "preco": 52.90,
+      "descricao": "Muçarela, provolone, parmesão e gorgonzola",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/63/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": {
+        "nome": "Bordas",
+        "max": 1,
+        "opcoes": [
+          {"nome": "Borda Recheada", "preco": 10.00}
+        ]
+      }
+    },
+    {
+      "id": "15",
+      "nome": "Água Mineral 510ml",
+      "preco": 5.00,
+      "descricao": "Água mineral com ou sem gás",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/106/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "16",
+      "nome": "Red Bull Energy Drink",
+      "preco": 13.90,
+      "descricao": "Red Bull lata 250ml",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/133/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "17",
+      "nome": "Pastel de Carne (4un)",
+      "preco": 22.90,
+      "descricao": "Massa crocante recheada com carne moída temperada",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "18",
+      "nome": "Nuggets de Frango (12un)",
+      "preco": 21.90,
+      "descricao": "Nuggets crocantes acompanhados de molho",
+      "categoria": "porcoes",
+      "imagem": "https://picsum.photos/id/431/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "19",
+      "nome": "Refrigerante 2L",
+      "preco": 13.90,
+      "descricao": "Coca, Guaraná ou Fanta 2 litros",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/106/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "20",
+      "nome": "Combo X-Tudo + Refri",
+      "preco": 29.90,
+      "descricao": "X-Tudo + Refrigerante 350ml + Batata pequena",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/870/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "21",
+      "nome": "Pizza Calabresa",
+      "preco": 47.90,
+      "descricao": "Muçarela, calabresa fatiada e cebola",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/63/800/600",
+      "ativo": true,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 4,
+        "opcoes": [
+          {"nome": "Cebola Extra", "preco": 3.00},
+          {"nome": "Azeitona", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "22",
+      "nome": "Suco Detox",
+      "preco": 11.90,
+      "descricao": "Laranja, cenoura, gengibre e couve",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/201/800/600",
+      "ativo": true,
+      "adicionais1": null,
+      "adicionais2": null
+    }
+  ]
+    {
+      "id": "1",
+      "nome": "X-Tudo",
+      "preco": 22.90,
+      "descricao": "Hambúrguer, queijo, presunto, ovo, bacon, alface, tomate e maionese",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/1080/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Extras",
+        "max": 3,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 4.00},
+          {"nome": "Queijo Extra", "preco": 3.00},
+          {"nome": "Ovo Extra", "preco": 2.50}
+        ]
+      },
+      "adicionais2": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Barbecue", "preco": 1.50},
+          {"nome": "Mostarda e Mel", "preco": 1.50},
+          {"nome": "Picante", "preco": 1.00}
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "nome": "X-Bacon",
+      "preco": 19.90,
+      "descricao": "Hambúrguer, queijo, bacon crocante, alface e tomate",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/201/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Extras",
+        "max": 3,
+        "opcoes": [
+          {"nome": "Bacon Extra", "preco": 4.00},
+          {"nome": "Queijo Extra", "preco": 3.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "3",
+      "nome": "X-Salada",
+      "preco": 17.90,
+      "descricao": "Hambúrguer, queijo, alface, tomate, milho e maionese",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/292/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Extras",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Ovo", "preco": 2.50},
+          {"nome": "Bacon", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "4",
+      "nome": "Hambúrguer Artesanal",
+      "preco": 24.90,
+      "descricao": "180g de carne, queijo cheddar, cebola caramelizada e molho especial",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/870/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Queijos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Cheddar", "preco": 3.50},
+          {"nome": "Gorgonzola", "preco": 4.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "5",
+      "nome": "Hot Dog Especial",
+      "preco": 14.90,
+      "descricao": "Salsicha, milho, batata palha, molho de tomate e maionese",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/431/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Extras",
+        "max": 3,
+        "opcoes": [
+          {"nome": "Queijo", "preco": 2.00},
+          {"nome": "Bacon", "preco": 3.50}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "6",
+      "nome": "Coxinha de Frango",
+      "preco": 6.90,
+      "descricao": "Massa crocante recheada com frango desfiado e catupiry",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/63/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "7",
+      "nome": "Pastel de Carne",
+      "preco": 7.50,
+      "descricao": "Massa fina recheada com carne moída temperada",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/133/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "8",
+      "nome": "Porção de Batata Frita",
+      "preco": 16.90,
+      "descricao": "Batatas cortadas em palitos e fritas na hora",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/292/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Molhos",
+        "max": 2,
+        "opcoes": [
+          {"nome": "Barbecue", "preco": 2.00},
+          {"nome": "Maionese", "preco": 2.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "9",
+      "nome": "Nuggets (10un)",
+      "preco": 18.90,
+      "descricao": "Nuggets de frango crocantes acompanhados de molho",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/201/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "10",
+      "nome": "Wrap de Frango",
+      "preco": 19.90,
+      "descricao": "Tortilla com frango grelhado, alface, tomate e molho especial",
+      "categoria": "lanches",
+      "imagem": "https://picsum.photos/id/870/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "11",
+      "nome": "Pizza Calabresa",
+      "preco": 48.90,
+      "descricao": "Calabresa, cebola, mussarela e orégano",
+      "categoria": "pizzas",
+      "imagem": "https://picsum.photos/id/292/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": {
+        "nome": "Adicionais",
+        "max": 5,
+        "opcoes": [
+          {"nome": "Bacon", "preco": 6.00},
+          {"nome": "Milho", "preco": 4.00},
+          {"nome": "Catupiry", "preco": 7.00}
+        ]
+      },
+      "adicionais2": null
+    },
+    {
+      "id": "12",
+      "nome": "Coca-Cola 350ml",
+      "preco": 5.90,
+      "descricao": "Refrigerante Coca-Cola lata",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/30/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "13",
+      "nome": "Guaraná Antarctica 350ml",
+      "preco": 5.90,
+      "descricao": "Refrigerante Guaraná lata",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/201/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "14",
+      "nome": "Suco de Laranja Natural 500ml",
+      "preco": 9.90,
+      "descricao": "Suco de laranja feito na hora",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/133/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "15",
+      "nome": "Red Bull Energy Drink",
+      "preco": 12.90,
+      "descricao": "Energético Red Bull 250ml",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/870/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "16",
+      "nome": "Fanta Laranja 350ml",
+      "preco": 5.50,
+      "descricao": "Refrigerante Fanta Laranja lata",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/30/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "17",
+      "nome": "Sprite 350ml",
+      "preco": 5.90,
+      "descricao": "Refrigerante Sprite lata",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/201/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "18",
+      "nome": "Suco de Maracujá 500ml",
+      "preco": 8.90,
+      "descricao": "Suco natural de maracujá",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/133/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "19",
+      "nome": "Água Mineral 510ml",
+      "preco": 4.50,
+      "descricao": "Água mineral sem gás",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/292/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "20",
+      "nome": "Milk Shake de Chocolate",
+      "preco": 13.90,
+      "descricao": "Milk shake cremoso de chocolate com chantilly",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/870/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    },
+    {
+      "id": "21",
+      "nome": "Chá Mate com Limão",
+      "preco": 6.90,
+      "descricao": "Chá mate gelado com limão",
+      "categoria": "bebidas",
+      "imagem": "https://picsum.photos/id/30/600/400",
+      "ativo": true,
+      "favorito": false,
+      "adicionais1": null,
+      "adicionais2": null
+    }
+  ]
+}
