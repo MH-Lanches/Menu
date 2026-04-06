@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo | Delivery Seguro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .anim-fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen font-sans text-slate-900 overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 text-white p-6 flex flex-col hidden md:flex shadow-2xl">
+        <div class="mb-8">
+            <h2 class="text-2xl font-black tracking-tighter text-emerald-400">GESTOR PRO</h2>
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">v4.0 - Arquitetura Segura</p>
+        </div>
+        
+        <nav class="flex-1 space-y-2">
+            <button onclick="showTab('dash')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 transition-all"><i class="fa-solid fa-chart-pie w-5"></i> Dashboard</button>
+            <button onclick="showTab('produtos')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 transition-all"><i class="fa-solid fa-layer-group w-5"></i> Cardápio</button>
+            <button onclick="showTab('config')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 transition-all"><i class="fa-solid fa-sliders w-5"></i> Configurações</button>
+            <div class="h-px bg-slate-800 my-2"></div>
+            <button onclick="showTab('github')" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 transition-all"><i class="fa-brands fa-github w-5"></i> Conexão</button>
+            <button onclick="showTab('backups'); carregarHistoricoBackups();" class="w-full text-left p-3 rounded-xl hover:bg-slate-800 flex items-center gap-3 transition-all text-orange-400"><i class="fa-solid fa-clock-rotate-left w-5"></i> Backups</button>
+        </nav>
+
+        <div class="pt-6 border-t border-slate-800 mt-auto">
+            <button onclick="salvarNoGitHub()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 uppercase text-xs tracking-wider">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Publicar no Site
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto bg-[#f8fafc]">
+        
+        <section id="tab-dash" class="tab-content active space-y-6">
+            <div>
+                <h1 class="text-3xl font-black text-slate-800">Painel de Controle</h1>
+                <p class="text-slate-500">Bem-vindo à nova versão segura do sistema.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total de Produtos</p>
+                    <h3 class="text-4xl font-black mt-2 text-slate-700" id="stat-total">0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status da Sincronização</p>
+                    <h3 class="text-xl font-black mt-2 text-emerald-600" id="stat-sync"><i class="fa-solid fa-check-circle"></i> Conectado</h3>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-produtos" class="tab-content space-y-6">
+            <h2 class="text-2xl font-black">Seu Cardápio</h2>
+            <p class="text-sm text-slate-500">*(O visual avançado de cadastro virá nas próximas atualizações. Os dados estão seguros)*.</p>
+            <button onclick="alert('Na próxima etapa, vamos recriar o Modal Profissional aqui.')" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm">+ Adicionar Novo Item</button>
+        </section>
+
+        <section id="tab-config" class="tab-content space-y-6">
+            <h2 class="text-2xl font-black">Configurações</h2>
+            <p class="text-sm text-slate-500">Área em construção para a nova arquitetura.</p>
+        </section>
+
+        <section id="tab-github" class="tab-content space-y-6">
+            <div class="max-w-xl mx-auto bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl text-center">
+                <i class="fa-brands fa-github text-5xl mb-4 text-slate-800"></i>
+                <h2 class="text-2xl font-black">Conexão com Banco de Dados</h2>
+                <div class="text-left space-y-4 mt-8">
+                    <div><label class="text-[10px] font-black text-slate-400 uppercase ml-1">Personal Access Token</label><input type="password" id="gh-token" class="w-full bg-slate-50 border p-4 rounded-2xl mt-1 outline-none"></div>
+                    <div><label class="text-[10px] font-black text-slate-400 uppercase ml-1">Repositório (usuario/repo)</label><input type="text" id="gh-repo" class="w-full bg-slate-50 border p-4 rounded-2xl mt-1 outline-none"></div>
+                    <button onclick="salvarCredenciais()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black mt-4 shadow-lg">CONECTAR</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-backups" class="tab-content space-y-6">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-orange-400 mr-2"></i> Máquina do Tempo</h2>
+                    <p class="text-slate-500">Restaure seu cardápio para uma versão anterior em caso de erro.</p>
+                </div>
+                <button onclick="carregarHistoricoBackups()" class="text-blue-600 font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors"><i class="fa-solid fa-rotate-right mr-1"></i> Atualizar Lista</button>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-shield-halved mr-1"></i> Histórico de Publicações (produtos.json)</p>
+                </div>
+                <div id="lista-backups" class="divide-y divide-slate-100">
+                    <div class="p-8 text-center text-slate-400 font-bold text-sm">Carregando backups do GitHub...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Estrutura Base Intocável
+        let DATA = { config: { categorias: [], horarios: {} }, items: [] };
+
+        window.onload = async () => {
+            document.getElementById('gh-token').value = localStorage.getItem('gh_token') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('gh_repo') || '';
+            
+            try {
+                const res = await fetch('produtos.json', { cache: 'no-store' });
+                DATA = await res.json();
+                document.getElementById('stat-total').innerText = DATA.items ? DATA.items.length : 0;
+            } catch (e) {
+                console.log("Sistema limpo, pronto para iniciar.");
+            }
+        };
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+        }
+
+        function salvarCredenciais() {
+            localStorage.setItem('gh_token', document.getElementById('gh-token').value);
+            localStorage.setItem('gh_repo', document.getElementById('gh-repo').value);
+            alert("✅ Credenciais salvas com sucesso!");
+        }
+
+        async function salvarNoGitHub() {
+            const token = localStorage.getItem('gh_token');
+            const repo = localStorage.getItem('gh_repo');
+            if(!token || !repo) return alert("Configure o Token na aba Conexão.");
+
+            try {
+                const url = `https://api.github.com/repos/${repo}/contents/produtos.json`;
+                const getRes = await fetch(url, { headers: { 'Authorization': `token ${token}` }, cache: 'no-store' });
+                const getJson = await getRes.json();
+                
+                const putRes = await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Atualização Automática via Painel - " + new Date().toLocaleString(),
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(DATA, null, 2)))),
+                        sha: getJson.sha || null
+                    })
+                });
+
+                if(putRes.ok) alert("🚀 SUCESSO! Site atualizado. Um novo backup foi criado.");
+                else alert("Erro ao salvar. Verifique se o repositório existe e o token tem permissão 'repo'.");
+            } catch (e) { alert("Erro de conexão."); }
+        }
+
+        // --- SISTEMA DE BACKUP (MÁQUINA DO TEMPO) ---
+        async function carregarHistoricoBackups() {
+            const token = localStorage.getItem('gh_token');
+            const repo = localStorage.getItem('gh_repo');
+            const divLista = document.getElementById('lista-backups');
+            
+            if(!token || !repo) {
+                divLista.innerHTML = `<div class="p-8 text-center text-red-500 font-bold text-sm">Conecte o GitHub primeiro para ver os backups.</div>`;
+                return;
+            }
+
+            divLista.innerHTML = `<div class="p-8 text-center text-slate-400 font-bold text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Buscando na nuvem...</div>`;
+
+            try {
+                // Busca o histórico de commits apenas do arquivo produtos.json
+                const url = `https://api.github.com/repos/${repo}/commits?path=produtos.json`;
+                const res = await fetch(url, { headers: { 'Authorization': `token ${token}` } });
+                
+                if(!res.ok) throw new Error("Falha ao buscar");
+                
+                const commits = await res.json();
+                
+                if(commits.length === 0) {
+                    divLista.innerHTML = `<div class="p-8 text-center text-slate-400 font-bold text-sm">Nenhum histórico encontrado. Salve algo primeiro.</div>`;
+                    return;
+                }
+
+                divLista.innerHTML = commits.map((commit, index) => {
+                    const data = new Date(commit.commit.author.date);
+                    const dataFormatada = data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR');
+                    const isAtual = index === 0;
+
+                    return `
+                        <div class="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors anim-fade-in">
+                            <div>
+                                <h4 class="font-black text-slate-700 flex items-center gap-2">
+                                    ${dataFormatada} 
+                                    ${isAtual ? '<span class="bg-emerald-100 text-emerald-700 text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Versão Atual</span>' : ''}
+                                </h4>
+                                <p class="text-xs text-slate-500 mt-1">${commit.commit.message}</p>
+                                <p class="text-[10px] text-slate-400 font-mono mt-1">ID: ${commit.sha.substring(0,7)}</p>
+                            </div>
+                            ${!isAtual ? `
+                                <button onclick="restaurarVersao('${commit.sha}')" class="bg-orange-100 text-orange-600 px-4 py-2 rounded-xl font-bold text-xs hover:bg-orange-600 hover:text-white transition-colors shadow-sm">
+                                    <i class="fa-solid fa-clock-rotate-left mr-1"></i> Restaurar Esta
+                                </button>
+                            ` : `<span class="text-xs font-bold text-slate-300">Em uso</span>`}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(e) {
+                divLista.innerHTML = `<div class="p-8 text-center text-red-500 font-bold text-sm">Erro ao carregar o histórico.</div>`;
+            }
+        }
+
+        async function restaurarVersao(sha) {
+            if(!confirm("⚠️ ATENÇÃO: Tem certeza que deseja voltar o cardápio para esta versão antiga? Tudo o que foi feito depois dessa data será desfeito.")) return;
+
+            const token = localStorage.getItem('gh_token');
+            const repo = localStorage.getItem('gh_repo');
+
+            try {
+                // 1. Pega o conteúdo daquela versão específica
+                const urlVersaoAntiga = `https://api.github.com/repos/${repo}/contents/produtos.json?ref=${sha}`;
+                const resAntiga = await fetch(urlVersaoAntiga, { headers: { 'Authorization': `token ${token}` } });
+                const jsonAntigo = await resAntiga.json();
+                
+                // Decodifica o arquivo do github (Base64 para texto) e transforma em objeto JS
+                const conteudoRestaurado = JSON.parse(decodeURIComponent(escape(atob(jsonAntigo.content))));
+                
+                // 2. Coloca os dados restaurados na memória do painel
+                DATA = conteudoRestaurado;
+
+                // 3. Força um novo salvamento (cria um novo ponto no histórico)
+                await salvarNoGitHub();
+                
+                alert("✨ RESTAURAÇÃO CONCLUÍDA! Seu sistema voltou no tempo com sucesso.");
+                carregarHistoricoBackups();
+                document.getElementById('stat-total').innerText = DATA.items ? DATA.items.length : 0;
+
+            } catch(e) {
+                alert("Erro ao tentar restaurar o backup.");
+            }
+        }
+    </script>
+</body>
+</html>
