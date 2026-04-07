@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brasa Express - Delivery</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes softPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-rise { animation: rise .7s ease-out both; }
+    .animate-pulse-soft { animation: softPulse .45s ease-in-out; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100">
+  <section class="relative min-h-screen overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1800&q=80"
+      alt="Mesa com refeicoes para delivery"
+      class="absolute inset-0 h-full w-full object-cover"
+    >
+    <div class="absolute inset-0 bg-zinc-950/65"></div>
+
+    <div class="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
+      <p class="animate-rise text-sm font-semibold uppercase tracking-[0.22em] text-orange-300">Brasa Express</p>
+      <h1 class="animate-rise mt-5 max-w-3xl text-4xl font-black leading-tight sm:text-6xl">Delivery rapido para matar a fome sem sair de casa.</h1>
+      <p class="animate-rise mt-5 max-w-xl text-lg text-zinc-200">Pizzas, burgers e combos com preparo imediato e rastreio simples pelo WhatsApp.</p>
+      <div class="animate-rise mt-8 flex flex-wrap gap-3">
+        <a href="#menu" class="rounded-md bg-orange-500 px-6 py-3 text-sm font-bold text-zinc-950 transition hover:bg-orange-400">Ver cardapio</a>
+        <a href="#carrinho" class="rounded-md border border-zinc-200 px-6 py-3 text-sm font-bold text-zinc-100 transition hover:bg-zinc-100 hover:text-zinc-950">Abrir carrinho</a>
+      </div>
+    </div>
+  </section>
+
+  <main id="menu" class="mx-auto grid w-full max-w-6xl gap-8 px-6 py-12 lg:grid-cols-[1fr_360px]">
+    <section>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <h2 class="text-2xl font-bold">Cardapio do dia</h2>
+        <input id="busca" type="search" placeholder="Buscar item..." class="w-full max-w-xs rounded-md border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm outline-none ring-orange-400 focus:ring-2">
+      </div>
+
+      <div id="categorias" class="mt-4 flex flex-wrap gap-2"></div>
+      <p id="mensagem" class="mt-6 text-zinc-400"></p>
+      <ul id="lista-produtos" class="mt-6 grid gap-4 sm:grid-cols-2"></ul>
+    </section>
+
+    <aside id="carrinho" class="self-start rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+      <h2 class="text-xl font-bold">Seu pedido</h2>
+      <p id="resumo-itens" class="mt-1 text-sm text-zinc-400">0 itens no carrinho</p>
+      <ul id="itens-carrinho" class="mt-4 space-y-3"></ul>
+
+      <div class="mt-6 space-y-2 border-t border-zinc-800 pt-4 text-sm">
+        <div class="flex items-center justify-between"><span>Subtotal</span><span id="subtotal">R$ 0,00</span></div>
+        <div class="flex items-center justify-between"><span>Entrega</span><span id="entrega">R$ 0,00</span></div>
+        <div class="flex items-center justify-between font-bold text-lg"><span>Total</span><span id="total">R$ 0,00</span></div>
+        <p id="tempo-estimado" class="pt-2 text-zinc-400">Tempo medio: -- min</p>
+      </div>
+
+      <button id="finalizar" class="mt-6 w-full rounded-md bg-emerald-500 px-4 py-3 font-bold text-zinc-950 transition hover:bg-emerald-400">Finalizar no WhatsApp</button>
+    </aside>
+  </main>
+
+  <script>
+    const estado = {
+      produtos: [],
+      categoria: 'Todos',
+      busca: '',
+      carrinho: new Map()
+    };
+
+    const elLista = document.getElementById('lista-produtos');
+    const elMensagem = document.getElementById('mensagem');
+    const elCategorias = document.getElementById('categorias');
+    const elBusca = document.getElementById('busca');
+    const elCarrinho = document.getElementById('itens-carrinho');
+    const elResumo = document.getElementById('resumo-itens');
+    const elSubtotal = document.getElementById('subtotal');
+    const elEntrega = document.getElementById('entrega');
+    const elTotal = document.getElementById('total');
+    const elTempo = document.getElementById('tempo-estimado');
+    const elAside = document.getElementById('carrinho');
+
+    function formatarMoeda(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function produtosFiltrados() {
+      return estado.produtos.filter((produto) => {
+        const porCategoria = estado.categoria === 'Todos' || produto.categoria === estado.categoria;
+        const termo = estado.busca.trim().toLowerCase();
+        const porBusca = termo === ''
+          || produto.nome.toLowerCase().includes(termo)
+          || produto.descricao.toLowerCase().includes(termo);
+        return porCategoria && porBusca;
+      });
+    }
+
+    function renderCategorias() {
+      const categorias = ['Todos', ...new Set(estado.produtos.map((item) => item.categoria))];
+      elCategorias.innerHTML = categorias.map((categoria) => `
+        <button
+          data-categoria="${categoria}"
+          class="rounded-md border px-3 py-1.5 text-sm font-semibold transition ${estado.categoria === categoria ? 'border-orange-400 bg-orange-400 text-zinc-950' : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'}"
+        >
+          ${categoria}
+        </button>
+      `).join('');
+    }
+
+    function renderProdutos() {
+      const lista = produtosFiltrados();
+      if (lista.length === 0) {
+        elLista.innerHTML = '';
+        elMensagem.textContent = 'Nenhum item encontrado para esse filtro.';
+        return;
+      }
+
+      elMensagem.textContent = '';
+      elLista.innerHTML = lista.map((produto) => `
+        <li class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/80 animate-rise">
+          <img src="${produto.imagem}" alt="${produto.nome}" class="h-40 w-full object-cover">
+          <div class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="text-lg font-bold">${produto.nome}</h3>
+              <span class="text-sm text-zinc-400">${produto.tempo} min</span>
+            </div>
+            <p class="mt-1 text-sm text-zinc-400">${produto.descricao}</p>
+            <div class="mt-4 flex items-center justify-between">
+              <strong class="text-orange-300">${formatarMoeda(produto.preco)}</strong>
+              <button data-id="${produto.id}" class="rounded-md bg-orange-500 px-3 py-2 text-sm font-bold text-zinc-950 transition hover:bg-orange-400">Adicionar</button>
+            </div>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function renderCarrinho() {
+      const itens = [...estado.carrinho.values()];
+      const quantidade = itens.reduce((acc, item) => acc + item.quantidade, 0);
+      const subtotal = itens.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
+      const entrega = subtotal === 0 ? 0 : subtotal >= 80 ? 0 : 6.9;
+      const total = subtotal + entrega;
+      const tempoMedio = itens.length ? Math.round(itens.reduce((acc, item) => acc + item.tempo, 0) / itens.length) : '--';
+
+      elResumo.textContent = `${quantidade} ${quantidade === 1 ? 'item' : 'itens'} no carrinho`;
+      elSubtotal.textContent = formatarMoeda(subtotal);
+      elEntrega.textContent = entrega === 0 ? 'Gratis' : formatarMoeda(entrega);
+      elTotal.textContent = formatarMoeda(total);
+      elTempo.textContent = `Tempo medio: ${tempoMedio} min`;
+
+      if (itens.length === 0) {
+        elCarrinho.innerHTML = '<li class="text-sm text-zinc-400">Seu carrinho esta vazio.</li>';
+        return;
+      }
+
+      elCarrinho.innerHTML = itens.map((item) => `
+        <li class="flex items-center justify-between gap-3 border-b border-zinc-800 pb-3 text-sm">
+          <div>
+            <p class="font-semibold">${item.nome}</p>
+            <p class="text-zinc-400">${item.quantidade} x ${formatarMoeda(item.preco)}</p>
+          </div>
+          <button data-remover="${item.id}" class="text-rose-400 transition hover:text-rose-300">Remover</button>
+        </li>
+      `).join('');
+    }
+
+    function adicionarAoCarrinho(id) {
+      const produto = estado.produtos.find((item) => item.id === id);
+      if (!produto) return;
+
+      const itemAtual = estado.carrinho.get(id);
+      if (itemAtual) {
+        itemAtual.quantidade += 1;
+      } else {
+        estado.carrinho.set(id, { ...produto, quantidade: 1 });
+      }
+
+      elAside.classList.remove('animate-pulse-soft');
+      void elAside.offsetWidth;
+      elAside.classList.add('animate-pulse-soft');
+      renderCarrinho();
+    }
+
+    function removerDoCarrinho(id) {
+      estado.carrinho.delete(id);
+      renderCarrinho();
+    }
+
+    async function carregarProdutos() {
+      try {
+        const resposta = await fetch('produtos.json', { cache: 'no-store' });
+        if (!resposta.ok) throw new Error('Nao foi possivel carregar o cardapio.');
+
+        const json = await resposta.json();
+        if (!Array.isArray(json) || json.length === 0) {
+          throw new Error('Cardapio vazio.');
+        }
+
+        estado.produtos = json;
+        renderCategorias();
+        renderProdutos();
+        renderCarrinho();
+      } catch (erro) {
+        elMensagem.textContent = 'Erro: ' + erro.message;
+      }
+    }
+
+    document.addEventListener('click', (evento) => {
+      const botaoCategoria = evento.target.closest('[data-categoria]');
+      if (botaoCategoria) {
+        estado.categoria = botaoCategoria.dataset.categoria;
+        renderCategorias();
+        renderProdutos();
+      }
+
+      const botaoAdd = evento.target.closest('[data-id]');
+      if (botaoAdd) {
+        adicionarAoCarrinho(Number(botaoAdd.dataset.id));
+      }
+
+      const botaoRemover = evento.target.closest('[data-remover]');
+      if (botaoRemover) {
+        removerDoCarrinho(Number(botaoRemover.dataset.remover));
+      }
+    });
+
+    elBusca.addEventListener('input', (evento) => {
+      estado.busca = evento.target.value;
+      renderProdutos();
+    });
+
+    document.getElementById('finalizar').addEventListener('click', () => {
+      const itens = [...estado.carrinho.values()];
+      if (itens.length === 0) {
+        alert('Adicione pelo menos 1 item para finalizar.');
+        return;
+      }
+
+      const linhas = itens.map((item) => `${item.quantidade}x ${item.nome} - ${formatarMoeda(item.preco * item.quantidade)}`);
+      const subtotal = itens.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
+      const entrega = subtotal >= 80 ? 0 : 6.9;
+      const total = subtotal + entrega;
+      const texto = [
+        'Ola, Brasa Express. Quero finalizar meu pedido:',
+        ...linhas,
+        `Subtotal: ${formatarMoeda(subtotal)}`,
+        `Entrega: ${entrega === 0 ? 'Gratis' : formatarMoeda(entrega)}`,
+        `Total: ${formatarMoeda(total)}`
+      ].join('\n');
+
+      window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(texto)}`, '_blank');
+    });
+
+    carregarProdutos();
+  </script>
+</body>
+</html>

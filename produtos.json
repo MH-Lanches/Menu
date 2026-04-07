@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "nome": "Pizza Margherita",
+    "descricao": "Molho artesanal, mozzarella e manjericao fresco.",
+    "categoria": "Pizzas",
+    "preco": 49.9,
+    "tempo": 35,
+    "imagem": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 2,
+    "nome": "Pizza Pepperoni",
+    "descricao": "Queijo derretido e pepperoni crocante em massa fina.",
+    "categoria": "Pizzas",
+    "preco": 56.9,
+    "tempo": 35,
+    "imagem": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 3,
+    "nome": "Burger da Casa",
+    "descricao": "Pao brioche, blend 160g, cheddar e molho especial.",
+    "categoria": "Burgers",
+    "preco": 32.9,
+    "tempo": 25,
+    "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 4,
+    "nome": "Burger Bacon",
+    "descricao": "Blend 160g, bacon crocante, cebola caramelizada e queijo.",
+    "categoria": "Burgers",
+    "preco": 36.9,
+    "tempo": 25,
+    "imagem": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 5,
+    "nome": "Combo Frango Crocante",
+    "descricao": "Frango crocante, fritas sequinhas e molho barbecue.",
+    "categoria": "Combos",
+    "preco": 34.9,
+    "tempo": 30,
+    "imagem": "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 6,
+    "nome": "Combo Veggie",
+    "descricao": "Hamburger de grao-de-bico com salada e fritas rusticas.",
+    "categoria": "Combos",
+    "preco": 33.9,
+    "tempo": 28,
+    "imagem": "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 7,
+    "nome": "Refrigerante 350ml",
+    "descricao": "Lata gelada para acompanhar seu pedido.",
+    "categoria": "Bebidas",
+    "preco": 6.5,
+    "tempo": 5,
+    "imagem": "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 8,
+    "nome": "Suco Natural 500ml",
+    "descricao": "Suco de laranja natural sem conservantes.",
+    "categoria": "Bebidas",
+    "preco": 9.9,
+    "tempo": 8,
+    "imagem": "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=900&q=80"
+  }
+]
