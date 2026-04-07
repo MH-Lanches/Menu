@@ -6,24 +6,32 @@
     <title>Delivery Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --cor-primaria: #E74C3C;
-            --cor-secundaria: #25D366;
-            --cor-fundo: #F8F9FA;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primaria: '#E74C3C',
+                        secundaria: '#25D366',
+                    }
+                }
+            }
         }
-        .bg-primary { background: var(--cor-primaria) !important; }
-        .bg-secundaria { background: var(--cor-secundaria) !important; }
-        header { background: var(--cor-primaria) !important; }
-        .categoria-btn { background: var(--cor-primaria); color: white; }
-        body { background-color: var(--cor-fundo); }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
-<header class="text-white p-4 shadow-md sticky top-0 z-50">
+<!-- HEADER -->
+<header class="bg-primaria text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold" id="nome-loja">Seu Delivery</h1>
+        <h1 class="text-2xl font-bold">🍔 Delivery Top</h1>
         <div class="flex gap-4 items-center">
             <button onclick="abrirFavoritos()" class="relative">
                 <i class="fas fa-heart text-xl"></i>
@@ -34,6 +42,276 @@
                 <span id="contador-cart" class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
             </button>
         </div>
+    </div>
+</header>
+
+<!-- BANNER ANUNCIO -->
+<section class="max-w-6xl mx-auto mt-4 px-4">
+    <div class="relative h-40 rounded-xl overflow-hidden shadow mb-6">
+        <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=800" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-40 p-4 flex flex-col justify-end text-white">
+            <h3 class="font-bold text-xl">🔥 Super Combo Lanche</h3>
+            <p>Lanche + Batata + Refrigerante por R$ 29,90</p>
+        </div>
+    </div>
+</section>
+
+<!-- MENU CATEGORIAS -->
+<nav class="max-w-6xl mx-auto mt-6 px-4 overflow-x-auto whitespace-nowrap pb-2">
+    <button onclick="filtrar('todos')" class="bg-primaria text-white px-4 py-2 rounded-full mr-2 font-bold">Todos</button>
+    <button onclick="filtrar('Pizzas')" class="bg-gray-200 px-4 py-2 rounded-full mr-2 font-bold">Pizzas</button>
+    <button onclick="filtrar('Pastéis')" class="bg-gray-200 px-4 py-2 rounded-full mr-2 font-bold">Pastéis</button>
+    <button onclick="filtrar('Lanches')" class="bg-gray-200 px-4 py-2 rounded-full mr-2 font-bold">Lanches</button>
+</nav>
+
+<!-- LISTA PRODUTOS -->
+<main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-4" id="lista-produtos">
+    <!-- Produtos vão aqui -->
+</main>
+
+<!-- MODAL FAVORITOS -->
+<div id="modal-fav" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg max-w-md w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">❤️ Favoritos</h2>
+            <span onclick="fecharFavoritos()" class="text-2xl cursor-pointer">&times;</span>
+        </div>
+        <div id="conteudo-fav"></div>
+    </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div id="modal-produto" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full">
+        <div class="p-4">
+            <span onclick="fecharModal()" class="float-right text-2xl cursor-pointer">&times;</span>
+            <h2 id="modal-nome" class="text-xl font-bold"></h2>
+            <img id="modal-img" class="w-full h-48 object-cover rounded my-2">
+            <div id="area-opcoes" class="mt-4"></div>
+            <button onclick="adicionarCarrinho()" class="mt-6 w-full bg-secundaria text-white py-3 rounded font-bold">ADICIONAR AO PEDIDO</button>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO LATERAL -->
+<div id="carrinho" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform z-50">
+    <div class="p-4 h-full flex flex-col">
+        <h3 class="text-xl font-bold mb-4">🛒 Meu Pedido</h3>
+        <div id="itens-carrinho" class="flex-1 overflow-y-auto"></div>
+        <div class="border-t pt-4 mt-4">
+            <p class="text-xl font-bold">Total: <span id="total-carrinho">R$ 0,00</span></p>
+            <button onclick="finalizarPedido()" class="w-full bg-secundaria text-white py-3 rounded mt-2 font-bold">FINALIZAR NO WHATSAPP</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// DADOS EMBUTIDOS
+const produtos = [
+    {
+        "nome": "Pizza Grande",
+        "descricao": "Massa fina, 8 fatias.",
+        "preco": 30.00,
+        "categoria": "Pizzas",
+        "imagem": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
+        "tipo": "pizza",
+        "sabores": [
+            {"nome": "Mussarela", "preco": 0},
+            {"nome": "Calabresa", "preco": 0},
+            {"nome": "Portuguesa", "preco": 2},
+            {"nome": "Frango c/ Catupiry", "preco": 3}
+        ]
+    },
+    {
+        "nome": "Pastel Grande",
+        "descricao": "Escolha até 5 sabores.",
+        "preco": 15.00,
+        "categoria": "Pastéis",
+        "imagem": "https://images.unsplash.com/photo-1611270629568-920fe071f818?w=400",
+        "tipo": "comum",
+        "max_adic": 5,
+        "adicionais": [
+            {"nome": "Carne", "preco": 0},
+            {"nome": "Queijo", "preco": 0},
+            {"nome": "Frango", "preco": 0},
+            {"nome": "Pizza", "preco": 0},
+            {"nome": "Chocolate", "preco": 2}
+        ]
+    },
+    {
+        "nome": "Hambúrguer Top",
+        "descricao": "Carne 180g, queijo, bacon.",
+        "preco": 22.90,
+        "categoria": "Lanches",
+        "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+        "tipo": "comum",
+        "max_adic": 3,
+        "adicionais": [
+            {"nome": "Bacon", "preco": 2},
+            {"nome": "Ovo", "preco": 1},
+            {"nome": "Cheddar", "preco": 3}
+        ]
+    }
+];
+
+let carrinho = [];
+let favoritos = [];
+let produtoAtual;
+
+// INICIALIZA
+document.addEventListener('DOMContentLoaded', () => {
+    renderizarProdutos();
+});
+
+function renderizarProdutos(filtro = null) {
+    const container = document.getElementById('lista-produtos');
+    container.innerHTML = '';
+    
+    produtos.filter(p => !filtro || p.categoria == filtro).forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'bg-white rounded-xl shadow overflow-hidden relative';
+        div.innerHTML = `
+            <button onclick="toggleFavorito(${idx})" class="absolute top-2 right-2 z-10 bg-white p-2 rounded-full shadow">
+                <i class="fas fa-heart ${favoritos.includes(idx) ? 'text-red-500' : 'text-gray-400'}"></i>
+            </button>
+            <img src="${item.imagem}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="font-bold text-lg">${item.nome}</h3>
+                <p class="text-gray-500 text-sm h-10">${item.descricao}</p>
+                <p class="text-green-600 font-bold text-xl mt-2">R$ ${item.preco.toFixed(2)}</p>
+                <button onclick="abrirModal(${idx})" class="mt-2 w-full bg-primaria text-white py-2 rounded font-bold">VER DETALHES</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function filtrar(cat) {
+    renderizarProdutos(cat == 'todos' ? null : cat);
+}
+
+function abrirModal(idx) {
+    produtoAtual = produtos[idx];
+    document.getElementById('modal-nome').innerText = produtoAtual.nome;
+    document.getElementById('modal-img').src = produtoAtual.imagem;
+    document.getElementById('area-opcoes').innerHTML = '';
+
+    // PIZZA MEIA A MEIA
+    if(produtoAtual.tipo == 'pizza') {
+        let html = `
+            <label class="font-bold">Primeira Metade</label>
+            <select id="s1" class="w-full border p-2 my-2 rounded">
+                ${produtoAtual.sabores.map(s=>`<option value="${s.nome}">${s.nome}</option>`).join('')}
+            </select>
+            <label class="font-bold">Segunda Metade</label>
+            <select id="s2" class="w-full border p-2 my-2 rounded">
+                ${produtoAtual.sabores.map(s=>`<option value="${s.nome}">${s.nome}</option>`).join('')}
+            </select>
+        `;
+        document.getElementById('area-opcoes').innerHTML = html;
+    }
+
+    // ADICIONAIS COM LIMITE
+    if(produtoAtual.adicionais) {
+        let html = `<p class="font-bold mt-4">Adicionais (Max: ${produtoAtual.max_adic})</p>`;
+        produtoAtual.adicionais.forEach(ad => {
+            html += `
+                <label class="flex items-center gap-2 p-2 border rounded mt-1 cursor-pointer">
+                    <input type="checkbox" class="adic-item" value="${ad.preco}">
+                    ${ad.nome} + R$ ${ad.preco.toFixed(2)}
+                </label>
+            `;
+        });
+        document.getElementById('area-opcoes').innerHTML += html;
+    }
+
+    document.getElementById('modal-produto').classList.remove('hidden');
+    document.getElementById('modal-produto').classList.add('flex');
+}
+
+function fecharModal() {
+    document.getElementById('modal-produto').classList.add('hidden');
+    document.getElementById('modal-produto').classList.remove('flex');
+}
+
+function adicionarCarrinho() {
+    let item = {...produtoAtual};
+    item.precoFinal = item.preco;
+    item.obs = [];
+
+    if(item.tipo == 'pizza') {
+        const s1 = document.getElementById('s1').value;
+        const s2 = document.getElementById('s2').value;
+        item.nome = `${item.nome} - ${s1} / ${s2}`;
+    }
+
+    document.querySelectorAll('.adic-item:checked').forEach(c => {
+        item.precoFinal += parseFloat(c.value);
+        item.obs.push(c.parentElement.textContent.trim());
+    });
+
+    carrinho.push(item);
+    atualizarCarrinho();
+    fecharModal();
+    abrirCarrinho();
+}
+
+function atualizarCarrinho() {
+    document.getElementById('contador-cart').innerText = carrinho.length;
+    const container = document.getElementById('itens-carrinho');
+    container.innerHTML = '';
+    let total = 0;
+
+    carrinho.forEach(item => {
+        total += item.precoFinal || item.preco;
+        container.innerHTML += `
+            <div class="border-b pb-2 mb-2">
+                <p class="font-bold">${item.nome}</p>
+                <p class="text-green-600">R$ ${(item.precoFinal || item.preco).toFixed(2)}</p>
+                ${item.obs ? item.obs.map(o=>`<p class="text-xs text-gray-500">${o}</p>`).join('') : ''}
+            </div>
+        `;
+    });
+
+    document.getElementById('total-carrinho').innerText = 'R$ ' + total.toFixed(2);
+}
+
+function abrirCarrinho() { document.getElementById('carrinho').classList.remove('translate-x-full'); }
+function fecharCarrinho() { document.getElementById('carrinho').classList.add('translate-x-full'); }
+
+function finalizarPedido() {
+    let texto = "Olá! Gostaria de fazer o pedido:\n\n";
+    carrinho.forEach((item, i) => {
+        texto += `${i+1} - ${item.nome}\n`;
+        texto += `Valor: R$ ${(item.precoFinal || item.preco).toFixed(2)}\n`;
+        if(item.obs) texto += item.obs.join('\n') + '\n';
+        texto += "---\n";
+    });
+    texto += `\nTotal: R$ ${carrinho.reduce((s,i)=> s + (i.precoFinal || i.preco), 0).toFixed(2)}`;
+    
+    window.open(`https://wa.me/5581999999999?text=${encodeURIComponent(texto)}`);
+}
+
+// FAVORITOS
+function toggleFavorito(idx) {
+    favoritos.includes(idx) ? favoritos.splice(favoritos.indexOf(idx),1) : favoritos.push(idx);
+    document.getElementById('contador-fav').innerText = favoritos.length;
+    renderizarProdutos();
+}
+function abrirFavoritos() {
+    const container = document.getElementById('conteudo-fav');
+    container.innerHTML = favoritos.map(i => `<p class="p-2 border-b">${produtos[i].nome}</p>`).join('');
+    document.getElementById('modal-fav').classList.remove('hidden');
+    document.getElementById('modal-fav').classList.add('flex');
+}
+function fecharFavoritos() {
+    document.getElementById('modal-fav').classList.add('hidden');
+    document.getElementById('modal-fav').classList.remove('flex');
+}
+
+</script>
+</body>
+</html>
     </div>
 </header>
 
