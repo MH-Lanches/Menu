@@ -274,7 +274,7 @@ function carregarConfig(){
     // Marca dias
     const dias = ['seg','ter','qua','qui','sex','sab','dom'];
     dias.forEach((d, idx) => {
-        document.getElementById(`dia-${d}`).checked = dadosSite.config.diasFunc.includes(idx);
+        if(document.getElementById(`dia-${d}`)) document.getElementById(`dia-${d}`).checked = dadosSite.config.diasFunc.includes(idx);
     });
 }
 
@@ -283,13 +283,11 @@ function salvarConfig(){
     dadosSite.config.whatsapp = document.getElementById('config-whatsapp').value;
     dadosSite.config.frete = parseFloat(document.getElementById('config-frete').value) || 0;
     dadosSite.config.minimo = parseFloat(document.getElementById('config-minimo').value) || 0;
+   
     dadosSite.config.horaIni = document.getElementById('hora-ini').value;
     dadosSite.config.horaFim = document.getElementById('hora-fim').value;
     dadosSite.config.lojaFechada = document.getElementById('config-fechado').checked;
 
-    // Salva dias
-    dadosSite.config.diasFunc = [];
-    const map = [0,1,2,3,4,5,
     // Salva dias
     dadosSite.config.diasFunc = [];
     const map = [0,1,2,3,4,5,6];
