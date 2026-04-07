@@ -16,7 +16,7 @@
         <div class="text-center mb-8">
             <i class="fas fa-user-shield text-6xl text-red-500 mb-4"></i>
             <h1 class="text-3xl font-bold text-gray-800">Área Restrita</h1>
-            <p class="text-gray-500">Acesso ao Painel Administrativo</p>
+            <p class="text-gray-500">Acesso ao Painel de Controle</p>
         </div>
 
         <div class="space-y-4">
@@ -29,11 +29,28 @@
                 <input type="password" id="pass" value="123456" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none">
             </div>
 
-            <button onclick="logar()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl text-lg mt-4 transition">
+            <button onclick="logar()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl text-lg transition">
                 ENTRAR <i class="fas fa-arrow-right ml-2"></i>
             </button>
             <p id="erro" class="text-center text-red-500 mt-2 hidden">Usuário ou senha incorretos!</p>
         </div>
+    </div>
+
+<script>
+function logar(){
+    let u = document.getElementById('user').value;
+    let p = document.getElementById('pass').value;
+    
+    if(u == 'admin' && p == '123456'){
+        localStorage.setItem('logado', 'sim');
+        window.location.href = 'admin.html'; // <<<<--- AGORA VAI CERTO
+    } else {
+        document.getElementById('erro').classList.remove('hidden');
+    }
+}
+</script>
+</body>
+</html>
     </div>
 
 <script>
