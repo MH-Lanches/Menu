@@ -3,37 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Profissional</title>
+    <title>Delivery Premium - Admin Completo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primaria: '#E74C3C',
-                        secundaria: '#25D366',
-                    }
-                }
-            }
+            theme: { extend: { colors: { prim: '#E74C3C', sec: '#25D366' } } }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-        }
+    <style>
+        :root { --cor1: #E74C3C; --cor2: #25D366; }
+        .bg-prim { background: var(--cor1) !important; }
+        .bg-sec { background: var(--cor2) !important; }
+        header { background: var(--cor1) !important; }
+        .aba-btn.active { background: #2563eb; color: white; border-radius: 6px; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-100">
+
+<!-- TELA DE LOJA FECHADA -->
+<div id="telaFechada" class="fixed inset-0 bg-gray-900 text-white z-50 items-center justify-center hidden">
+    <div class="text-center p-8 bg-gray-800 rounded-xl shadow-2xl max-w-md">
+        <i class="fas fa-store-slash text-6xl text-gray-500 mb-4"></i>
+        <h1 class="text-3xl font-bold mb-2">Loja Fechada</h1>
+        <p id="msgFechada" class="text-gray-400 mb-4">Confira nosso horário de funcionamento.</p>
+        <button onclick="abrirAdmin()" class="bg-sec text-white px-6 py-2 rounded">Acessar Admin</button>
+    </div>
+</div>
 
 <!-- HEADER -->
-<header class="bg-primaria text-white p-4 shadow-md sticky top-0 z-50">
+<header class="text-white p-4 shadow sticky top-0 z-40">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold">🍔 Delivery Top</h1>
+        <h1 class="text-2xl font-bold" id="nomeLojaTop">Carregando...</h1>
         <div class="flex gap-4 items-center">
-            <button onclick="abrirFavoritos()" class="relative">
+            <button onclick="abrirAdmin()" class="bg-white/20 px-3 py-1 rounded text-sm">⚙️ Admin</button>
+            <button onclick="abrirCarrinho()" class="relative">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span id="qtdCarrinho" class="absolute -top-2 -right-2 bg-white text-prim rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- AVISO DE LOJA FECHADA -->
+<div id="avisoPanico" class="bg-red-600 text-white text-center py-2 font-bold hidden">
+    🔴 LOJA FECHADA - Pedidos temporariamente suspensos
+</div>
+
+<!-- MENU DE CATEGORIAS -->
+<nav id="menuCategorias" class="max-w-6xl mx-auto mt-4 px-4 overflow-x-auto whitespace-nowrap pb-2">
+    <!-- Carregado via JS -->
+</nav>
+
+<!-- LISTA PRODUTOS -->
+<main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-4" id="listaProdutos"></main>
+
+<!-- MODAL PRODUTO -->
+<div id="modalProduto" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-4">
+            <span onclick="fecharModal()" class="float-right text-2xl cursor-pointer">&times;</span>
+            <h2 id="modalNome" class="text-xl font-bold"></h2>
+            <img id="modalImg" class="w-full h-48 object-cover rounded my-2">
+            <p id="modalDesc" class="text-gray-500"></p>
+            <div id="modalOpcoes" class="mt-4"></div>
+            <button onclick="addCarrinho()" class="mt-6 w-full bg-sec text-white py-3 rounded font-bold">ADICIONAR AO PEDIDO</button>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO -->
+<div id="carrinho" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform z-50">
+    <div class="p-4 h-full flex flex-col">
+        <h3 class="text-xl font-bold mb-4">🛒 Meu Pedido</h3>
+        <div id="itensCarrinho" class="flex-1 overflow-y-auto"></div>
+        <div class="border-t pt-4 mt-4">
+            <p class="text-xl font-bold">Total: R$ <span id="totalCarrinho">0,00</span></p>
+            <button onclick="finalizarPedido()" class="w-full bg-sec text-white py-3 rounded mt-2 font-bold">FINALIZAR NO WHATSAPP</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔥 PAINEL ADMIN COMPLETO -->
+<div id="painelAdmin" class="fixed inset-0 bg-gray-900 text-white z-50 hidden overflow-y-auto p-4">
+    <div class="max-w-6xl mx-auto pb-10">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">⚙️ PAINEL DE CONTROLE</h1>
+            <button onclick="fecharAdmin()" class="bg-red-600 px-4 py-2 rounded">Voltar</button>
+        </div>
+
+        <!-- BOTÃO DE PÂNICO -->
+        <div class="bg-gray-800 p-4 rounded-xl mb-6 flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-lg">🔴 BOTÃO DE PÂNICO</h3>
+                <p class="text-gray-400 text-sm">Ative para fechar a loja imediatamente</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="botaoPanico" onchange="salvar()">
+                <span class="w-20 h-10 bg-gray-600 rounded-full transition-all peer-checked:bg-green-600"></span>
+                <span class="absolute left-1 top-1 bg-white w-8 h-8 rounded-full transition-all peer-checked:left-11"></span>
+            </label>
+        </div>
+
+        <!-- ABAS -->
+        <div class="flex gap-2 mb-6 border-b border-gray-700 pb-2">
+            <button class="aba-btn active px-4 py-2" data-aba="config">Geral</button>
+            <button class="aba-btn px-4 py-2" data-aba="produtos">Produtos</button>
+            <button class="aba-btn px-4 py-2" data-aba="horario">Horário</button>
+            <button class="aba-btn px-4 py-2" data-aba="ordem">Ordenar</button>
+        </div>
+
+        <!-- CONTEUDO DAS ABAS -->
+        <div id="aba-config" class="aba-content">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <label>Nome da Loja</label>
+                    <input id="confNome" class="w-full bg-gray-700 p-2 rounded mt-1">
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <label>WhatsApp (ex: 5581999999999)</label>
+                    <input id="confWhats" class="w-full bg-gray-700 p-2 rounded mt-1">
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <label>Cor Principal</label>
+                    <input type="color" id="confCor1" class="w-full h-10 bg-transparent">
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <label>Cor Secundária</label>
+                    <input type="color" id="confCor2" class="w-full h-10 bg-transparent">
+                </div>
+            </div>
+            <button onclick="salvar()" class="mt-4 bg-green-600 px-6 py-3 rounded font-bold">SALVAR ALTERAÇÕES</button>
+        </div>
+
+        <div id="aba-produtos" class="aba-content hidden">
+            <button onclick="modalNovoProduto()" class="mb-4 bg-blue-600 px-4 py-2 rounded">+ Adicionar Produto</button>
+            <div id="listaAdminProdutos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <div id="aba-horario" class="aba-content hidden">
+            <div class="bg-gray-800 p-4 rounded" id="containerHorarios"></div>
+        </div>
+
+        <div id="aba-ordem" class="aba-content hidden">
+            <p class="text-gray-400 mb-4">Arraste para mudar a posição</p>
+            <div id="listaOrdenar" class="space-y-2"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL CRIAR PRODUTO -->
+<div id="modalCriar" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4">
+        <h2 id="tituloModalCriar" class="text-2xl font-bold mb-4">Novo Produto</h2>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+            <input type="text" id="p_nome" placeholder="Nome" class="p-2 border rounded">
+            <input type="text" id="p_cat" placeholder="Categoria" class="p-2 border rounded">
+            <input type="number" id="p_preco" placeholder="Preço" class="p-2 border rounded">
+            <input type="text" id="p_img" placeholder="URL da Imagem" class="p-2 border rounded">
+            <textarea id="p_desc" placeholder="Descrição" class="p-2 border rounded md:col-span-2"></textarea>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="font-bold">Adicionais / Complementos</h3>
+            <div id="listaAdicionais"></div>
+            <button onclick="addCampoAdicional()" class="mt-2 text-blue-600">+ Adicionar opção</button>
+            <input type="number" id="p_limite" placeholder="Limite de escolhas (ex: 3)" class="p-2 border rounded w-40 mt-2">
+        </div>
+
+        <div class="mt-6 flex gap-2">
+            <button onclick="salvarProduto()" class="bg-green-600 text-white px-6 py-2 rounded">Salvar</button>
+            <button onclick="fecharModalCriar()" class="bg-gray-500 px-6 py-2 rounded">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== DADOS E VARIAVEIS =====
+let config = {
+    nome: "Meu Delivery",
+    whatsapp: "5581999999999",
+    cor1: "#E74C3C",
+    cor2: "#25D366",
+    panico: false,
+    horarios: [
+        {dia:0, nome:"Domingo", aberto:false, ini:"18:00", fim:"23:00"},
+        {dia:1, nome:"Segunda", aberto:true, ini:"18:00", fim:"23:00"},
+        {dia:2, nome:"Terça", aberto:true, ini:"18:00", fim:"23:00"},
+        {dia:3, nome:"Quarta", aberto:true, ini:"18:00", fim:"23:00"},
+        {dia:4, nome:"Quinta", aberto:true, ini:"18:00", fim:"23:00"},
+        {dia:5, nome:"Sexta", aberto:true, ini:"18:00", fim:"23:59"},
+        {dia:6, nome:"Sábado", aberto:true, ini:"18:00", fim:"23:59"}
+    ]
+};
+
+let produtos = [];
+let carrinho = [];
+let prodEditar = null;
+
+// ===== INICIALIZAÇÃO =====
+function init() {
+    carregar();
+    aplicarCores();
+    verificarStatusLoja();
+    renderizarMenu();
+    renderizarProdutos();
+    carregarHorariosUI();
+}
+
+// ===== VERIFICA SE ESTÁ ABERTO =====
+function verificarStatusLoja() {
+    const agora = new Date();
+    const diaHoje = agora.getDay();
+    const horaAgora = agora.getHours().toString().padStart(2,'0') + ":" + agora.getMinutes().toString().padStart(2,'0');
+
+    if(config.panico) {
+        document.getElementById('telaFechada').classList.remove('hidden');
+        document.getElementById('telaFechada').classList.add('flex');
+        document.getElementById('msgFechada').innerText = "Loja fechada temporariamente.";
+        document.getElementById('avisoPanico').classList.remove('hidden');
+        return;
+    }
+
+    const diaConfig = config.horarios.find(h => h.dia == diaHoje);
+    if(!diaConfig || !diaConfig.aberto || horaAgora < diaConfig.ini || horaAgora > diaConfig.fim) {
+        document.getElementById('telaFechada').classList.remove('hidden');
+        document.getElementById('telaFechada').classList.add('flex');
+        document.getElementById('msgFechada').innerText = `Abrimos ${diaConfig.nome} às ${diaConfig.ini}`;
+    } else {
+        document.getElementById('telaFechada').classList.add('hidden');
+    }
+    document.getElementById('avisoPanico').classList.add('hidden');
+}
+
+// ===== CORES E LAYOUT =====
+function aplicarCores() {
+    document.documentElement.style.setProperty('--cor1', config.cor1);
+    document.documentElement.style.setProperty('--cor2', config.cor2);
+    document.getElementById('nomeLojaTop').innerText = config.nome;
+    document.getElementById('botaoPanico').checked = config.panico;
+}
+
+function renderizarMenu() {
+    const cats = [...new Set(produtos.map(p => p.cat))];
+    const nav = document.getElementById('menuCategorias');
+    nav.innerHTML = '<button onclick="filtrar()" class="bg-prim text-white px-4 py-2 rounded-full mr-2 font-bold">Todos</button>';
+    cats.forEach(c => {
+        nav.innerHTML += `<button onclick="filtrar('${c}')" class="bg-gray-200 px-4 py-2 rounded-full mr-2 font-bold">${c}</button>`;
+    });
+}
+
+function renderizarProdutos(filtro=null) {
+    const container = document.getElementById('listaProdutos');
+    container.innerHTML = '';
+    produtos.filter(p => !p.pausado && (!filtro || p.cat == filtro)).forEach((p, idx) => {
+        container.innerHTML += `
+        <div class="bg-white rounded-xl shadow overflow-hidden relative">
+            ${p.pausado ? `<div class="absolute inset-0 bg-black/70 flex items-center justify-center z-10"><span class="bg-red-600 text-white px-3 py-1 rounded font-bold">ESGOTADO</span></div>` : ''}
+            <img src="${p.img}" class="w-full h-48 object
                 <i class="fas fa-heart text-xl"></i>
                 <span id="contador-fav" class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">0</span>
             </button>
