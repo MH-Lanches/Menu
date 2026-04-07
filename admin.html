@@ -12,21 +12,50 @@
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
 
-    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
         <h1 class="text-4xl font-bold text-center text-red-600 mb-8">📊 Painel de Controle</h1>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <a href="#" class="bg-blue-50 p-6 rounded-2xl text-center hover:scale-105 transition">
+        <!-- BOTÕES PRINCIPAIS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <button onclick="abrirSecao('produtos')" class="bg-blue-50 p-6 rounded-2xl text-center hover:scale-105 transition">
                 <i class="fas fa-utensils text-5xl text-blue-600 mb-4"></i>
                 <h3 class="text-xl font-bold">Gerenciar Produtos</h3>
                 <p class="text-gray-500">Adicionar, editar ou remover itens</p>
-            </a>
+            </button>
 
-            <a href="#" class="bg-green-50 p-6 rounded-2xl text-center hover:scale-105 transition">
+            <button onclick="abrirSecao('config')" class="bg-green-50 p-6 rounded-2xl text-center hover:scale-105 transition">
                 <i class="fas fa-cog text-5xl text-green-600 mb-4"></i>
                 <h3 class="text-xl font-bold">Configurações</h3>
                 <p class="text-gray-500">Horário, WhatsApp e Cor do site</p>
-            </a>
+            </button>
+        </div>
+
+        <!-- ÁREA DE PRODUTOS -->
+        <div id="secao-produtos" class="hidden border-t pt-8">
+            <h2 class="text-2xl font-bold mb-4">📦 Produtos</h2>
+            <button onclick="novoProduto()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">+ Adicionar Novo</button>
+            
+            <div id="lista-produtos-admin" class="space-y-4">
+                <!-- Produtos vão aparecer aqui -->
+            </div>
+        </div>
+
+        <!-- ÁREA DE CONFIGURAÇÕES -->
+        <div id="secao-config" class="hidden border-t pt-8">
+            <h2 class="text-2xl font-bold mb-4">⚙️ Configurações Gerais</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label>Nome da Loja</label>
+                    <input id="config-nome" class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label>WhatsApp (com DDD)</label>
+                    <input id="config-whatsapp" class="w-full border p-2 rounded" placeholder="5581999999999">
+                </div>
+            </div>
+
+            <button onclick="salvarConfig()" class="mt-4 bg-green-600 text-white px-6 py-2 rounded">Salvar Configurações</button>
         </div>
 
         <div class="text-center mt-10">
@@ -37,19 +66,104 @@
     </div>
 
 <script>
-// 🔐 VERIFICAÇÃO DE SEGURANÇA
-window.onload = function(){
-    // Verifica se está logado
-    if(localStorage.getItem('logado') != 'sim'){
-        // Se não estiver, manda para o login
-        window.location.href = 'login.html';
+// 🔐 SEGURANÇA
+if(localStorage.getItem('logado') != 'sim'){
+    window.location.href = 'login.html';
+}
+
+let dadosSite = {
+    config: { nome: "MH Lanches", whatsapp: "5581999999999" },
+    produtos: []
+};
+
+// CARREGA DADOS
+function carregarDados(){
+    const salvos = localStorage.getItem('dados_site');
+    if(salvos){
+        dadosSite = JSON.parse(salvos);
     }
+    renderizarProdutosAdmin();
+    carregarConfig();
+}
+
+// MOSTRA/ESCONDE SEÇÕES
+function abrirSecao(secao){
+    document.querySelectorAll('[id^="secao-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById('secao-' + secao).classList.remove('hidden');
+}
+
+// ======= PRODUTOS =======
+function renderizarProdutosAdmin(){
+    const container = document.getElementById('lista-produtos-admin');
+    container.innerHTML = '';
+    dadosSite.produtos.forEach((p, i) => {
+        container.innerHTML += `
+        <div class="border p-4 rounded flex justify-between items-center">
+            <div>
+                <h4 class="font-bold">${p.nome}</h4>
+                <p class="text-sm text-gray-500">R$ ${p.preco.toFixed(2)} | ${p.cat}</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editarProduto(${i})" class="text-blue-500"><i class="fas fa-edit"></i></button>
+                <button onclick="excluirProduto(${i})" class="text-red-500"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    });
+}
+
+function novoProduto(){
+    const nome = prompt("Nome do produto:");
+    const preco = parseFloat(prompt("Preço:"));
+    const cat = prompt("Categoria:");
+    const desc = prompt("Descrição:");
+    const img = prompt("URL da Imagem:");
+
+    if(nome && preco){
+        dadosSite.produtos.push({id: Date.now(), nome, desc, preco, cat, img, adicionais:[]});
+        salvar();
+    }
+}
+
+function editarProduto(i){
+    const p = dadosSite.produtos[i];
+    p.nome = prompt("Nome:", p.nome) || p.nome;
+    p.preco = parseFloat(prompt("Preço:", p.preco)) || p.preco;
+    salvar();
+}
+
+function excluirProduto(i){
+    if(confirm("Tem certeza?")){
+        dadosSite.produtos.splice(i,1);
+        salvar();
+    }
+}
+
+// ======= CONFIGURAÇÕES =======
+function carregarConfig(){
+    document.getElementById('config-nome').value = dadosSite.config.nome;
+    document.getElementById('config-whatsapp').value = dadosSite.config.whatsapp;
+}
+
+function salvarConfig(){
+    dadosSite.config.nome = document.getElementById('config-nome').value;
+    dadosSite.config.whatsapp = document.getElementById('config-whatsapp').value;
+    salvar();
+    alert("Salvo! Atualize a tela do site para ver as mudanças.");
+}
+
+// ======= GERAL =======
+function salvar(){
+    localStorage.setItem('dados_site', JSON.stringify(dadosSite));
+    carregarDados();
 }
 
 function sair(){
     localStorage.removeItem('logado');
     window.location.href = 'login.html';
 }
+
+// INICIA
+carregarDados();
 </script>
 </body>
 </html>
