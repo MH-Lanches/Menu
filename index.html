@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Delivery</title>
+    <title>Menu Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -17,14 +17,18 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #FF4A5F; border-radius: 10px; }
         .card { transition: all 0.3s ease; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .card:hover { transform: translateY(-5px); }
+        .heart.active { color: #FF4A5F; transform: scale(1.2); }
     </style>
 </head>
 <body class="bg-gray-50">
 
 <!-- AVISO DE FECHADO -->
+<div id="avisoFechado" class="bg-red-600 text-white text-center py-3 font-bold hidden">
+    <i class="fas fa-times-circle mr-2"></i> LOJA FECHADA NO MOMENTO
+</div>
 <div id="avisoAgendamento" class="bg-yellow-500 text-white text-center py-3 font-bold hidden">
-    <i class="fas fa-clock mr-2"></i> LOJA FECHADA - PEDIDO SERÁ AGENDADO
+    <i class="fas fa-clock mr-2"></i> FORA DO HORÁRIO - PEDIDO SERÁ AGENDADO
 </div>
 
 <!-- HEADER -->
@@ -33,10 +37,15 @@
         <h1 id="nomeLoja" class="text-3xl font-extrabold text-dark tracking-tighter">
             <span class="text-prim">CARREGANDO...</span>
         </h1>
-        <button onclick="abrirCarrinho()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
-            <i class="fas fa-shopping-bag text-xl text-dark"></i>
-            <span id="badgeCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
-        </button>
+        <div class="flex gap-3">
+            <button onclick="abrirFavoritos()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
+                <i class="fas fa-heart text-xl text-prim"></i>
+            </button>
+            <button onclick="abrirCarrinho()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
+                <i class="fas fa-shopping-bag text-xl text-dark"></i>
+                <span id="badgeCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -56,13 +65,14 @@
         <div class="relative">
             <img id="modalImg" class="w-full h-64 object-cover">
             <span onclick="fecharModal()" class="absolute top-4 right-4 bg-white/90 text-dark w-10 h-10 rounded-full flex items-center justify-center cursor-pointer text-xl font-bold">&times;</span>
+            <button onclick="toggleFavorito()" class="absolute top-4 left-4 bg-white/90 text-gray-500 w-10 h-10 rounded-full flex items-center justify-center text-xl heart">
+                <i class="far fa-heart"></i>
+            </button>
         </div>
         <div class="p-6">
             <h2 id="modalNome" class="text-2xl font-bold text-dark"></h2>
             <p id="modalDesc" class="text-gray-500 mt-2"></p>
             <p class="text-prim text-3xl font-bold mt-4">R$ <span id="modalPreco"></span></p>
-            
-            <div id="modalAdicionais" class="mt-4 space-y-2"></div>
 
             <button onclick="adicionarCarrinho()" class="w-full mt-6 bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90">
                 ADICIONAR AO PEDIDO
@@ -82,24 +92,41 @@
         </div>
         <div id="itensCarrinho" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
         <div class="p-6 border-t">
-            <div class="flex justify-between text-xl font-bold mb-4">
-                <span>Total:</span>
-                <span class="text-prim">R$ <span id="totalCarrinho">0,00</span></span>
+            <div class="space-y-2 mb-4">
+                <div class="flex justify-between text-gray-500">
+                    <span>Subtotal:</span>
+                    <span>R$ <span id="subTotal">0,00</span></span>
+                </div>
+                <div class="flex justify-between text-gray-500">
+                    <span>Taxa de Entrega:</span>
+                    <span>R$ <span id="valorFrete">0,00</span></span>
+                </div>
+                <div class="flex justify-between text-xl font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span class="text-prim">R$ <span id="totalGeral">0,00</span></span>
+                </div>
             </div>
             <button onclick="finalizarPedido()" class="w-full bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90">
                 <i class="fab fa-whatsapp mr-2"></i> FINALIZAR PEDIDO
             </button>
+            <p id="avisoMinimo" class="text-center text-red-500 text-sm mt-2 hidden">Valor mínimo de R$ <span id="minimoTexto"></span></p>
         </div>
     </div>
 </div>
 
 <script>
-// DADOS PADRÃO
 const dadosPadrao = {
     config: { 
         nome: "MH Lanches", 
-        whatsapp: "5581999999999" 
+        whatsapp: "5581999999999",
+        frete: 5.00,
+        minimo: 20.00,
+        diasFunc: [1,2,3,4,5],
+        horaIni: "18:00",
+        horaFim: "23:00",
+        lojaFechada: false
     },
+    categorias: ["Lanches", "Bebidas", "Porções"],
     produtos: [
         {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"},
         {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"}
@@ -109,10 +136,11 @@ const dadosPadrao = {
 let dadosSite = {};
 let carrinho = [];
 let produtoAtual = null;
+let favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
 
-// INICIALIZAÇÃO
 function iniciar() {
     carregarDados();
+    verificarHorario();
     montarSite();
 }
 
@@ -122,44 +150,77 @@ function carregarDados(){
         dadosSite = JSON.parse(salvos);
     } else {
         dadosSite = {...dadosPadrao};
-        salvarDados();
     }
 }
 
-function salvarDados(){
-    localStorage.setItem('dados_site', JSON.stringify(dadosSite));
-}
-
 function montarSite(){
-    // 🏷️ Coloca o nome da loja vindo do painel
     document.getElementById('nomeLoja').innerHTML = `<span class="text-prim">${dadosSite.config.nome.split(' ')[0]}</span> ${dadosSite.config.nome.split(' ').slice(1).join(' ')}`;
+    document.getElementById('valorFrete').innerText = dadosSite.config.frete.toFixed(2).replace('.', ',');
+    document.getElementById('minimoTexto').innerText = dadosSite.config.minimo.toFixed(2).replace('.', ',');
 
     renderizarCategorias();
     renderizarProdutos();
 }
 
-// ======= CATEGORIAS E PRODUTOS =======
+function verificarHorario(){
+    if(dadosSite.config.lojaFechada){
+        document.getElementById('avisoFechado').classList.remove('hidden');
+        return;
+    }
+
+    const agora = new Date();
+    const diaSem = agora.getDay(); // 0 = Dom, 1 = Seg...
+    const horaAtual = agora.getHours() + ":" + (agora.getMinutes() < 10 ? '0'+agora.getMinutes() : agora.getMinutes());
+
+    if(!dadosSite.config.diasFunc.includes(diaSem) || horaAtual < dadosSite.config.horaIni || horaAtual > dadosSite.config.horaFim){
+        document.getElementById('avisoAgendamento').classList.remove('hidden');
+    }
+}
+
+// ======= CATEGORIAS =======
 function renderizarCategorias() {
-    const cats = [...new Set(dadosSite.produtos.map(p => p.cat))];
-    let html = `<button onclick="filtrar('')" class="bg-prim text-white px-6 py-3 rounded-full font-bold whitespace-nowrap">Todos</button>`;
-    cats.forEach(cat => {
-        html += `<button onclick="filtrar('${cat}')" class="bg-white border border-gray-200 px-6 py-3 rounded-full font-bold whitespace-nowrap hover:bg-gray-100">${cat}</button>`;
+    const container = document.getElementById('menuCategorias');
+    let html = `<button onclick="filtrar('')" class="bg-prim text-white px-6 py-3 rounded-full font-bold">Todos</button>`;
+    html += `<button onclick="filtrar('favoritos')" class="bg-white border border-prim text-prim px-6 py-3 rounded-full font-bold"><i class="fas fa-heart"></i> Favoritos</button>`;
+    
+    dadosSite.categorias.forEach(cat => {
+        html += `<button onclick="filtrar('${cat}')" class="bg-white border border-gray-200 px-6 py-3 rounded-full font-bold">${cat}</button>`;
     });
-    document.getElementById('menuCategorias').innerHTML = html;
+    container.innerHTML = html;
 }
 
 function filtrar(cat){
     renderizarProdutos(cat);
 }
 
+// ======= PRODUTOS =======
 function renderizarProdutos(filtro=null) {
     const container = document.getElementById('listaProdutos');
     container.innerHTML = '';
-    dadosSite.produtos.filter(p => !filtro || p.cat === filtro).forEach((p, i) => {
+    
+    let lista = dadosSite.produtos;
+
+    if(filtro === 'favoritos'){
+        lista = lista.filter(p => favoritos.includes(p.id));
+        if(lista.length === 0){
+            container.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10">Nenhum produto favoritado ainda ❤️</p>`;
+            return;
+        }
+    } else if(filtro) {
+        lista = lista.filter(p => p.cat === filtro);
+    }
+
+    lista.forEach((p, i) => {
+        const favClass = favoritos.includes(p.id) ? 'text-prim' : 'text-gray-400';
         container.innerHTML += `
-        <div class="bg-white rounded-3xl shadow overflow-hidden card cursor-pointer" onclick="abrirModal(${i})">
-            <img src="${p.img}" class="w-full h-48 object-cover">
-            <div class="p-5">
+        <div class="bg-white rounded-3xl shadow overflow-hidden card">
+            <div class="relative">
+                <img src="${p.img}" class="w-full h-48 object-cover">
+                <button onclick="toggleFavoritoCard(${p.id})" class="absolute top-3 right-3 bg-white/80 p-2 rounded-full ${favClass}">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+            <div class="p-5 cursor-pointer" onclick="abrirModal(${dadosSite.produtos.indexOf(p)})">
                 <h3 class="font-bold text-xl text-dark">${p.nome}</h3>
                 <p class="text-gray-500 text-sm mt-1 line-clamp-2">${p.desc}</p>
                 <div class="mt-4 flex justify-between items-center">
@@ -171,6 +232,21 @@ function renderizarProdutos(filtro=null) {
     });
 }
 
+// ======= FAVORITOS =======
+function toggleFavoritoCard(id){
+    if(favoritos.includes(id)){
+        favoritos = favoritos.filter(f => f !== id);
+    } else {
+        favoritos.push(id);
+    }
+    localStorage.setItem('favoritos', JSON.stringify(favoritos));
+    renderizarProdutos();
+}
+
+function abrirFavoritos(){
+    filtrar('favoritos');
+}
+
 // ======= MODAL =======
 function abrirModal(i){
     produtoAtual = dadosSite.produtos[i];
@@ -179,6 +255,16 @@ function abrirModal(i){
     document.getElementById('modalPreco').innerText = produtoAtual.preco.toFixed(2);
     document.getElementById('modalImg').src = produtoAtual.img;
     
+    // Atualiza coração no modal
+    const heartBtn = document.querySelector('#modalProduto .heart');
+    if(favoritos.includes(produtoAtual.id)){
+        heartBtn.classList.add('active');
+        heartBtn.innerHTML = '<i class="fas fa-heart"></i>';
+    } else {
+        heartBtn.classList.remove('active');
+        heartBtn.innerHTML = '<i class="far fa-heart"></i>';
+    }
+
     document.getElementById('modalProduto').classList.remove('hidden');
     document.getElementById('modalProduto').classList.add('flex');
 }
@@ -188,13 +274,21 @@ function fecharModal(){
     document.getElementById('modalProduto').classList.remove('flex');
 }
 
-function adicionarCarrinho(){
-    carrinho.push({...produtoAtual});
-    atualizarCarrinho();
-    fecharModal();
-    abrirCarrinho();
+function toggleFavorito(){
+    toggleFavoritoCard(produtoAtual.id);
+    // Atualiza ícone
+    const heartBtn = document.querySelector('#modalProduto .heart');
+    if(favoritos.includes(produtoAtual.id)){
+        heartBtn.classList.add('active');
+        heartBtn.innerHTML = '<i class="fas fa-heart"></i>';
+    } else {
+        heartBtn.classList.remove('active');
+        heartBtn.innerHTML = '<i class="far fa-heart"></i>';
+    }
 }
 
+// ======= CARRINHO =======
+function abrirC
 // ======= CARRINHO =======
 function abrirCarrinho(){
     document.getElementById('carrinho').classList.remove('translate-x-full');
@@ -207,10 +301,10 @@ function fecharCarrinho(){
 function atualizarCarrinho(){
     const container = document.getElementById('itensCarrinho');
     container.innerHTML = '';
-    let total = 0;
+    let subtotal = 0;
 
     carrinho.forEach((item, idx) => {
-        total += item.preco;
+        subtotal += item.preco;
         container.innerHTML += `
         <div class="flex gap-4 border-b pb-3">
             <img src="${item.img}" class="w-16 h-16 rounded object-cover">
@@ -222,8 +316,19 @@ function atualizarCarrinho(){
         </div>`;
     });
 
+    const frete = dadosSite.config.frete;
+    const total = subtotal + frete;
+
     document.getElementById('badgeCarrinho').innerText = carrinho.length;
-    document.getElementById('totalCarrinho').innerText = total.toFixed(2).replace('.', ',');
+    document.getElementById('subTotal').innerText = subtotal.toFixed(2).replace('.', ',');
+    document.getElementById('totalGeral').innerText = total.toFixed(2).replace('.', ',');
+
+    // Verifica mínimo
+    if(subtotal < dadosSite.config.minimo && dadosSite.config.minimo > 0){
+        document.getElementById('avisoMinimo').classList.remove('hidden');
+    } else {
+        document.getElementById('avisoMinimo').classList.add('hidden');
+    }
 }
 
 function removerDoCarrinho(idx){
@@ -231,17 +336,31 @@ function removerDoCarrinho(idx){
     atualizarCarrinho();
 }
 
+function adicionarCarrinho(){
+    carrinho.push({...produtoAtual});
+    atualizarCarrinho();
+    fecharModal();
+    abrirCarrinho();
+}
+
 // ======= FINALIZAR =======
 function finalizarPedido(){
-    if(carrinho.length === 0) return alert("Adicione algo primeiro!");
+    let subtotal = 0;
+    carrinho.forEach(item => subtotal += item.preco);
+
+    // Verifica mínimo
+    if(subtotal < dadosSite.config.minimo && dadosSite.config.minimo > 0){
+        alert(`Pedido mínimo é R$ ${dadosSite.config.minimo.toFixed(2)}`);
+        return;
+    }
 
     let texto = "Olá! Gostaria de fazer o pedido:\n\n";
-    let total = 0;
     carrinho.forEach(item => {
         texto += `• ${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
-        total += item.preco;
     });
-    texto += `\nTotal: R$ ${total.toFixed(2)}`;
+
+    texto += `\n📦 Taxa de entrega: R$ ${dadosSite.config.frete.toFixed(2)}`;
+    texto += `\n💵 Total: R$ ${(subtotal + dadosSite.config.frete).toFixed(2)}`;
 
     const link = `https://wa.me/${dadosSite.config.whatsapp}?text=${encodeURIComponent(texto)}`;
     window.open(link);
