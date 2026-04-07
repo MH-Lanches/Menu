@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Login Administrativo</title>
+    <title>Painel Administrativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -10,44 +10,45 @@
         body { font-family: 'Poppins', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 min-h-screen p-4">
 
-    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-        <div class="text-center mb-8">
-            <i class="fas fa-user-shield text-6xl text-red-500 mb-4"></i>
-            <h1 class="text-3xl font-bold text-gray-800">Área Restrita</h1>
-            <p class="text-gray-500">Acesso ao Painel Administrativo</p>
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
+        <h1 class="text-4xl font-bold text-center text-red-600 mb-8">📊 Painel de Controle</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a href="#" class="bg-blue-50 p-6 rounded-2xl text-center hover:scale-105 transition">
+                <i class="fas fa-utensils text-5xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-bold">Gerenciar Produtos</h3>
+                <p class="text-gray-500">Adicionar, editar ou remover itens</p>
+            </a>
+
+            <a href="#" class="bg-green-50 p-6 rounded-2xl text-center hover:scale-105 transition">
+                <i class="fas fa-cog text-5xl text-green-600 mb-4"></i>
+                <h3 class="text-xl font-bold">Configurações</h3>
+                <p class="text-gray-500">Horário, WhatsApp e Cor do site</p>
+            </a>
         </div>
 
-        <div class="space-y-4">
-            <div>
-                <label class="block text-gray-600 mb-2">Usuário</label>
-                <input type="text" id="user" value="admin" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none">
-            </div>
-            <div>
-                <label class="block text-gray-600 mb-2">Senha</label>
-                <input type="password" id="pass" value="123456" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none">
-            </div>
-
-            <button onclick="logar()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl text-lg mt-4 transition">
-                ENTRAR <i class="fas fa-arrow-right ml-2"></i>
+        <div class="text-center mt-10">
+            <button onclick="sair()" class="bg-gray-800 text-white px-6 py-3 rounded-xl hover:bg-gray-900">
+                <i class="fas fa-sign-out-alt mr-2"></i> Sair
             </button>
-            <p id="erro" class="text-center text-red-500 mt-2 hidden">Usuário ou senha incorretos!</p>
         </div>
     </div>
 
 <script>
-function logar(){
-    let u = document.getElementById('user').value;
-    let p = document.getElementById('pass').value;
-    
-    // Usuário e Senha padrão
-    if(u == 'admin' && p == '123456'){
-        localStorage.setItem('logado', 'sim'); // <-- ESSA É A CHAVE QUE O ADM LÊ
-        window.location = 'admin.html';
-    } else {
-        document.getElementById('erro').classList.remove('hidden');
+// 🔐 VERIFICAÇÃO DE SEGURANÇA
+window.onload = function(){
+    // Verifica se está logado
+    if(localStorage.getItem('logado') != 'sim'){
+        // Se não estiver, manda para o login
+        window.location.href = 'login.html';
     }
+}
+
+function sair(){
+    localStorage.removeItem('logado');
+    window.location.href = 'login.html';
 }
 </script>
 </body>
