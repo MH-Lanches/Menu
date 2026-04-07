@@ -8,87 +8,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-900 text-white min-h-screen">
-
-<div class="max-w-6xl mx-auto p-4">
-    <!-- CABEÇALHO -->
-    <div id="aba-config">
-        <div class="grid md:grid-cols-2 gap-4">
-            <div class="bg-gray-800 p-4 rounded"><label>Nome da Loja</label><input id="confNome" class="w-full bg-gray-700 p-2 rounded mt-1"></div>
-            <div class="bg-gray-800 p-4 rounded"><label>WhatsApp</label><input id="confWhats" class="w-full bg-gray-700 p-2 rounded mt-1"></div>
-        </div>
-        <button onclick="salvar()" class="mt-4 bg-green-600 px-6 py-3 rounded font-bold">SALVAR</button>
-    </div>
-
-    <div id="aba-produtos" class="hidden">
-        <button onclick="novoProduto()" class="mb-4 bg-blue-600 px-4 py-2 rounded">+ Novo Produto</button>
-        <div id="listaProdutos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-
-    <div id="aba-horario" class="hidden">
-        <div class="bg-gray-800 p-4 rounded space-y-4" id="boxHorario"></div>
-    </div>
-</div>
-
-<!-- MODAL EDITAR -->
-<div id="modalEdit" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl max-w-2xl w-full p-4 text-black">
-        <h2 id="editTitulo" class="text-2xl font-bold mb-4">Editar Produto</h2>
-        <input type="hidden" id="editId">
-        <div class="grid grid-cols-2 gap-2">
-            <input id="e_nome" placeholder="Nome" class="p-2 border rounded">
-            <input id="e_cat" placeholder="Categoria" class="p-2 border rounded">
-            <input id="e_preco" type="number" placeholder="Preço" class="p-2 border rounded">
-            <input id="e_img" placeholder="URL Imagem" class="p-2 border rounded">
-            <textarea id="e_desc" placeholder="Descrição" class="p-2 border rounded col-span-2"></textarea>
-        </div>
-        <div class="mt-4">
-            <label>Limite de Adicionais:</label>
-            <input type="number" id="e_limite" class="p-2 border rounded w-20 ml-2">
-            <div id="e_adicionais"></div>
-            <button onclick="addCampo()" class="text-blue-600 text-sm mt-2">+ Adicionar opção</button>
-        </div>
-        <div class="mt-4 flex gap-2">
-            <button onclick="salvarProduto()" class="bg-green-600 text-white px-4 py-2 rounded">Salvar</button>
-            <button onclick="fecharEdit()" class="bg-gray-500 px-4 py-2 rounded">Fechar</button>
-        </div>
-    </div>
-</div>
-
-<script>
-let dados = { config:{}, produtos:[] };
-
-fetch('products.json')
-.then(res => res.json())
-.then(base => {
-    dados = base;
-    carregarDados();
-    renderProdutos();
-    renderHorarios();
-});
-
-document.querySelectorAll('.aba').forEach(b=>{
-    b.onclick = () => {
-        document.querySelectorAll('.aba').forEach(x=>x.classList.remove('active','bg-blue-600'));
-        b.classList.add('active','bg-blue-600');
-        document.querySelectorAll('[id^="aba-"]').forEach(c=>c.classList.add('hidden'));
-        document.getElementById('aba-'+b.datasetaba).classList.remove('hidden');
-    }
-});
-p.cat<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel Administrativo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #FC4A1A; border-radius: 10px; }
+        .aba.active { background-color: #374151; color: white; }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
@@ -116,7 +38,7 @@ p.cat<!DOCTYPE html>
             </div>
         </div>
         <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="panico" onchange="salvar()">
+            <input type="checkbox" id="panico">
             <span class="w-20 h-10 bg-gray-600 rounded-full transition-all peer-checked:bg-green-600"></span>
             <span class="absolute left-1 top-1 bg-white w-8 h-8 rounded-full transition-all peer-checked:left-11"></span>
         </label>
@@ -140,11 +62,11 @@ p.cat<!DOCTYPE html>
         <div class="grid md:grid-cols-2 gap-6">
             <div class="bg-gray-800 p-6 rounded-xl">
                 <label class="block text-gray-400 mb-2">Nome da Loja</label>
-                <input id="confNome" class="w-full bg-gray-700 p-4 rounded-lg text-white outline-none focus:ring-2 focus:prim">
+                <input id="confNome" class="w-full bg-gray-700 p-4 rounded-lg text-white outline-none">
             </div>
             <div class="bg-gray-800 p-6 rounded-xl">
                 <label class="block text-gray-400 mb-2">WhatsApp (com DDD)</label>
-                <input id="confWhats" class="w-full bg-gray-700 p-4 rounded-lg text-white outline-none focus:ring-2 focus:prim">
+                <input id="confWhats" class="w-full bg-gray-700 p-4 rounded-lg text-white outline-none">
             </div>
         </div>
         <button onclick="salvar()" class="mt-6 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-full font-bold text-lg transition">
@@ -175,11 +97,11 @@ p.cat<!DOCTYPE html>
         <h2 id="editTitulo" class="text-2xl font-bold mb-6">Editar Produto</h2>
         
         <div class="grid md:grid-cols-2 gap-4">
-            <input id="e_nome" placeholder="Nome do produto" class="p-4 bg-gray-700 rounded-lg">
-            <input id="e_cat" placeholder="Categoria" class="p-4 bg-gray-700 rounded-lg">
-            <input id="e_preco" type="number" step="0.01" placeholder="Preço" class="p-4 bg-gray-700 rounded-lg">
-            <input id="e_img" placeholder="URL da Imagem" class="p-4 bg-gray-700 rounded-lg">
-            <textarea id="e_desc" placeholder="Descrição" class="p-4 bg-gray-700 rounded-lg md:col-span-2"></textarea>
+            <input id="e_nome" placeholder="Nome do produto" class="p-4 bg-gray-700 rounded-lg text-white">
+            <input id="e_cat" placeholder="Categoria" class="p-4 bg-gray-700 rounded-lg text-white">
+            <input id="e_preco" type="number" step="0.01" placeholder="Preço" class="p-4 bg-gray-700 rounded-lg text-white">
+            <input id="e_img" placeholder="URL da Imagem" class="p-4 bg-gray-700 rounded-lg text-white">
+            <textarea id="e_desc" placeholder="Descrição" class="p-4 bg-gray-700 rounded-lg md:col-span-2 text-white"></textarea>
         </div>
 
         <div class="mt-6">
@@ -190,7 +112,7 @@ p.cat<!DOCTYPE html>
             </button>
             <br>
             <label class="block mt-4 text-gray-400">Limite de escolhas (0 = ilimitado):</label>
-            <input type="number" id="e_limite" value="0" class="mt-2 p-2 bg-gray-700 rounded w-20 text-center">
+            <input type="number" id="e_limite" value="0" class="mt-2 p-2 bg-gray-700 rounded w-20 text-center text-white">
         </div>
 
         <div class="mt-8 flex gap-4">
@@ -202,39 +124,53 @@ p.cat<!DOCTYPE html>
 
 <script>
 let dados = { config:{}, produtos:[] };
+let idEdicao = -1; // Controla se é novo ou edição
 
 // Verificar login
 if(localStorage.getItem('logado') !== 'sim'){
     window.location = 'login.html';
 }
 
-fetch('products.json')
-.then(res => res.json())
-.then(base => {
-    dados = base;
-    carregarDados();
+// Carregar dados salvos
+function carregarDadosSalvos(){
+    // Tenta carregar do localStorage primeiro (onde salvamos as alterações)
+    const local = localStorage.getItem('dados_backup');
+    if(local){
+        dados = JSON.parse(local);
+        inicializarInterface();
+    } else {
+        // Se não tiver, carrega do arquivo original
+        fetch('products.json')
+        .then(res => res.json())
+        .then(base => {
+            dados = base;
+            localStorage.setItem('dados_backup', JSON.stringify(dados));
+            inicializarInterface();
+        });
+    }
+}
+
+function inicializarInterface(){
+    document.getElementById('confNome').value = dados.config.nome;
+    document.getElementById('confWhats').value = dados.config.whatsapp;
+    document.getElementById('panico').checked = dados.config.panico;
+    
     renderProdutos();
     renderHorarios();
-});
+}
 
 // Controle das Abas
 document.querySelectorAll('.aba').forEach(b=>{
     b.onclick = () => {
         document.querySelectorAll('.aba').forEach(x=>{
-            x.classList.remove('active','bg-gray-800','text-white');
+            x.classList.remove('active','text-white');
             x.classList.add('text-gray-400');
         });
-        b.classList.add('active','bg-gray-800','text-white');
+        b.classList.add('active','text-white');
         document.querySelectorAll('[id^="aba-"]').forEach(c=>c.classList.add('hidden'));
         document.getElementById('aba-'+b.datasetaba).classList.remove('hidden');
     }
 });
-
-function carregarDados(){
-    document.getElementById('confNome').value = dados.config.nome;
-    document.getElementById('confWhats').value = dados.config.whatsapp;
-    document.getElementById('panico').checked = dados.config.panico;
-}
 
 function renderProdutos(){
     document.getElementById('listaProdutos').innerHTML = '';
@@ -258,9 +194,13 @@ function renderProdutos(){
     });
 }
 
-function pausar(i){ dados.produtos[i].pausado = !dados.produtos[i].pausado; salvar(); }
+function pausar(i){ 
+    dados.produtos[i].pausado = !dados.produtos[i].pausado; 
+    salvar(); 
+}
 
 function novoProduto(){
+    idEdicao = -1;
     document.getElementById('editTitulo').innerText = "Novo Produto";
     document.getElementById('e_nome').value = "";
     document.getElementById('e_cat').value = "";
@@ -270,10 +210,10 @@ function novoProduto(){
     document.getElementById('e_limite').value = "0";
     document.getElementById('e_adicionais').innerHTML = "";
     document.getElementById('modalEdit').classList.remove('hidden');
-    document.getElementById('modalEdit').classList.add('flex');
 }
 
 function editar(i){
+    idEdicao = i;
     let p = dados.produtos[i];
     document.getElementById('editTitulo').innerText = "Editar Produto";
     document.getElementById('e_nome').value = p.nome;
@@ -285,15 +225,14 @@ function editar(i){
     document.getElementById('e_adicionais').innerHTML = "";
     if(p.adicionais) p.adicionais.forEach(a=>{ addCampo(a.nome, a.preco); });
     document.getElementById('modalEdit').classList.remove('hidden');
-    document.getElementById('modalEdit').classList.add('flex');
 }
 
 function addCampo(nome='', preco=''){
     let div = document.createElement('div');
     div.className = 'flex gap-2';
     div.innerHTML = `
-    <input type="text" placeholder="Nome" value="${nome}" class="flex-1 p-3 bg-gray-700 rounded">
-    <input type="number" placeholder="Preço" value="${preco}" class="w-32 p-3 bg-gray-700 rounded">
+    <input type="text" placeholder="Nome" value="${nome}" class="flex-1 p-3 bg-gray-700 rounded text-white">
+    <input type="number" placeholder="Preço" value="${preco}" class="w-32 p-3 bg-gray-700 rounded text-white">
     <button onclick="this.parentElement.remove()" class="text-red-400 px-2">✕</button>`;
     document.getElementById('e_adicionais').appendChild(div);
 }
@@ -316,9 +255,11 @@ function salvarProduto(){
         pausado: false
     };
 
-    // Verifica se é edição ou novo
-    let id = document.querySelector('#editTitulo').innerText.includes('Editar') ? dados.produtos.findIndex(x=>x.nome == prod.nome) : -1;
-    if(id >= 0) dados.produtos[id] = prod; else dados.produtos.push(prod);
+    if(idEdicao >= 0) {
+        dados.produtos[idEdicao] = prod;
+    } else {
+        dados.produtos.push(prod);
+    }
 
     salvar();
     fecharEdit();
@@ -338,9 +279,9 @@ function renderHorarios(){
                 Aberto
             </label>
             <span>das</span>
-            <input type="time" value="${dia.ini}" onchange="atualizaDia(${dia.dia}, 'ini', this.value)" class="bg-gray-700 p-2 rounded">
+            <input type="time" value="${dia.ini}" onchange="atualizaDia(${dia.dia}, 'ini', this.value)" class="bg-gray-700 p-2 rounded text-white">
             <span>às</span>
-            <input type="time" value="${dia.fim}" onchange="atualizaDia(${dia.dia}, 'fim', this.value)" class="bg-gray-700 p-2 rounded">
+            <input type="time" value="${dia.fim}" onchange="atualizaDia(${dia.dia}, 'fim', this.value)" class="bg-gray-700 p-2 rounded text-white">
         </div>`;
     });
 }
@@ -350,7 +291,6 @@ function atualizaDia(d, campo, val){
     if(campo == 'aberto') obj.aberto = val;
     if(campo == 'ini') obj.ini = val;
     if(campo == 'fim') obj.fim = val;
-    salvar();
 }
 
 function salvar(){
@@ -359,14 +299,30 @@ function salvar(){
     dados.config.whatsapp = document.getElementById('confWhats').value;
     dados.config.panico = document.getElementById('panico').checked;
 
-    // Para usar localmente, salvamos no navegador. 
-    // Se hospedar, precisaria de um backend, mas para teste local funciona.
+    // SALVA NO NAVEGADOR
     localStorage.setItem('dados_backup', JSON.stringify(dados));
     
+    // Atualiza a lista
     renderProdutos();
-    alert('✅ Tudo salvo com sucesso!');
+    
+    alert('✅ Salvo com sucesso!');
 }
+
+// Iniciar
+carregarDadosSalvos();
+
+// Ajuste para o index.html ler também
+// Você precisa adicionar esse código no começo do seu index.html também:
+/*
+const local = localStorage.getItem('dados_backup');
+if(local) {
+    dados = JSON.parse(local);
+    init();
+} else {
+    fetch('products.json').then(...);
+}
+*/
+
 </script>
 </body>
 </html>
-
