@@ -2,38 +2,238 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Delivery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>tailwind.config={theme:{extend:{colors:{prim:'#E74C3C',sec:'#25D366'}}}}</script>
-    <style>:root{--cor1:#E74C3C;--cor2:#25D366}header,.bg-prim{background:var(--cor1)!important}.bg-sec{background:var(--cor2)!important}</style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        prim: '#FC4A1A',
+                        sec: '#25D366',
+                        dark: '#1E1E1E'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #FC4A1A; border-radius: 10px; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
 
-<div id="telaFechada" class="fixed inset-0 bg-gray-900 text-white z-50 items-center justify-center hidden">
-    <div class="text-center p-8 bg-gray-800 rounded-xl shadow-2xl max-w-md">
-        <i class="fas fa-store-slash text-6xl text-gray-500 mb-4"></i>
-        <h1 class="text-3xl font-bold">Loja Fechada</h1>
-        <p id="msgFechada" class="text-gray-400 mt-2"></p>
+<!-- TELA DE LOJA FECHADA -->
+<div id="telaFechada" class="fixed inset-0 bg-dark z-50 flex items-center justify-center hidden">
+    <div class="text-center p-8 max-w-md">
+        <i class="fas fa-store-slash text-8xl text-gray-700 mb-6"></i>
+        <h1 class="text-4xl font-bold text-white mb-2">Loja Fechada</h1>
+        <p id="msgFechada" class="text-gray-400 text-lg mb-8">Volte mais tarde!</p>
+        <a href="login.html" class="bg-sec text-white px-8 py-3 rounded-full font-bold text-lg">Acessar Administrador</a>
     </div>
 </div>
 
-<header class="text-white p-4 shadow sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
-        <h1 class="text-2xl font-bold" id="nomeLoja">Carregando...</h1>
-        <div class="flex gap-4">
-            <button onclick="window.location='admin.html'" class="bg-white/20 px-3 py-1 rounded text-sm">⚙️ Admin</button>
-            <button onclick="abrirCarrinho()" class="relative">
-                <i class="fas fa-shopping-cart text-xl"></i>
-                <span id="qtdCarrinho" class="absolute -top-2 -right-2 bg-white text-prim rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">0</span>
-            </button>
-        </div>
+<!-- HEADER -->
+<header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-dark">
+            <span class="text-prim">DELIVERY</span>APP
+        </h1>
+        <button onclick="abrirCarrinho()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
+            <i class="fas fa-shopping-bag text-xl text-dark"></i>
+            <span id="qtdCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-7 h-7 text-sm flex items-center justify-center font-bold">0</span>
+        </button>
     </div>
 </header>
 
-<nav id="menuCategorias" class="max-w-6xl mx-auto mt-4 px-4 overflow-x-auto whitespace-nowrap pb-2"></nav>
-<main class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-4" id="listaProdutos"></main>
+<!-- CATEGORIAS -->
+<nav id="menuCategorias" class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto whitespace-nowrap flex gap-3">
+    <!-- Carregado via JS -->
+</nav>
 
+<!-- PRODUTOS -->
+<main class="max-w-7xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="listaProdutos">
+</main>
+
+<!-- MODAL PRODUTO -->
+<div id="modalProduto" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+        <div class="relative">
+            <img id="modalImg" class="w-full h-56 object-cover">
+            <span onclick="fecharModal()" class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm text-dark w-10 h-10 rounded-full flex items-center justify-center cursor-pointer text-xl font-bold">&times;</span>
+        </div>
+        <div class="p-6">
+            <h2 id="modalNome" class="text-2xl font-bold text-dark"></h2>
+            <p id="modalDesc" class="text-gray-500 mt-2"></p>
+            <div id="modalOpcoes" class="mt-6"></div>
+            <div class="mt-6 flex items-center justify-between">
+                <span class="text-2xl font-bold text-prim">R$ <span id="modalPreco">0,00</span></span>
+                <button onclick="addCarrinho()" class="bg-sec text-white px-8 py-3 rounded-full font-bold shadow-lg">ADICIONAR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO LATERAL -->
+<div id="carrinho" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+    <div class="h-full flex flex-col">
+        <div class="p-6 bg-dark text-white">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold"><i class="fas fa-shopping-bag mr-2"></i>Seu Pedido</h3>
+                <button onclick="fecharCarrinho()" class="text-2xl">&times;</button>
+            </div>
+        </div>
+        <div id="itensCarrinho" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+        <div class="p-6 border-t">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-lg font-semibold">Total:</span>
+                <span class="text-2xl font-bold text-prim">R$ <span id="totalCarrinho">0,00</span></span>
+            </div>
+            <button onclick="finalizar()" class="w-full bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg">FINALIZAR NO WHATSAPP</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let config = {};
+let produtos = [];
+let carrinho = [];
+let prodAtual;
+
+fetch('products.json')
+.then(res => res.json())
+.then(dados => {
+    config = dados.config;
+    produtos = dados.produtos;
+    init();
+});
+
+function init() {
+    verificarHorario();
+    renderizarMenu();
+    renderizarProdutos();
+}
+
+function verificarHorario() {
+    const agora = new Date();
+    const h = agora.getHours().toString().padStart(2,'0') + ":" + agora.getMinutes().toString().padStart(2,'0');
+    const dia = config.horarios.find(x => x.dia == agora.getDay());
+    
+    if(config.panico || !dia || !dia.aberto || h < dia.ini || h > dia.fim) {
+        document.getElementById('telaFechada').classList.remove('hidden');
+        document.getElementById('msgFechada').innerText = config.panico ? "Loja em manutenção." : `Abrimos ${dia.nome} às ${dia.ini}`;
+    }
+}
+
+function renderizarMenu() {
+    const cats = [...new Set(produtos.map(p => p.cat))];
+    let html = `<button onclick="filtrar()" class="bg-prim text-white px-6 py-3 rounded-full font-bold whitespace-nowrap">Todos</button>`;
+    cats.forEach(c => {
+        html += `<button onclick="filtrar('${c}')" class="bg-white border border-gray-200 px-6 py-3 rounded-full font-bold whitespace-nowrap hover:bg-gray-100">${c}</button>`;
+    });
+    document.getElementById('menuCategorias').innerHTML = html;
+}
+
+function renderizarProdutos(fil=null) {
+    const container = document.getElementById('listaProdutos');
+    container.innerHTML = '';
+    produtos.filter(p => !p.pausado && (!fil || p.cat == fil)).forEach((p, i) => {
+        container.innerHTML += `
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover cursor-pointer" onclick="abrirModal(${i})">
+            <img src="${p.img}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="font-bold text-lg text-dark">${p.nome}</h3>
+                <p class="text-gray-500 text-sm h-10 overflow-hidden">${p.desc}</p>
+                <div class="mt-3 flex justify-between items-center">
+                    <span class="font-bold text-xl text-prim">R$ ${p.preco.toFixed(2)}</span>
+                    <i class="fas fa-plus-circle text-prim text-xl"></i>
+                </div>
+            </div>
+        </div>`;
+    });
+}
+function filtrar(cat){ renderizarProdutos(cat); }
+
+function abrirModal(i) {
+    prodAtual = produtos[i];
+    document.getElementById('modalNome').innerText = prodAtual.nome;
+    document.getElementById('modalImg').src = prodAtual.img;
+    document.getElementById('modalDesc').innerText = prodAtual.desc;
+    document.getElementById('modalPreco').innerText = prodAtual.preco.toFixed(2);
+    document.getElementById('modalOpcoes').innerHTML = '';
+    
+    if(prodAtual.adicionais && prodAtual.adicionais.length > 0) {
+        document.getElementById('modalOpcoes').innerHTML += `<p class="font-bold text-lg mb-2">Adicionais</p>`;
+        prodAtual.adicionais.forEach(a => {
+            document.getElementById('modalOpcoes').innerHTML += `
+            <label class="flex items-center justify-between p-3 border rounded-xl mb-2 cursor-pointer">
+                <span>${a.nome}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-prim font-bold">+ R$ ${a.preco.toFixed(2)}</span>
+                    <input type="checkbox" class="adc w-5 h-5" value="${a.preco}">
+                </div>
+            </label>`;
+        });
+    }
+    document.getElementById('modalProduto').classList.remove('hidden');
+    document.getElementById('modalProduto').classList.add('flex');
+}
+function fecharModal(){ document.getElementById('modalProduto').classList.add('hidden'); }
+
+function addCarrinho() {
+    let total = prodAtual.preco;
+    let obs = [];
+    document.querySelectorAll('.adc:checked').forEach(c => { 
+        total += parseFloat(c.value); 
+        obs.push(c.parentElement.parentElement.querySelector('span').innerText); 
+    });
+    
+    carrinho.push({...prodAtual, total: total, obs: obs});
+    atualizarCarrinho();
+    fecharModal();
+    abrirCarrinho();
+}
+
+function atualizarCarrinho() {
+    document.getElementById('qtdCarrinho').innerText = carrinho.length;
+    document.getElementById('itensCarrinho').innerHTML = '';
+    carrinho.forEach((item, idx) => {
+        document.getElementById('itensCarrinho').innerHTML += `
+        <div class="flex gap-4 border-b pb-4">
+            <img src="${item.img}" class="w-16 h-16 rounded-lg object-cover">
+            <div class="flex-1">
+                <h4 class="font-bold">${item.nome}</h4>
+                <p class="text-green-600 font-bold">R$ ${item.total.toFixed(2)}</p>
+            </div>
+            <button onclick="removerItem(${idx})" class="text-red-500"><i class="fas fa-trash"></i></button>
+        </div>`;
+    });
+    document.getElementById('totalCarrinho').innerText = carrinho.reduce((s,i)=>s+i.total,0).toFixed(2);
+}
+function removerItem(i){ carrinho.splice(i,1); atualizarCarrinho(); }
+function abrirCarrinho(){ document.getElementById('carrinho').classList.remove('translate-x-full'); }
+function fecharCarrinho(){ document.getElementById('carrinho').classList.add('translate-x-full'); }
+
+function finalizar(){
+    if(carrinho.length == 0) return alert('Adicione itens ao carrinho!');
+    let txt = "Olá! Gostaria de fazer o pedido:\n\n";
+    carrinho.forEach(i => {
+        txt += `- ${i.nome} R$ ${i.total.toFixed(2)}\n`;
+        if(i.obs.length > 0) txt += `   * ${i.obs.join(', ')}\n`;
+    });
+    txt += `\n*Total: R$ ${carrinho.reduce((s,i)=>s+i.total,0).toFixed(2)}*`;
+    window.open(`https://wa.me/${config.whatsapp}?text=`+encodeURIComponent(txt));
+}
+</script>
+</body>
+</html>
 <div id="modalProduto" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full p-4">
         <span onclick="fecharModal()" class="float-right text-2xl cursor-pointer">&times;</span>
