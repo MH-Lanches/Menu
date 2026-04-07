@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>tailwind.config={theme:{extend:{colors:{prim:'#E74C3C',sec:'#25D366'}}}}</script>
+    <style>:root{--cor1:#E74C3C;--cor2:#25D366}header,.bg-prim{background:var(--cor1)!important}.bg-sec{background:var(--cor2)!important}.aba.active{background:#2563eb;color:white;border-radius:6px}</style>
+</head>
+<body class="bg-gray-900 text-white p-4">
+
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">⚙️ PAINEL DE CONTROLE</h1>
+        <button onclick="window.location='index.html'" class="bg-red-600 px-4 py-2 rounded">Voltar para Loja</button>
+    </div>
+
+    <!-- BOTAO PANICO -->
+    <div class="bg-gray-800 p-4 rounded-xl mb-6 flex items-center justify-between">
+        <div><h3 class="font-bold text-lg">🔴 BOTÃO DE PÂNICO</h3><p class="text-gray-400 text-sm">Fecha loja imediatamente</p></div>
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="panico" onchange="salvar()">
+            <span class="w-20 h-10 bg-gray-600 rounded-full transition-all peer-checked:bg-green-600"></span>
+            <span class="absolute left-1 top-1 bg-white w-8 h-8 rounded-full transition-all peer-checked:left-11"></span>
+        </label>
+    </div>
+
+    <!-- ABAS -->
+    <div class="flex gap-2 mb-6 border-b border-gray-700 pb-2">
+        <button class="aba active px-4 py-2" dataaba="config">Geral</button>
+        <button class="aba px-4 py-2" dataaba="produtos">Produtos</button>
+        <button class="aba px-4 py-2" dataaba="horario">Horário</button>
+    </div>
+
+    <!-- CONTEUDO -->
+    <div id="aba-config">
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-gray-800 p-4 rounded"><label>Nome da Loja</label><input id="confNome" class="w-full bg-gray-700 p-2 rounded mt-1"></div>
+            <div class="bg-gray-800 p-4 rounded"><label>WhatsApp</label><input id="confWhats" class="w-full bg-gray-700 p-2 rounded mt-1"></div>
+        </div>
+        <button onclick="salvar()" class="mt-4 bg-green-600 px-6 py-3 rounded font-bold">SALVAR</button>
+    </div>
+
+    <div id="aba-produtos" class="hidden">
+        <button onclick="novoProduto()" class="mb-4 bg-blue-600 px-4 py-2 rounded">+ Novo Produto</button>
+        <div id="listaProdutos" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+
+    <div id="aba-horario" class="hidden">
+        <div class="bg-gray-800 p-4 rounded space-y-4" id="boxHorario"></div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div id="modalEdit" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full p-4 text-black">
+        <h2 id="editTitulo" class="text-2xl font-bold mb-4">Editar Produto</h2>
+        <input type="hidden" id="editId">
+        <div class="grid grid-cols-2 gap-2">
+            <input id="e_nome" placeholder="Nome" class="p-2 border rounded">
+            <input id="e_cat" placeholder="Categoria" class="p-2 border rounded">
+            <input id="e_preco" type="number" placeholder="Preço" class="p-2 border rounded">
+            <input id="e_img" placeholder="URL Imagem" class="p-2 border rounded">
+            <textarea id="e_desc" placeholder="Descrição" class="p-2 border rounded col-span-2"></textarea>
+        </div>
+        <div class="mt-4">
+            <label>Limite de Adicionais:</label>
+            <input type="number" id="e_limite" class="p-2 border rounded w-20 ml-2">
+            <div id="e_adicionais"></div>
+            <button onclick="addCampo()" class="text-blue-600 text-sm mt-2">+ Adicionar opção</button>
+        </div>
+        <div class="mt-4 flex gap-2">
+            <button onclick="salvarProduto()" class="bg-green-600 text-white px-4 py-2 rounded">Salvar</button>
+            <button onclick="fecharEdit()" class="bg-gray-500 px-4 py-2 rounded">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let dados = { config:{}, produtos:[] };
+
+fetch('products.json')
+.then(res => res.json())
+.then(base => {
+    dados = base;
+    carregarDados();
+    renderProdutos();
+    renderHorarios();
+});
+
+document.querySelectorAll('.aba').forEach(b=>{
+    b.onclick = () => {
+        document.querySelectorAll('.aba').forEach(x=>x.classList.remove('active','bg-blue-600'));
+        b.classList.add('active','bg-blue-600');
+        document.querySelectorAll('[id^="aba-"]').forEach(c=>c.classList.add('hidden'));
+        document.getElementById('aba-'+b.datasetaba).classList.remove('hidden');
+    }
+});
+p.cat
