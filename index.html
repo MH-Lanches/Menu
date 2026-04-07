@@ -36,6 +36,255 @@
         <i class="fas fa-store-slash text-8xl text-gray-700 mb-6"></i>
         <h1 class="text-4xl font-bold text-white mb-2">Loja Fechada</h1>
         <p id="msgFechada" class="text-gray-400 text-lg mb-8">Volte mais tarde!</p>
+        <a href="login.html" class="bg-sec text-white px-8 py-3 rounded-full font-bold text-lg">Área Administrativa</a>
+    </div>
+</div>
+
+<!-- HEADER -->
+<header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-dark">
+            <span class="text-prim">MEU</span>DELIVERY
+        </h1>
+        <button onclick="abrirCarrinho()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
+            <i class="fas fa-shopping-bag text-xl text-dark"></i>
+            <span id="badgeCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-7 h-7 text-sm flex items-center justify-center font-bold">0</span>
+        </button>
+    </div>
+</header>
+
+<!-- CATEGORIAS -->
+<nav id="menuCategorias" class="max-w-7xl mx-auto px-4 py-4 overflow-x-auto whitespace-nowrap flex gap-3">
+    <!-- Carregado via JS -->
+</nav>
+
+<!-- PRODUTOS -->
+<main class="max-w-7xl mx-auto px-4 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="listaProdutos">
+</main>
+
+<!-- MODAL PRODUTO -->
+<div id="modalProduto" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden">
+        <div class="relative">
+            <img id="modalImg" class="w-full h-56 object-cover">
+            <span onclick="fecharModal()" class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm text-dark w-10 h-10 rounded-full flex items-center justify-center cursor-pointer text-xl font-bold">&times;</span>
+        </div>
+        <div class="p-6">
+            <h2 id="modalNome" class="text-2xl font-bold text-dark"></h2>
+            <p id="modalDesc" class="text-gray-500 mt-2"></p>
+            <div id="modalOpcoes" class="mt-6"></div>
+            <div class="mt-6 flex items-center justify-between">
+                <span class="text-2xl font-bold text-prim">R$ <span id="modalPreco">0,00</span></span>
+                <button onclick="adicionarCarrinho()" class="bg-sec text-white px-8 py-3 rounded-full font-bold shadow-lg">ADICIONAR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CARRINHO LATERAL -->
+<div id="carrinho" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+    <div class="h-full flex flex-col">
+        <div class="p-6 bg-dark text-white">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold"><i class="fas fa-shopping-bag mr-2"></i>Seu Pedido</h3>
+                <button onclick="fecharCarrinho()" class="text-2xl">&times;</button>
+            </div>
+        </div>
+        <div id="itensCarrinho" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+        <div class="p-6 border-t">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-lg font-semibold">Total:</span>
+                <span class="text-2xl font-bold text-prim">R$ <span id="totalCarrinho">0,00</span></span>
+            </div>
+            <button onclick="finalizarPedido()" class="w-full bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg">FINALIZAR NO WHATSAPP</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let config = {};
+let produtos = [];
+let carrinho = [];
+let produtoAtual;
+
+// --- INICIALIZAÇÃO ---
+function iniciar() {
+    // Tenta carregar do backup primeiro (onde o admin salva)
+    const local = localStorage.getItem('dados_backup');
+    if(local){
+        let dados = JSON.parse(local);
+        config = dados.config;
+        produtos = dados.produtos;
+        montarLoja();
+    } else {
+        // Se não tiver, carrega do arquivo original
+        fetch('products.json')
+        .then(res => res.json())
+        .then(dados => {
+            config = dados.config;
+            produtos = dados.produtos;
+            montarLoja();
+        });
+    }
+}
+
+function montarLoja(){
+    verificarStatusLoja();
+    renderizarCategorias();
+    renderizarProdutos();
+}
+
+// --- STATUS DA LOJA ---
+function verificarStatusLoja() {
+    const agora = new Date();
+    const horaAtual = agora.getHours().toString().padStart(2,'0') + ":" + agora.getMinutes().toString().padStart(2,'0');
+    const diaSemana = agora.getDay(); // 0 = Domingo, 6 = Sábado
+
+    const horarioHoje = config.horario.find(h => h.dia === diaSemana);
+
+    if(config.panico || !horarioHoje || !horarioHoje.aberto || horaAtual < horarioHoje.ini || horaAtual > horarioHoje.fim) {
+        document.getElementById('telaFechada').classList.remove('hidden');
+        let msg = "Loja fechada no momento.";
+        if(config.panico) msg = "Loja em manutenção.";
+        else if(horarioHoje) msg = `Abrimos hoje às ${horarioHoje.ini}`;
+        document.getElementById('msgFechada').innerText = msg;
+    }
+}
+
+// --- CATEGORIAS ---
+function renderizarCategorias() {
+    const categorias = [...new Set(produtos.map(p => p.cat))];
+    let html = `<button onclick="filtrar('')" class="bg-prim text-white px-6 py-3 rounded-full font-bold whitespace-nowrap">Todos</button>`;
+    categorias.forEach(cat => {
+        html += `<button onclick="filtrar('${cat}')" class="bg-white border border-gray-200 px-6 py-3 rounded-full font-bold whitespace-nowrap hover:bg-gray-100">${cat}</button>`;
+    });
+    document.getElementById('menuCategorias').innerHTML = html;
+}
+
+function filtrar(cat){
+    renderizarProdutos(cat);
+}
+
+// --- PRODUTOS ---
+function renderizarProdutos(filtro=null) {
+    const container = document.getElementById('listaProdutos');
+    container.innerHTML = '';
+    
+    produtos.filter(p => !p.pausado && (!filtro || p.cat === filtro)).forEach((prod, idx) => {
+        container.innerHTML += `
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover cursor-pointer" onclick="abrirModal(${idx})">
+            <img src="${prod.img}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="font-bold text-lg text-dark">${prod.nome}</h3>
+                <p class="text-gray-500 text-sm h-10 overflow-hidden">${prod.desc}</p>
+                <div class="mt-3 flex justify-between items-center">
+                    <span class="font-bold text-xl text-prim">R$ ${prod.preco.toFixed(2)}</span>
+                    <i class="fas fa-plus-circle text-prim text-xl"></i>
+                </div>
+            </div>
+        </div>`;
+    });
+}
+
+// --- MODAL ---
+function abrirModal(i) {
+    produtoAtual = produtos[i];
+    document.getElementById('modalNome').innerText = produtoAtual.nome;
+    document.getElementById('modalImg').src = produtoAtual.img;
+    document.getElementById('modalDesc').innerText = produtoAtual.desc;
+    document.getElementById('modalPreco').innerText = produtoAtual.preco.toFixed(2);
+    document.getElementById('modalOpcoes').innerHTML = '';
+    
+    if(produtoAtual.adicionais && produtoAtual.adicionais.length > 0) {
+        document.getElementById('modalOpcoes').innerHTML += `<p class="font-bold text-lg mb-2">Adicionais</p>`;
+        produtoAtual.adicionais.forEach(ad => {
+            document.getElementById('modalOpcoes').innerHTML += `
+            <label class="flex items-center justify-between p-3 border rounded-xl mb-2 cursor-pointer">
+                <span>${ad.nome}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-prim font-bold">+ R$ ${ad.preco.toFixed(2)}</span>
+                    <input type="checkbox" class="adc w-5 h-5" value="${ad.preco}">
+                </div>
+            </label>`;
+        });
+    }
+    document.getElementById('modalProduto').classList.remove('hidden');
+    document.getElementById('modalProduto').classList.add('flex');
+}
+
+function fecharModal(){
+    document.getElementById('modalProduto').classList.add('hidden');
+}
+
+// --- CARRINHO ---
+function adicionarCarrinho() {
+    let total = produtoAtual.preco;
+    let obs = [];
+    
+    document.querySelectorAll('.adc:checked').forEach(c => { 
+        total += parseFloat(c.value);
+        let nome = c.parentElement.parentElement.querySelector('span').innerText;
+        obs.push(nome);
+    });
+
+    carrinho.push({...produtoAtual, total: total, obs: obs});
+    atualizarCarrinho();
+    fecharModal();
+    abrirCarrinho();
+}
+
+function atualizarCarrinho() {
+    document.getElementById('badgeCarrinho').innerText = carrinho.length;
+    document.getElementById('itensCarrinho').innerHTML = '';
+    
+    carrinho.forEach((item, idx) => {
+        document.getElementById('itensCarrinho').innerHTML += `
+        <div class="flex gap-4 border-b pb-4">
+            <img src="${item.img}" class="w-16 h-16 rounded-lg object-cover">
+            <div class="flex-1">
+                <h4 class="font-bold">${item.nome}</h4>
+                <p class="text-green-600 font-bold">R$ ${item.total.toFixed(2)}</p>
+                ${item.obs.length > 0 ? `<small class="text-gray-500">+ ${item.obs.join(', ')}</small>` : ''}
+            </div>
+            <button onclick="removerDoCarrinho(${idx})" class="text-red-500"><i class="fas fa-trash"></i></button>
+        </div>`;
+    });
+
+    document.getElementById('totalCarrinho').innerText = carrinho.reduce((soma, i) => soma + i.total, 0).toFixed(2);
+}
+
+function removerDoCarrinho(i){
+    carrinho.splice(i,1);
+    atualizarCarrinho();
+}
+
+function abrirCarrinho(){ document.getElementById('carrinho').classList.remove('translate-x-full'); }
+function fecharCarrinho(){ document.getElementById('carrinho').classList.add('translate-x-full'); }
+
+// --- FINALIZAR ---
+function finalizarPedido(){
+    if(carrinho.length === 0) {
+        alert("Adicione itens ao pedido primeiro!");
+        return;
+    }
+
+    let texto = "Olá! Gostaria de fazer o pedido:\n\n";
+    carrinho.forEach(i => {
+        texto += `🍔 ${i.nome} - R$ ${i.total.toFixed(2)}\n`;
+        if(i.obs.length > 0) texto += `   ➡️ ${i.obs.join(', ')}\n`;
+    });
+    texto += `\n💵 Total: R$ ${carrinho.reduce((s,i)=>s+i.total,0).toFixed(2)}`;
+
+    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(texto)}`);
+}
+
+// Começar tudo
+iniciar();
+</script>
+</body>
+</html>
+        <h1 class="text-4xl font-bold text-white mb-2">Loja Fechada</h1>
+        <p id="msgFechada" class="text-gray-400 text-lg mb-8">Volte mais tarde!</p>
         <a href="login.html" class="bg-sec text-white px-8 py-3 rounded-full font-bold text-lg">Acessar Administrador</a>
     </div>
 </div>
