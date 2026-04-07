@@ -12,7 +12,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
 
-    <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
+    <div class="max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-8">
         <h1 class="text-4xl font-bold text-center text-red-600 mb-8">📊 Painel de Controle</h1>
         
         <!-- BOTÕES PRINCIPAIS -->
@@ -30,32 +30,51 @@
             </button>
         </div>
 
-        <!-- ÁREA DE PRODUTOS -->
-        <div id="secao-produtos" class="hidden border-t pt-8">
-            <h2 class="text-2xl font-bold mb-4">📦 Produtos</h2>
-            <button onclick="novoProduto()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">+ Adicionar Novo</button>
+        <!-- ============== SEÇÃO PRODUTOS ============== -->
+        <div id="secao-produtos" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">📦 Cadastro de Produtos</h2>
             
-            <div id="lista-produtos-admin" class="space-y-4">
-                <!-- Produtos vão aparecer aqui -->
+            <!-- FORMULÁRIO DE NOVO PRODUTO -->
+            <div class="bg-gray-50 p-6 rounded-xl mb-6 border">
+                <h3 class="font-bold text-lg mb-3">➕ Adicionar Novo Produto</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="prod-nome" placeholder="Nome do Produto" class="border p-3 rounded">
+                    <input type="number" id="prod-preco" placeholder="Preço (ex: 25.90)" class="border p-3 rounded">
+                    <input type="text" id="prod-cat" placeholder="Categoria (ex: Lanches)" class="border p-3 rounded">
+                    <input type="text" id="prod-img" placeholder="URL da Imagem" class="border p-3 rounded">
+                    <textarea id="prod-desc" placeholder="Descrição" class="border p-3 rounded col-span-2"></textarea>
+                </div>
+                <button onclick="salvarProduto()" class="mt-4 bg-blue-600 text-white px-6 py-3 rounded font-bold">
+                    <i class="fas fa-save"></i> SALVAR PRODUTO
+                </button>
+            </div>
+
+            <!-- LISTA DE PRODUTOS CADASTRADOS -->
+            <h3 class="font-bold text-lg mb-3">📋 Produtos Cadastrados</h3>
+            <div id="lista-produtos-admin" class="space-y-3">
+                <!-- Os produtos aparecem aqui -->
             </div>
         </div>
 
-        <!-- ÁREA DE CONFIGURAÇÕES -->
-        <div id="secao-config" class="hidden border-t pt-8">
-            <h2 class="text-2xl font-bold mb-4">⚙️ Configurações Gerais</h2>
+        <!-- ============== SEÇÃO CONFIGURAÇÕES ============== -->
+        <div id="secao-config" class="hidden">
+            <h2 class="text-2xl font-bold mb-4">⚙️ Configurações da Loja</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label>Nome da Loja</label>
-                    <input id="config-nome" class="w-full border p-2 rounded">
+            <div class="bg-green-50 p-6 rounded-xl border">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold mb-1">Nome da Loja</label>
+                        <input id="config-nome" class="w-full border p-3 rounded">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">WhatsApp (com DDD)</label>
+                        <input id="config-whatsapp" class="w-full border p-3 rounded" placeholder="5581999999999">
+                    </div>
                 </div>
-                <div>
-                    <label>WhatsApp (com DDD)</label>
-                    <input id="config-whatsapp" class="w-full border p-2 rounded" placeholder="5581999999999">
-                </div>
+                <button onclick="salvarConfig()" class="mt-4 bg-green-600 text-white px-6 py-3 rounded font-bold">
+                    <i class="fas fa-check"></i> SALVAR ALTERAÇÕES
+                </button>
             </div>
-
-            <button onclick="salvarConfig()" class="mt-4 bg-green-600 text-white px-6 py-2 rounded">Salvar Configurações</button>
         </div>
 
         <div class="text-center mt-10">
@@ -71,22 +90,34 @@ if(localStorage.getItem('logado') != 'sim'){
     window.location.href = 'login.html';
 }
 
-let dadosSite = {
-    config: { nome: "MH Lanches", whatsapp: "5581999999999" },
-    produtos: []
+// DADOS PADRÃO (SE NÃO TIVER NENHUM)
+const dadosPadrao = {
+    config: { 
+        nome: "MH Lanches", 
+        whatsapp: "5581999999999" 
+    },
+    produtos: [
+        {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"},
+        {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"}
+    ]
 };
+
+let dadosSite = {};
 
 // CARREGA DADOS
 function carregarDados(){
     const salvos = localStorage.getItem('dados_site');
     if(salvos){
         dadosSite = JSON.parse(salvos);
+    } else {
+        dadosSite = {...dadosPadrao};
+        salvar();
     }
     renderizarProdutosAdmin();
     carregarConfig();
 }
 
-// MOSTRA/ESCONDE SEÇÕES
+// MOSTRA SEÇÃO
 function abrirSecao(secao){
     document.querySelectorAll('[id^="secao-"]').forEach(el => el.classList.add('hidden'));
     document.getElementById('secao-' + secao).classList.remove('hidden');
@@ -98,41 +129,43 @@ function renderizarProdutosAdmin(){
     container.innerHTML = '';
     dadosSite.produtos.forEach((p, i) => {
         container.innerHTML += `
-        <div class="border p-4 rounded flex justify-between items-center">
-            <div>
+        <div class="border p-4 rounded flex justify-between items-center bg-white">
+            <img src="${p.img}" class="w-16 h-16 rounded object-cover">
+            <div class="flex-1 ml-4">
                 <h4 class="font-bold">${p.nome}</h4>
-                <p class="text-sm text-gray-500">R$ ${p.preco.toFixed(2)} | ${p.cat}</p>
+                <p class="text-sm text-gray-500">${p.cat} | R$ ${p.preco.toFixed(2)}</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="editarProduto(${i})" class="text-blue-500"><i class="fas fa-edit"></i></button>
-                <button onclick="excluirProduto(${i})" class="text-red-500"><i class="fas fa-trash"></i></button>
+                <button onclick="editarProduto(${i})" class="text-blue-500 text-xl"><i class="fas fa-edit"></i></button>
+                <button onclick="excluirProduto(${i})" class="text-red-500 text-xl"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
     });
 }
 
-function novoProduto(){
-    const nome = prompt("Nome do produto:");
-    const preco = parseFloat(prompt("Preço:"));
-    const cat = prompt("Categoria:");
-    const desc = prompt("Descrição:");
-    const img = prompt("URL da Imagem:");
+function salvarProduto(){
+    const nome = document.getElementById('prod-nome').value;
+    const preco = parseFloat(document.getElementById('prod-preco').value);
+    const cat = document.getElementById('prod-cat').value;
+    const img = document.getElementById('prod-img').value;
+    const desc = document.getElementById('prod-desc').value;
 
-    if(nome && preco){
-        dadosSite.produtos.push({id: Date.now(), nome, desc, preco, cat, img, adicionais:[]});
-        salvar();
-    }
-}
+    if(!nome || !preco) return alert("Preencha nome e preço!");
 
-function editarProduto(i){
-    const p = dadosSite.produtos[i];
-    p.nome = prompt("Nome:", p.nome) || p.nome;
-    p.preco = parseFloat(prompt("Preço:", p.preco)) || p.preco;
+    const novo = { id: Date.now(), nome, desc, preco, cat, img };
+    dadosSite.produtos.push(novo);
     salvar();
+    
+    // Limpa campos
+    document.getElementById('prod-nome').value = '';
+    document.getElementById('prod-preco').value = '';
+    document.getElementById('prod-cat').value = '';
+    document.getElementById('prod-img').value = '';
+    document.getElementById('prod-desc').value = '';
 }
 
 function excluirProduto(i){
-    if(confirm("Tem certeza?")){
+    if(confirm("Excluir este produto?")){
         dadosSite.produtos.splice(i,1);
         salvar();
     }
@@ -148,7 +181,7 @@ function salvarConfig(){
     dadosSite.config.nome = document.getElementById('config-nome').value;
     dadosSite.config.whatsapp = document.getElementById('config-whatsapp').value;
     salvar();
-    alert("Salvo! Atualize a tela do site para ver as mudanças.");
+    alert("✅ Configurações salvas! Atualize a página do site.");
 }
 
 // ======= GERAL =======
