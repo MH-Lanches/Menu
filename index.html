@@ -22,30 +22,32 @@
 </head>
 <body class="bg-gray-50">
 
-<!-- AVISO DE AGENDAMENTO -->
+<!-- AVISO DE FECHADO -->
 <div id="avisoAgendamento" class="bg-yellow-500 text-white text-center py-3 font-bold hidden">
-    <i class="fas fa-clock mr-2"></i> LOJA FECHADA - PEDIDO SERÁ AGENDADO PARA ABERTURA
+    <i class="fas fa-clock mr-2"></i> LOJA FECHADA - PEDIDO SERÁ AGENDADO
 </div>
 
 <!-- HEADER -->
 <header class="bg-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-3xl font-extrabold text-dark tracking-tighter">
-            <span class="text-prim">MEU</span>DELIVERY
+        <h1 id="nomeLoja" class="text-3xl font-extrabold text-dark tracking-tighter">
+            <span class="text-prim">CARREGANDO...</span>
         </h1>
         <button onclick="abrirCarrinho()" class="relative bg-gray-100 p-3 rounded-full hover:bg-gray-200 transition">
             <i class="fas fa-shopping-bag text-xl text-dark"></i>
-            <span id="badgeCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-7 h-7 text-sm flex items-center justify-center font-bold">0</span>
+            <span id="badgeCarrinho" class="absolute -top-2 -right-2 bg-prim text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">0</span>
         </button>
     </div>
 </header>
 
 <!-- CATEGORIAS -->
 <nav id="menuCategorias" class="max-w-7xl mx-auto px-4 py-6 overflow-x-auto whitespace-nowrap flex gap-3">
+    <!-- Carregado via JS -->
 </nav>
 
 <!-- PRODUTOS -->
 <main class="max-w-7xl mx-auto px-4 pb-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="listaProdutos">
+    <!-- Carregado via JS -->
 </main>
 
 <!-- MODAL PRODUTO -->
@@ -58,16 +60,18 @@
         <div class="p-6">
             <h2 id="modalNome" class="text-2xl font-bold text-dark"></h2>
             <p id="modalDesc" class="text-gray-500 mt-2"></p>
-            <div id="modalOpcoes" class="mt-6"></div>
-            <div class="mt-8 flex items-center justify-between">
-                <span class="text-3xl font-bold text-prim">R$ <span id="modalPreco">0,00</span></span>
-                <button onclick="adicionarCarrinho()" class="bg-sec text-white px-8 py-3 rounded-full font-bold shadow-lg">ADICIONAR</button>
-            </div>
+            <p class="text-prim text-3xl font-bold mt-4">R$ <span id="modalPreco"></span></p>
+            
+            <div id="modalAdicionais" class="mt-4 space-y-2"></div>
+
+            <button onclick="adicionarCarrinho()" class="w-full mt-6 bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90">
+                ADICIONAR AO PEDIDO
+            </button>
         </div>
     </div>
 </div>
 
-<!-- CARRINHO -->
+<!-- CARRINHO LATERAL -->
 <div id="carrinho" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
     <div class="h-full flex flex-col">
         <div class="p-6 bg-dark text-white">
@@ -78,79 +82,65 @@
         </div>
         <div id="itensCarrinho" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
         <div class="p-6 border-t">
-            <div class="flex justify-between items-center mb-6">
-                <span class="text-xl font-semibold">Total:</span>
-                <span class="text-3xl font-bold text-prim">R$ <span id="totalCarrinho">0,00</span></span>
+            <div class="flex justify-between text-xl font-bold mb-4">
+                <span>Total:</span>
+                <span class="text-prim">R$ <span id="totalCarrinho">0,00</span></span>
             </div>
-            <button onclick="finalizarPedido()" class="w-full bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg">FINALIZAR NO WHATSAPP</button>
+            <button onclick="finalizarPedido()" class="w-full bg-sec text-white py-4 rounded-full font-bold text-lg shadow-lg hover:opacity-90">
+                <i class="fab fa-whatsapp mr-2"></i> FINALIZAR PEDIDO
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-// DADOS INICIAIS
-const dadosIniciais = {
-    "config": {
-        "nome": "MEU DELIVERY",
-        "whatsapp": "5581999999999",
-        "horario": [
-            {"dia": 0, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 1, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 2, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 3, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 4, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 5, "aberto": true, "ini": "18:00", "fim": "23:59"},
-            {"dia": 6, "aberto": true, "ini": "18:00", "fim": "23:59"}
-        ]
+// DADOS PADRÃO
+const dadosPadrao = {
+    config: { 
+        nome: "MH Lanches", 
+        whatsapp: "5581999999999" 
     },
-    "produtos": [
-        {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", "adicionais": []},
-        {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500", "adicionais": []}
+    produtos: [
+        {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"},
+        {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"}
     ]
 };
 
-let config = {};
-let produtos = [];
+let dadosSite = {};
 let carrinho = [];
-let produtoAtual;
-let lojaFechada = false;
+let produtoAtual = null;
 
+// INICIALIZAÇÃO
 function iniciar() {
-    const local = localStorage.getItem('dados_site');
-    if(local){
-        let dados = JSON.parse(local);
-        config = dados.config;
-        produtos = dados.produtos;
-    } else {
-        config = dadosIniciais.config;
-        produtos = dadosIniciais.produtos;
-    }
-    montarLoja();
+    carregarDados();
+    montarSite();
 }
 
-function montarLoja(){
-    verificarStatusLoja();
+function carregarDados(){
+    const salvos = localStorage.getItem('dados_site');
+    if(salvos){
+        dadosSite = JSON.parse(salvos);
+    } else {
+        dadosSite = {...dadosPadrao};
+        salvarDados();
+    }
+}
+
+function salvarDados(){
+    localStorage.setItem('dados_site', JSON.stringify(dadosSite));
+}
+
+function montarSite(){
+    // 🏷️ Coloca o nome da loja vindo do painel
+    document.getElementById('nomeLoja').innerHTML = `<span class="text-prim">${dadosSite.config.nome.split(' ')[0]}</span> ${dadosSite.config.nome.split(' ').slice(1).join(' ')}`;
+
     renderizarCategorias();
     renderizarProdutos();
 }
 
-function verificarStatusLoja() {
-    const agora = new Date();
-    const horaAtual = agora.getHours().toString().padStart(2,'0') + ":" + agora.getMinutes().toString().padStart(2,'0');
-    const diaSemana = agora.getDay();
-    const horarioHoje = config.horario.find(h => h.dia === diaSemana);
-
-    if(!horarioHoje || !horarioHoje.aberto || horaAtual < horarioHoje.ini || horaAtual > horarioHoje.fim) {
-        lojaFechada = true;
-        document.getElementById('avisoAgendamento').classList.remove('hidden');
-    } else {
-        lojaFechada = false;
-        document.getElementById('avisoAgendamento').classList.add('hidden');
-    }
-}
-
+// ======= CATEGORIAS E PRODUTOS =======
 function renderizarCategorias() {
-    const cats = [...new Set(produtos.map(p => p.cat))];
+    const cats = [...new Set(dadosSite.produtos.map(p => p.cat))];
     let html = `<button onclick="filtrar('')" class="bg-prim text-white px-6 py-3 rounded-full font-bold whitespace-nowrap">Todos</button>`;
     cats.forEach(cat => {
         html += `<button onclick="filtrar('${cat}')" class="bg-white border border-gray-200 px-6 py-3 rounded-full font-bold whitespace-nowrap hover:bg-gray-100">${cat}</button>`;
@@ -158,20 +148,22 @@ function renderizarCategorias() {
     document.getElementById('menuCategorias').innerHTML = html;
 }
 
-function filtrar(cat){ renderizarProdutos(cat); }
+function filtrar(cat){
+    renderizarProdutos(cat);
+}
 
 function renderizarProdutos(filtro=null) {
     const container = document.getElementById('listaProdutos');
     container.innerHTML = '';
-    produtos.filter(p => !p.pausado && (!filtro || p.cat === filtro)).forEach((p, i) => {
+    dadosSite.produtos.filter(p => !filtro || p.cat === filtro).forEach((p, i) => {
         container.innerHTML += `
         <div class="bg-white rounded-3xl shadow overflow-hidden card cursor-pointer" onclick="abrirModal(${i})">
-            <img src="${p.img}" class="w-full h-56 object-cover">
+            <img src="${p.img}" class="w-full h-48 object-cover">
             <div class="p-5">
                 <h3 class="font-bold text-xl text-dark">${p.nome}</h3>
-                <p class="text-gray-500 text-sm mt-1 h-10 overflow-hidden">${p.desc}</p>
+                <p class="text-gray-500 text-sm mt-1 line-clamp-2">${p.desc}</p>
                 <div class="mt-4 flex justify-between items-center">
-                    <span class="font-bold text-2xl text-prim">R$ ${p.preco.toFixed(2)}</span>
+                    <span class="text-prim font-bold text-xl">R$ ${p.preco.toFixed(2)}</span>
                     <i class="fas fa-plus-circle text-prim text-xl"></i>
                 </div>
             </div>
@@ -179,84 +171,80 @@ function renderizarProdutos(filtro=null) {
     });
 }
 
-function abrirModal(i) {
-    produtoAtual = produtos[i];
+// ======= MODAL =======
+function abrirModal(i){
+    produtoAtual = dadosSite.produtos[i];
     document.getElementById('modalNome').innerText = produtoAtual.nome;
-    document.getElementById('modalImg').src = produtoAtual.img;
     document.getElementById('modalDesc').innerText = produtoAtual.desc;
     document.getElementById('modalPreco').innerText = produtoAtual.preco.toFixed(2);
-    document.getElementById('modalOpcoes').innerHTML = '';
+    document.getElementById('modalImg').src = produtoAtual.img;
     
-    if(produtoAtual.adicionais?.length > 0) {
-        document.getElementById('modalOpcoes').innerHTML += `<p class="font-bold text-lg mb-3">Adicionais</p>`;
-        produtoAtual.adicionais.forEach(ad => {
-            document.getElementById('modalOpcoes').innerHTML += `
-            <label class="flex items-center justify-between p-4 border rounded-2xl mb-2 cursor-pointer">
-                <span>${ad.nome}</span>
-                <div class="flex items-center gap-3">
-                    <span class="text-prim font-bold">+ R$ ${ad.preco.toFixed(2)}</span>
-                    <input type="checkbox" class="adc w-5 h-5" value="${ad.preco}">
-                </div>
-            </label>`;
-        });
-    }
     document.getElementById('modalProduto').classList.remove('hidden');
     document.getElementById('modalProduto').classList.add('flex');
 }
-function fecharModal(){ document.getElementById('modalProduto').classList.add('hidden'); }
 
-function adicionarCarrinho() {
-    let total = produtoAtual.preco;
-    let obs = [];
-    document.querySelectorAll('.adc:checked').forEach(c => { 
-        total += parseFloat(c.value);
-        obs.push(c.parentElement.parentElement.querySelector('span').innerText);
-    });
-    carrinho.push({...produtoAtual, total, obs});
+function fecharModal(){
+    document.getElementById('modalProduto').classList.add('hidden');
+    document.getElementById('modalProduto').classList.remove('flex');
+}
+
+function adicionarCarrinho(){
+    carrinho.push({...produtoAtual});
     atualizarCarrinho();
     fecharModal();
     abrirCarrinho();
 }
 
-function atualizarCarrinho() {
-    document.getElementById('badgeCarrinho').innerText = carrinho.length;
-    document.getElementById('itensCarrinho').innerHTML = '';
+// ======= CARRINHO =======
+function abrirCarrinho(){
+    document.getElementById('carrinho').classList.remove('translate-x-full');
+}
+
+function fecharCarrinho(){
+    document.getElementById('carrinho').classList.add('translate-x-full');
+}
+
+function atualizarCarrinho(){
+    const container = document.getElementById('itensCarrinho');
+    container.innerHTML = '';
+    let total = 0;
+
     carrinho.forEach((item, idx) => {
-        document.getElementById('itensCarrinho').innerHTML += `
-        <div class="flex gap-4 border-b pb-4">
-            <img src="${item.img}" class="w-16 h-16 rounded-xl object-cover">
+        total += item.preco;
+        container.innerHTML += `
+        <div class="flex gap-4 border-b pb-3">
+            <img src="${item.img}" class="w-16 h-16 rounded object-cover">
             <div class="flex-1">
                 <h4 class="font-bold">${item.nome}</h4>
-                <p class="text-green-600 font-bold">R$ ${item.total.toFixed(2)}</p>
-                ${item.obs.length ? `<small class="text-gray-500">+ ${item.obs.join(', ')}</small>` : ''}
+                <p class="text-prim font-bold">R$ ${item.preco.toFixed(2)}</p>
             </div>
             <button onclick="removerDoCarrinho(${idx})" class="text-red-500"><i class="fas fa-trash"></i></button>
         </div>`;
     });
-    document.getElementById('totalCarrinho').innerText = carrinho.reduce((s, i) => s + i.total, 0).toFixed(2);
+
+    document.getElementById('badgeCarrinho').innerText = carrinho.length;
+    document.getElementById('totalCarrinho').innerText = total.toFixed(2).replace('.', ',');
 }
 
-function removerDoCarrinho(i){ carrinho.splice(i,1); atualizarCarrinho(); }
-function abrirCarrinho(){ document.getElementById('carrinho').classList.remove('translate-x-full'); }
-function fecharCarrinho(){ document.getElementById('carrinho').classList.add('translate-x-full'); }
+function removerDoCarrinho(idx){
+    carrinho.splice(idx, 1);
+    atualizarCarrinho();
+}
 
+// ======= FINALIZAR =======
 function finalizarPedido(){
-    if(!carrinho.length) return alert("Carrinho vazio!");
+    if(carrinho.length === 0) return alert("Adicione algo primeiro!");
 
     let texto = "Olá! Gostaria de fazer o pedido:\n\n";
-    
-    if(lojaFechada){
-        texto += "⚠️ *PEDIDO AGENDADO - SERÁ PREPARADO NA ABERTURA*\n\n";
-    }
-
-    carrinho.forEach(i => {
-        texto += `• ${i.nome} - R$ ${i.total.toFixed(2)}\n`;
-        if(i.obs.length) texto += `   ➡️ ${i.obs.join(', ')}\n`;
+    let total = 0;
+    carrinho.forEach(item => {
+        texto += `• ${item.nome} - R$ ${item.preco.toFixed(2)}\n`;
+        total += item.preco;
     });
-    
-    texto += `\n💵 Total: R$ ${carrinho.reduce((s,i)=>s+i.total,0).toFixed(2)}`;
-    
-    window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(texto)}`);
+    texto += `\nTotal: R$ ${total.toFixed(2)}`;
+
+    const link = `https://wa.me/${dadosSite.config.whatsapp}?text=${encodeURIComponent(texto)}`;
+    window.open(link);
 }
 
 iniciar();
