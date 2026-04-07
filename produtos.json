@@ -1,0 +1,137 @@
+[
+    {
+        "id": 1,
+        "nome": "Pizza de Calabresa",
+        "preco": 49.90,
+        "categoria": "Pizzas",
+        "imagem": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop",
+        "descricao": "Deliciosa pizza com calabresa, mussarela, cebola e orégano.",
+        "destaque": true
+    },
+    {
+        "id": 2,
+        "nome": "Pizza Marguerita",
+        "preco": 45.90,
+        "categoria": "Pizzas",
+        "imagem": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop",
+        "descricao": "Clássica pizza com mussarela de búfala, tomate e manjericão fresco.",
+        "destaque": false
+    },
+    {
+        "id": 3,
+        "nome": "Pizza Portuguesa",
+        "preco": 52.90,
+        "categoria": "Pizzas",
+        "imagem": "https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?w=400&h=300&fit=crop",
+        "descricao": "Pizza recheada com presunto, ovo, cebola, pimentão e azeitonas.",
+        "destaque": true
+    },
+    {
+        "id": 4,
+        "nome": "Hambúrguer Clássico",
+        "preco": 29.90,
+        "categoria": "Hambúrgueres",
+        "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop",
+        "descricao": "Hambúrguer suculento com queijo, alface, tomate e molho especial.",
+        "destaque": true
+    },
+    {
+        "id": 5,
+        "nome": "Hambúrguer Bacon",
+        "preco": 34.90,
+        "categoria": "Hambúrgueres",
+        "imagem": "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&h=300&fit=crop",
+        "descricao": "Hambúrguer com bacon crocante, queijo cheddar e cebola caramelizada.",
+        "destaque": false
+    },
+    {
+        "id": 6,
+        "nome": "Double Cheese",
+        "preco": 32.90,
+        "categoria": "Hambúrgueres",
+        "imagem": "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&h=300&fit=crop",
+        "descricao": "Duplo hambúrguer com queijo mussarela e prato derretido.",
+        "destaque": false
+    },
+    {
+        "id": 7,
+        "nome": "Refrigerante Cola 2L",
+        "preco": 12.00,
+        "categoria": "Bebidas",
+        "imagem": "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&h=300&fit=crop",
+        "descricao": "Refrigerante cola gelado de 2 litros.",
+        "destaque": false
+    },
+    {
+        "id": 8,
+        "nome": "Suco de Laranja Natural",
+        "preco": 15.00,
+        "categoria": "Bebidas",
+        "imagem": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=300&fit=crop",
+        "descricao": "Suco de laranja fresco feito na hora.",
+        "destaque": false
+    },
+    {
+        "id": 9,
+        "nome": "Cerveja Long Neck",
+        "preco": 18.00,
+        "categoria": "Bebidas",
+        "imagem": "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop",
+        "descricao": "Cerveja pilsen gelada long neck.",
+        "destaque": false
+    },
+    {
+        "id": 10,
+        "nome": "Batata Frita Grande",
+        "preco": 18.90,
+        "categoria": "Acompanhamentos",
+        "imagem": "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop",
+        "descricao": "Porção de batatas fritas crocantes com sal.",
+        "destaque": false
+    },
+    {
+        "id": 11,
+        "nome": "Onion Rings",
+        "preco": 22.90,
+        "categoria": "Acompanhamentos",
+        "imagem": "https://images.unsplash.com/photo-1639024471283-03518883512d?w=400&h=300&fit=crop",
+        "descricao": "Anéis de cebola empanados e fritos.",
+        "destaque": false
+    },
+    {
+        "id": 12,
+        "nome": "Nuggets de Frango",
+        "preco": 24.90,
+        "categoria": "Acompanhamentos",
+        "imagem": "https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop",
+        "descricao": "20 nuggets de frango empanados com molho barbecue.",
+        "destaque": false
+    },
+    {
+        "id": 13,
+        "nome": "Sundae de Chocolate",
+        "preco": 16.90,
+        "categoria": "Sobremesas",
+        "imagem": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop",
+        "descricao": "Sorvete de baunilha com calda de chocolate e chantilly.",
+        "destaque": false
+    },
+    {
+        "id": 14,
+        "nome": "Cheesecake de Frutas Vermelhas",
+        "preco": 19.90,
+        "categoria": "Sobremesas",
+        "imagem": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400&h=300&fit=crop",
+        "descricao": "Delicioso cheesecake com cobertura de frutas vermelhas.",
+        "destaque": true
+    },
+    {
+        "id": 15,
+        "nome": "Brownie com Sorvete",
+        "preco": 21.90,
+        "categoria": "Sobremesas",
+        "imagem": "https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=400&h=300&fit=crop",
+        "descricao": "Brownie quente de chocolate com sorvete de baunilha.",
+        "destaque": false
+    }
+]
