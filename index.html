@@ -22,7 +22,7 @@
 </head>
 <body class="bg-gray-50">
 
-<!-- AVISO DE AGENDAMENTO (aparece quando fechado) -->
+<!-- AVISO DE AGENDAMENTO -->
 <div id="avisoAgendamento" class="bg-yellow-500 text-white text-center py-3 font-bold hidden">
     <i class="fas fa-clock mr-2"></i> LOJA FECHADA - PEDIDO SERÁ AGENDADO PARA ABERTURA
 </div>
@@ -42,7 +42,6 @@
 
 <!-- CATEGORIAS -->
 <nav id="menuCategorias" class="max-w-7xl mx-auto px-4 py-6 overflow-x-auto whitespace-nowrap flex gap-3">
-    <!-- Carregado via JS -->
 </nav>
 
 <!-- PRODUTOS -->
@@ -89,6 +88,27 @@
 </div>
 
 <script>
+// DADOS INICIAIS
+const dadosIniciais = {
+    "config": {
+        "nome": "MEU DELIVERY",
+        "whatsapp": "5581999999999",
+        "horario": [
+            {"dia": 0, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 1, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 2, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 3, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 4, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 5, "aberto": true, "ini": "18:00", "fim": "23:59"},
+            {"dia": 6, "aberto": true, "ini": "18:00", "fim": "23:59"}
+        ]
+    },
+    "produtos": [
+        {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", "adicionais": []},
+        {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500", "adicionais": []}
+    ]
+};
+
 let config = {};
 let produtos = [];
 let carrinho = [];
@@ -96,19 +116,16 @@ let produtoAtual;
 let lojaFechada = false;
 
 function iniciar() {
-    const local = localStorage.getItem('dados_backup');
+    const local = localStorage.getItem('dados_site');
     if(local){
         let dados = JSON.parse(local);
         config = dados.config;
         produtos = dados.produtos;
-        montarLoja();
     } else {
-        fetch('products.json').then(res => res.json()).then(dados => {
-            config = dados.config;
-            produtos = dados.produtos;
-            montarLoja();
-        });
+        config = dadosIniciais.config;
+        produtos = dadosIniciais.produtos;
     }
+    montarLoja();
 }
 
 function montarLoja(){
@@ -123,7 +140,7 @@ function verificarStatusLoja() {
     const diaSemana = agora.getDay();
     const horarioHoje = config.horario.find(h => h.dia === diaSemana);
 
-    if(config.panico || !horarioHoje || !horarioHoje.aberto || horaAtual < horarioHoje.ini || horaAtual > horarioHoje.fim) {
+    if(!horarioHoje || !horarioHoje.aberto || horaAtual < horarioHoje.ini || horaAtual > horarioHoje.fim) {
         lojaFechada = true;
         document.getElementById('avisoAgendamento').classList.remove('hidden');
     } else {
