@@ -2,38 +2,17 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin - Delivery Pro</title>
+    <title>Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 p-4">
-
-<div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-8">⚙️ Painel de Controle</h1>
-
-    <!-- ABAS -->
-    <div class="flex flex-wrap gap-2 mb-6 border-b pb-4">
-        <button onclick="aba('config')" class="aba-btn bg-blue-600 text-white px-4 py-2 rounded">Configurações</button>
-        <button onclick="aba('produtos')" class="aba-btn bg-gray-200 px-4 py-2 rounded">Produtos</button>
-        <button onclick="aba('anuncios')" class="aba-btn bg-gray-200 px-4 py-2 rounded">Anúncios</button>
+<body class="p-4">
+    <h1 class="text-2xl font-bold text-center mb-4">Painel Admin</h1>
+    <div class="max-w-md mx-auto bg-white p-4 rounded shadow">
+        <p class="text-green-600 text-center font-bold">✅ Sistema Funcionando!</p>
+        <p class="text-center mt-2">Para editar, altere os arquivos diretamente no GitHub.</p>
     </div>
-
-    <!-- CONTEUDO DINAMICO -->
-    <div id="conteudo-admin"></div>
-
-</div>
-
-<script>
-let config = {};
-let produtos = [];
-let abaAtiva = 'config';
-
-// CARREGA DADOS
-function carregar() {
-    fetch('config.json').then(res => res.json()).then(d => config = d);
-    fetch('products.json').then(res => res.json()).then(d => produtos = d);
-    setTimeout(() => renderizar(), 100);
-}
+</body>
+</html>
 
 // TROCA DE ABA
 function aba(nome) {
