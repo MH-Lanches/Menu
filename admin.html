@@ -45,10 +45,29 @@
                 <h3 class="font-bold text-lg mb-3">➕ Adicionar Novo Produto</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" id="prod-nome" placeholder="Nome do Produto" class="border p-3 rounded">
-                    <input type="number" step="0.01" id="prod-preco" placeholder="Preço" class="border p-3 rounded">
+                    <input type="number" step="0.01" id="prod-preco" placeholder="Preço Base" class="border p-3 rounded">
                     <input type="text" id="prod-cat" placeholder="Categoria" class="border p-3 rounded">
                     <input type="text" id="prod-img" placeholder="URL da Imagem" class="border p-3 rounded">
                     <textarea id="prod-desc" placeholder="Descrição" class="border p-3 rounded col-span-2"></textarea>
+
+                    <!-- NOVO: TIPO PRODUTO -->
+                    <div class="col-span-2 flex gap-4">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="prod-ispizza"> É Pizza (Meia a Meia)
+                        </label>
+                    </div>
+
+                    <!-- ADICIONAIS -->
+                    <div class="col-span-2 border-t pt-4 mt-2">
+                        <h4 class="font-bold mb-2">🥗 Configurar Adicionais</h4>
+                        <div id="lista-adicionais-admin" class="space-y-2 mb-3">
+                            <!-- Itens adicionados via JS -->
+                        </div>
+                        <button onclick="addCampoAdicional()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-plus"></i> Adicionar Opção
+                        </button>
+                        <input type="number" id="prod-limite" placeholder="Limite de escolhas (ex: 5)" class="border p-2 rounded ml-2 w-32">
+                    </div>
                 </div>
                 <button onclick="salvarProduto()" class="mt-4 bg-blue-600 text-white px-6 py-3 rounded font-bold">
                     <i class="fas fa-save"></i> SALVAR PRODUTO
@@ -68,7 +87,7 @@
             <div id="lista-categorias" class="space-y-3">
                 <!-- Ordenação aqui -->
             </div>
-            <p class="text-sm text-gray-500 mt-4">A ordem de cima para baixo será a mesma que aparecerá no site.</p>
+            <p class="text-sm text-green-600 mt-4">✅ Ordem salva automaticamente ao clicar nas setas.</p>
         </div>
 
         <!-- ============== SEÇÃO CONFIG ============== -->
@@ -150,19 +169,43 @@ const dadosPadrao = {
         whatsapp: "5581999999999",
         frete: 0.00,
         minimo: 0.00,
-        diasFunc: [0,1,2,3,4], // seg a sex
+        diasFunc: [0,1,2,3,4],
         horaIni: "18:00",
         horaFim: "23:00",
         lojaFechada: false
     },
-    categorias: ["Lanches", "Bebidas", "Porções"],
+    categorias: ["Lanches", "Pizzas", "Bebidas", "Porções"],
     produtos: [
-        {"id": 1, "nome": "Hambúrguer Artesanal", "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", "preco": 25.90, "cat": "Lanches", "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"},
-        {"id": 2, "nome": "Coca-Cola 2L", "desc": "Refrigerante de cola original", "preco": 10.00, "cat": "Bebidas", "img": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"}
+        {
+            "id": 1, 
+            "nome": "Hambúrguer Artesanal", 
+            "desc": "Pão brioche, carne 150g, queijo, bacon e molho especial", 
+            "preco": 25.90, 
+            "cat": "Lanches", 
+            "img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500",
+            "isPizza": false,
+            "adicionais": [
+                {"nome": "Bacon Extra", "preco": 3.00},
+                {"nome": "Ovo", "preco": 1.50}
+            ],
+            "limiteAdicionais": 2
+        },
+        {
+            "id": 2, 
+            "nome": "Pizza Calabresa / Mussarela", 
+            "desc": "Pizza grande meia a meia", 
+            "preco": 35.00, 
+            "cat": "Pizzas", 
+            "img": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500",
+            "isPizza": true,
+            "adicionais": [],
+            "limiteAdicionais": 0
+        }
     ]
 };
 
 let dadosSite = {};
+let contadorAdicionais = 0;
 
 // CARREGA
 function carregarDados(){
@@ -184,6 +227,31 @@ function abrirSecao(secao){
     document.getElementById('secao-' + secao).classList.remove('hidden');
 }
 
+// ======= ADICIONAIS NO FORM =======
+function addCampoAdicional(){
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <input type="text" id="add-nome-${contadorAdicionais}" placeholder="Nome do Adicional" class="border p-2 rounded flex-1">
+        <input type="number" step="0.01" id="add-preco-${contadorAdicionais}" placeholder="Preço +R$" class="border p-2 rounded w-32">
+        <button onclick="this.parentElement.remove()" class="text-red-500"><i class="fas fa-times"></i></button>
+    `;
+    document.getElementById('lista-adicionais-admin').appendChild(div);
+    contadorAdicionais++;
+}
+
+function pegarAdicionaisDoForm(){
+    let lista = [];
+    for(let i=0; i<contadorAdicionais; i++){
+        const nome = document.getElementById(`add-nome-${i}`)?.value;
+        const preco = parseFloat(document.getElementById(`add-preco-${i}`)?.value);
+        if(nome && preco){
+            lista.push({nome, preco});
+        }
+    }
+    return lista;
+}
+
 // ======= PRODUTOS =======
 function renderizarProdutosAdmin(){
     const container = document.getElementById('lista-produtos-admin');
@@ -193,7 +261,7 @@ function renderizarProdutosAdmin(){
         <div class="border p-4 rounded flex justify-between items-center bg-white">
             <img src="${p.img}" class="w-16 h-16 rounded object-cover">
             <div class="flex-1 ml-4">
-                <h4 class="font-bold">${p.nome}</h4>
+                <h4 class="font-bold">${p.nome} ${p.isPizza ? '🍕' : ''}</h4>
                 <p class="text-sm text-gray-500">${p.cat} | R$ ${p.preco.toFixed(2)}</p>
             </div>
             <div class="flex gap-2">
@@ -220,20 +288,39 @@ function salvarProduto(){
     const cat = document.getElementById('prod-cat').value;
     const img = document.getElementById('prod-img').value;
     const desc = document.getElementById('prod-desc').value;
+    const isPizza = document.getElementById('prod-ispizza').checked;
+    const limite = parseInt(document.getElementById('prod-limite').value) || 0;
 
-    if(!nome || !preco) return alert("Preencha nome e preço!");
+    if(!nome || !preco) { alert("Preencha nome e preço!"); return; }
 
-    dadosSite.produtos.push({ id: Date.now(), nome, desc, preco, cat, img });
+    const novoProduto = {
+        id: Date.now(),
+        nome, preco, cat, img, desc,
+        isPizza: isPizza,
+        adicionais: pegarAdicionaisDoForm(),
+        limiteAdicionais: limite
+    };
+
+    dadosSite.produtos.push(novoProduto);
     salvar();
     
     // Limpa
-    document.getElementById('prod-nome').value='';document.getElementById('prod-preco').value='';
-    document.getElementById('prod-cat').value='';document.getElementById('prod-img').value='';
+    document.querySelectorAll('#lista-adicionais-admin div').forEach(d => d.remove());
+    contadorAdicionais = 0;
+    document.getElementById('prod-nome').value='';
+    document.getElementById('prod-preco').value='';
+    document.getElementById('prod-cat').value='';
+    document.getElementById('prod-img').value='';
     document.getElementById('prod-desc').value='';
+    document.getElementById('prod-ispizza').checked=false;
+    document.getElementById('prod-limite').value='';
 }
 
 function excluirProduto(i){
-    if(confirm("Excluir?")){ dadosSite.produtos.splice(i,1); salvar(); }
+    if(confirm("Tem certeza?")){
+        dadosSite.produtos.splice(i,1);
+        salvar();
+    }
 }
 
 // ======= CATEGORIAS =======
@@ -257,7 +344,7 @@ function moverCat(index, dir){
     const alvo = index + dir;
     if(alvo >=0 && alvo < lista.length){
         [lista[index], lista[alvo]] = [lista[alvo], lista[index]];
-        salvar();
+        salvar(); // ✅ Agora salva na hora!
     }
 }
 
@@ -271,10 +358,10 @@ function carregarConfig(){
     document.getElementById('hora-fim').value = dadosSite.config.horaFim;
     document.getElementById('config-fechado').checked = dadosSite.config.lojaFechada;
 
-    // Marca dias
     const dias = ['seg','ter','qua','qui','sex','sab','dom'];
     dias.forEach((d, idx) => {
-        if(document.getElementById(`dia-${d}`)) document.getElementById(`dia-${d}`).checked = dadosSite.config.diasFunc.includes(idx);
+        const el = document.getElementById(`dia-${d}`);
+        if(el) el.checked = dadosSite.config.diasFunc.includes(idx);
     });
 }
 
@@ -283,12 +370,10 @@ function salvarConfig(){
     dadosSite.config.whatsapp = document.getElementById('config-whatsapp').value;
     dadosSite.config.frete = parseFloat(document.getElementById('config-frete').value) || 0;
     dadosSite.config.minimo = parseFloat(document.getElementById('config-minimo').value) || 0;
-   
     dadosSite.config.horaIni = document.getElementById('hora-ini').value;
     dadosSite.config.horaFim = document.getElementById('hora-fim').value;
     dadosSite.config.lojaFechada = document.getElementById('config-fechado').checked;
 
-    // Salva dias
     dadosSite.config.diasFunc = [];
     const map = [0,1,2,3,4,5,6];
     const dias = ['seg','ter','qua','qui','sex','sab','dom'];
@@ -297,13 +382,14 @@ function salvarConfig(){
     });
 
     salvar();
-    alert("✅ Tudo salvo com sucesso!");
+    alert("✅ Configurações salvas!");
 }
 
 // ======= GERAL =======
 function salvar(){
     localStorage.setItem('dados_site', JSON.stringify(dadosSite));
-    carregarDados();
+    renderizarProdutosAdmin();
+    renderizarCategoriasAdmin();
 }
 
 function sair(){
