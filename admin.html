@@ -216,7 +216,7 @@
                 <input id="cfg-endereco" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="https://maps.google.com/?q=Seu+Endereco">
               </label>
               <label class="text-xs text-zinc-400 sm:col-span-2">Jingle da empresa (URL MP3)
-                <input id="cfg-jingle" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="https://.../jingle.mp3">
+                <input id="cfg-jingle" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="music/mh.mp3">
               </label>
               <section class="sm:col-span-2 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
                 <h3 class="text-sm font-bold">Atalho de app na tela inicial</h3>
@@ -566,7 +566,7 @@
       instagramUrl: 'https://instagram.com/',
       telefone: '+5511999999999',
       enderecoUrl: 'https://maps.google.com/?q=MH+Lanches',
-      jingleUrl: '',
+      jingleUrl: 'music/mh.mp3',
       sobreImagem1: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80',
       sobreImagem2: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80',
       sobreTexto: 'A MH Lanches nasceu como um pequeno atendimento de bairro e cresceu com foco em sabor, rapidez e carinho no preparo. Hoje seguimos o mesmo trajeto: ingredientes selecionados, padrao de qualidade e entrega caprichada para cada cliente.',
@@ -628,6 +628,28 @@
     function setStatus(texto, erro) {
       status.textContent = texto;
       status.className = `mt-4 text-sm ${erro ? 'text-rose-400' : 'text-emerald-400'}`;
+    }
+
+    function normalizarUrlJingle(valor) {
+      const bruto = String(valor || '').trim();
+      if (!bruto) return '';
+      let url = bruto;
+      const matchIframe = bruto.match(/src\s*=\s*["']([^"']+)["']/i);
+      if (matchIframe && matchIframe[1]) url = matchIframe[1].trim();
+      try {
+        const parsed = new URL(url, window.location.href);
+        const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+        if (host === 'drive.google.com') {
+          let fileId = '';
+          const matchPath = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+          if (matchPath && matchPath[1]) fileId = matchPath[1];
+          if (!fileId) fileId = parsed.searchParams.get('id') || '';
+          if (fileId) return `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+        return parsed.toString();
+      } catch (_) {
+        return '';
+      }
     }
 
     function clonarSeguro(valor) {
@@ -2088,8 +2110,14 @@
     document.getElementById('form-config').addEventListener('submit', (evento) => {
       evento.preventDefault();
       const diasFuncionamento = diasFuncionamentoSelecionados();
+      const jingleDigitado = document.getElementById('cfg-jingle').value.trim();
+      const jingleNormalizado = normalizarUrlJingle(jingleDigitado);
       if (!diasFuncionamento.length) {
         setStatus('Selecione ao menos um dia de funcionamento.', true);
+        return;
+      }
+      if (jingleDigitado && !jingleNormalizado) {
+        setStatus('URL do jingle invalida. Cole um link direto ou o iframe do Google Drive.', true);
         return;
       }
       estado.dados.config = {
@@ -2101,7 +2129,7 @@
         instagramUrl: document.getElementById('cfg-instagram').value.trim() || CONFIG_PADRAO.instagramUrl,
         telefone: document.getElementById('cfg-telefone').value.trim() || CONFIG_PADRAO.telefone,
         enderecoUrl: document.getElementById('cfg-endereco').value.trim() || CONFIG_PADRAO.enderecoUrl,
-        jingleUrl: document.getElementById('cfg-jingle').value.trim(),
+        jingleUrl: jingleNormalizado,
         appInstalarAtivo: document.getElementById('cfg-app-instalar-ativo').checked,
         appNome: document.getElementById('cfg-app-nome').value.trim() || 'MH LANCHES',
         appIconeUrl: document.getElementById('cfg-app-icone').value.trim() || ICONE_APP_PADRAO,
@@ -2134,6 +2162,7 @@
         }
       };
       credenciaisAcesso = normalizarCredenciais(estado.dados.config);
+      document.getElementById('cfg-jingle').value = jingleNormalizado;
       salvarRascunho();
       atualizarStatusOperacaoAdmin();
       setStatus('Configuracao salva no rascunho local.', false);

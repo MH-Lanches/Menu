@@ -382,7 +382,7 @@
       instagramUrl: 'https://instagram.com/',
       enderecoUrl: 'https://maps.google.com/?q=MH+Lanches',
       telefone: '+5511999999999',
-      jingleUrl: '',
+      jingleUrl: 'music/mh.mp3',
       sobreImagem1: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80',
       sobreImagem2: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80',
       sobreTexto: 'A MH Lanches nasceu como um pequeno atendimento de bairro e cresceu com foco em sabor, rapidez e carinho no preparo. Hoje seguimos o mesmo trajeto: ingredientes selecionados, padrao de qualidade e entrega caprichada para cada cliente.',
@@ -464,6 +464,28 @@
       if (texto.endsWith('.webp')) return 'image/webp';
       if (texto.endsWith('.svg')) return 'image/svg+xml';
       return 'image/png';
+    }
+
+    function normalizarUrlJingle(valor) {
+      const bruto = String(valor || '').trim();
+      if (!bruto) return '';
+      let url = bruto;
+      const matchIframe = bruto.match(/src\s*=\s*["']([^"']+)["']/i);
+      if (matchIframe && matchIframe[1]) url = matchIframe[1].trim();
+      try {
+        const parsed = new URL(url, window.location.href);
+        const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+        if (host === 'drive.google.com') {
+          let fileId = '';
+          const matchPath = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+          if (matchPath && matchPath[1]) fileId = matchPath[1];
+          if (!fileId) fileId = parsed.searchParams.get('id') || '';
+          if (fileId) return `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+        return parsed.toString();
+      } catch (_) {
+        return '';
+      }
     }
 
     function emModoAppInstalado() {
@@ -736,12 +758,13 @@
       document.getElementById('footer-instagram').href = cfg.instagramUrl || 'https://instagram.com/';
       document.getElementById('footer-endereco').href = cfg.enderecoUrl || 'https://maps.google.com/?q=MH+Lanches';
       document.getElementById('footer-telefone').href = `tel:${telLimpo || '+5511999999999'}`;
-      if (cfg.jingleUrl) {
+      const jingleUrl = normalizarUrlJingle(cfg.jingleUrl);
+      if (jingleUrl) {
         const urlAtual = elJingle.getAttribute('src') || '';
-        if (urlAtual !== cfg.jingleUrl) {
+        if (urlAtual !== jingleUrl) {
           elJingle.pause();
           elJingle.currentTime = 0;
-          elJingle.setAttribute('src', cfg.jingleUrl);
+          elJingle.setAttribute('src', jingleUrl);
         }
         elBtnJingle.classList.remove('opacity-40', 'cursor-not-allowed');
       } else {
