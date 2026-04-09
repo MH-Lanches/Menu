@@ -7,11 +7,48 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8D%94%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    .admin-shell {
+      background: radial-gradient(1200px 500px at 20% -20%, rgba(251, 146, 60, 0.12), transparent 60%), #09090b;
+    }
+
+    .tab-btn {
+      transition: all 0.18s ease;
+    }
+
+    .tab-btn:hover {
+      border-color: #71717a;
+      transform: translateY(-1px);
+    }
+
+    .tab-btn[data-active='true'] {
+      border-color: rgba(251, 146, 60, 0.9);
+      background: linear-gradient(180deg, rgba(39, 39, 42, 0.9), rgba(24, 24, 27, 0.95));
+      color: #fdba74;
+      box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.25);
+    }
+
+    .panel {
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .admin-mobile-tabs {
+      position: sticky;
+      top: 0.5rem;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+    }
+
     .pdv-only body { background: #050507; }
     .pdv-only main { max-width: 100%; padding: 1rem; }
     .pdv-only #admin-grid { display: block; }
     .pdv-only #admin-header,
     .pdv-only #admin-sidebar,
+    .pdv-only #admin-context,
+    .pdv-only #mobile-tabbar,
     .pdv-only [data-panel="produtos"],
     .pdv-only [data-panel="categorias"],
     .pdv-only [data-panel="site"],
@@ -23,9 +60,57 @@
       background: linear-gradient(180deg, #121217 0%, #0a0a0d 100%);
       min-height: calc(100vh - 2rem);
     }
+
+    /* Melhor enquadramento do PDV para uso continuo em desktop */
+    .pdv-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .pdv-col {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .pdv-scroll {
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    #caixa-catalogo {
+      max-height: 34vh;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    #caixa-comanda {
+      max-height: 30vh;
+    }
+
+    @media (min-width: 1280px) {
+      .pdv-shell {
+        grid-template-columns: minmax(340px, 1.02fr) minmax(560px, 1.48fr);
+        min-height: calc(100vh - 245px);
+        max-height: calc(100vh - 245px);
+      }
+    }
+
+    .pdv-only .pdv-shell {
+      min-height: calc(100vh - 158px);
+      max-height: calc(100vh - 158px);
+    }
+
+    .pdv-only #caixa-catalogo {
+      max-height: 38vh;
+    }
+
+    .pdv-only #caixa-comanda {
+      max-height: 34vh;
+    }
   </style>
 </head>
-<body class="min-h-screen bg-zinc-950 text-zinc-100">
+<body class="admin-shell min-h-screen bg-zinc-950 text-zinc-100">
   <main class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
     <section id="auth-box" class="mx-auto max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8">
       <p class="text-xs font-semibold uppercase tracking-[0.24em] text-orange-300">MH Lanches</p>
@@ -43,8 +128,8 @@
       <header id="admin-header" class="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.24em] text-orange-300">Painel profissional</p>
-          <h1 class="mt-2 text-2xl font-black sm:text-3xl">Gestao completa do delivery</h1>
-          <p class="mt-2 text-sm text-zinc-400">Configure o site e monte o cardapio sem editar codigo.</p>
+          <h1 class="mt-2 text-2xl font-black sm:text-3xl">Gestao completa MH LANCHES</h1>
+          <p class="mt-2 text-sm text-zinc-400">Configure o site e monte e edite o cardapio.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <a href="index.html" target="_blank" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Ver site</a>
@@ -52,8 +137,8 @@
         </div>
       </header>
 
-      <section id="admin-grid" class="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <aside id="admin-sidebar" class="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+      <section id="admin-grid" class="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <aside id="admin-sidebar" class="hidden rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <p class="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-400">Navegacao</p>
           <nav class="mt-4 grid gap-2">
             <button data-tab="produtos" class="tab-btn rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-left text-sm font-semibold">Produtos</button>
@@ -65,11 +150,28 @@
           </nav>
           <div class="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-400">
             <p><strong id="info-total">0</strong> produtos cadastrados</p>
-            <p class="mt-1">Sessao expira em 30 minutos.</p>
+            <p class="mt-1">Sessao expira em 6 horas.</p>
           </div>
         </aside>
 
         <section id="admin-panels" class="space-y-6">
+          <section id="admin-context" class="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4">
+            <p id="admin-context-tag" class="text-[11px] font-semibold uppercase tracking-[0.2em] text-orange-300">Area ativa</p>
+            <h2 id="admin-context-title" class="mt-1 text-lg font-bold">Produtos</h2>
+            <p id="admin-context-desc" class="mt-1 text-sm text-zinc-400">Cadastre, pesquise, pause e organize os itens com agilidade.</p>
+          </section>
+
+          <section id="mobile-tabbar" class="admin-mobile-tabs rounded-2xl border border-zinc-800 bg-zinc-900/90 p-3 lg:hidden">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Acesso rapido</p>
+            <div class="mt-2 grid grid-cols-2 gap-2">
+              <button data-tab="produtos" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Produtos</button>
+              <button data-tab="categorias" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Categorias</button>
+              <button data-tab="site" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Site e visual</button>
+              <button data-tab="publicar" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Publicar</button>
+            </div>
+            <button id="abrir-pdv-aba-mobile" type="button" class="mt-2 w-full rounded-lg border border-emerald-700 bg-emerald-500/10 px-3 py-2 text-left text-xs font-semibold text-emerald-300">Abrir PDV em nova aba</button>
+          </section>
+
           <section data-panel="produtos" class="panel rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="text-xl font-bold">Produtos</h2>
@@ -79,6 +181,17 @@
             <div class="mt-4 flex flex-wrap gap-2">
               <input id="busca-produto" placeholder="Buscar por nome ou categoria" class="w-full max-w-sm rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none ring-orange-400 focus:ring-2">
               <button id="btn-pesquisar-produto" type="button" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Pesquisar</button>
+              <select id="filtro-valor-produto" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                <option value="todos">Todos os valores</option>
+                <option value="ate20">Ate R$ 20</option>
+                <option value="20a40">R$ 20 a R$ 40</option>
+                <option value="acima40">Acima de R$ 40</option>
+              </select>
+              <select id="filtro-status-produto" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                <option value="todos">Todos os status</option>
+                <option value="ativos">Somente ativos</option>
+                <option value="pausados">Somente pausados</option>
+              </select>
             </div>
 
             <div id="produto-form-wrap" class="mt-5 hidden rounded-xl border border-zinc-800 bg-zinc-950 p-4">
@@ -111,6 +224,19 @@
               <label class="text-xs text-zinc-400 sm:col-span-2">Imagem (URL opcional)
                 <input id="imagem" placeholder="Se nao preencher, usamos imagem padrao MH" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none ring-orange-400 focus:ring-2">
               </label>
+              <fieldset class="sm:col-span-2 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+                <legend class="px-1 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-300">Dias indisponiveis do produto</legend>
+                <p class="mt-1 text-xs text-zinc-400">Por padrao o produto fica disponivel todos os dias. Marque apenas os dias em que deve ficar em falta automaticamente.</p>
+                <div class="mt-3 grid gap-2 text-xs text-zinc-300 sm:grid-cols-4">
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="0" class="h-4 w-4">Dom</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="1" class="h-4 w-4">Seg</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="2" class="h-4 w-4">Ter</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="3" class="h-4 w-4">Qua</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="4" class="h-4 w-4">Qui</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="5" class="h-4 w-4">Sex</label>
+                  <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-2"><input type="checkbox" name="produto-dia-indisp" value="6" class="h-4 w-4">Sab</label>
+                </div>
+              </fieldset>
 
               <section id="box-pastel" class="hidden sm:col-span-2 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
                 <h3 class="font-semibold">Configuracao de pastel</h3>
@@ -182,7 +308,7 @@
             <p class="mt-1 text-sm text-zinc-400">Gerencie categorias separadamente dos produtos para organizar o cardapio com mais clareza.</p>
             <section class="mt-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
               <h3 class="text-base font-bold">Criar e organizar categorias</h3>
-              <p class="mt-1 text-xs text-zinc-400">Crie novas categorias e organize a ordem de exibicao no site e no PDV.</p>
+              <p class="mt-1 text-xs text-zinc-400">Crie novas categorias, organize a ordem e pause/despause categorias com um clique.</p>
               <div class="mt-3 flex flex-wrap gap-2">
                 <input id="nova-categoria" placeholder="Ex.: Porcoes" class="w-full max-w-sm rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm">
                 <button id="add-categoria" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Adicionar categoria</button>
@@ -192,7 +318,10 @@
           </section>
 
           <section data-panel="site" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
-            <h2 class="text-xl font-bold">Configuracao do site</h2>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h2 class="text-xl font-bold">Configuracao do site</h2>
+              <button type="submit" form="form-config" class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Salvar alteracoes no site</button>
+            </div>
             <form id="form-config" class="mt-5 grid gap-3 sm:grid-cols-2">
               <label class="text-xs text-zinc-400">Nome da marca
                 <input id="cfg-marca" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
@@ -210,7 +339,7 @@
                 <input id="cfg-instagram" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="https://instagram.com/seuperfil">
               </label>
               <label class="text-xs text-zinc-400">Telefone do rodape
-                <input id="cfg-telefone" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="+5511999999999">
+                <input id="cfg-telefone" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="+5581985770055">
               </label>
               <label class="text-xs text-zinc-400 sm:col-span-2">Endereco (URL Google Maps)
                 <input id="cfg-endereco" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="https://maps.google.com/?q=Seu+Endereco">
@@ -337,7 +466,7 @@
                 <input id="cfg-cor-borda" type="color" class="mt-1 h-10 w-full rounded-lg border border-zinc-700 bg-zinc-950 p-1">
               </label>
               <div class="sm:col-span-2">
-                <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Salvar configuracao</button>
+                <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Salvar alteracoes no site</button>
               </div>
             </form>
 
@@ -372,7 +501,6 @@
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300">Operacao ao vivo</p>
                 <h2 class="text-xl font-bold">Painel PDV em tempo real</h2>
-                <p class="mt-1 text-sm text-zinc-400">Tela dividida em dois lados: controle geral das comandas e lancamento rapido no caixa.</p>
               </div>
               <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-300">
@@ -383,24 +511,24 @@
               </div>
             </div>
 
-            <div class="mt-5 grid gap-5 xl:grid-cols-[1.02fr_1.48fr]">
-              <section class="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+            <div class="pdv-shell mt-5 grid gap-5">
+              <section class="pdv-col rounded-xl border border-zinc-800 bg-zinc-950 p-4">
                 <div class="flex items-center justify-between gap-3">
-                  <h3 class="text-lg font-bold">Lado esquerdo: comandas abertas</h3>
+                  <h3 class="text-lg font-bold">Comandas abertas</h3>
                   <span id="pdv-total-online" class="rounded-md border border-zinc-700 px-2 py-1 text-xs">0 abertos</span>
                 </div>
-                <p class="mt-1 text-xs text-zinc-500">Mostra juntos: delivery online, mesas e balcao. Clique em qualquer comanda para continuar lancando itens no lado direito.</p>
                 <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-zinc-400">
                   <span class="rounded-md border border-emerald-700/70 bg-emerald-500/10 px-2 py-1">Novo</span>
                   <span class="rounded-md border border-amber-700/70 bg-amber-500/10 px-2 py-1">Em producao</span>
                   <span class="rounded-md border border-sky-700/70 bg-sky-500/10 px-2 py-1">Pronto</span>
+                  <span class="rounded-md border border-violet-700/70 bg-violet-500/10 px-2 py-1">Paga</span>
                 </div>
-                <div id="pdv-lista-pedidos" class="mt-4 grid max-h-[640px] gap-3 overflow-y-auto pr-1"></div>
+                <div id="pdv-lista-pedidos" class="pdv-scroll mt-4 grid gap-3"></div>
               </section>
 
-              <section class="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <section class="pdv-col rounded-xl border border-zinc-800 bg-zinc-950 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                  <h3 class="text-lg font-bold">Lado direito: lancamento / caixa</h3>
+                  <h3 class="text-lg font-bold">Lancamento / caixa</h3>
                   <p id="caixa-comanda-id" class="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-300">Sem comanda aberta</p>
                 </div>
 
@@ -414,6 +542,10 @@
                   <button id="caixa-abrir-comanda" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">+ Abrir nova comanda</button>
                   <button id="caixa-nova" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Limpar selecao</button>
                 </div>
+                <label class="mt-2 inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200">
+                  <input id="caixa-pago" type="checkbox" class="h-4 w-4 accent-violet-500">
+                  Comanda paga
+                </label>
 
                 <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
                   <p class="text-sm font-semibold">Catalogo por abas de categoria</p>
@@ -431,7 +563,7 @@
                     <p class="text-sm font-semibold">Comanda ativa</p>
                     <p id="caixa-ativo" class="text-xs text-zinc-400">Nenhuma comanda selecionada.</p>
                   </div>
-                  <div id="caixa-comanda" class="mt-3 max-h-[260px] overflow-y-auto pr-1 text-sm"></div>
+                  <div id="caixa-comanda" class="mt-3 overflow-y-auto pr-1 text-sm"></div>
                   <p id="caixa-total" class="mt-3 text-lg font-black">Total: R$ 0,00</p>
                   <div class="mt-3 flex flex-wrap gap-2">
                     <button id="caixa-imprimir" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Imprimir comanda</button>
@@ -455,13 +587,39 @@
 
           <section data-panel="publicar" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <h2 class="text-xl font-bold">Publicar alteracoes</h2>
-            <p class="mt-1 text-sm text-zinc-400">As alteracoes ficam no rascunho local e aparecem no site. Para fixar no arquivo use copiar ou baixar.</p>
+            <p class="mt-1 text-sm text-zinc-400">Salve no GitHub para atualizar o arquivo produtos.json de forma permanente para todos os dispositivos.</p>
             <div class="mt-4 flex flex-wrap gap-2">
               <button id="carregar" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Recarregar produtos.json</button>
               <button id="copiar" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">Copiar JSON</button>
               <button id="baixar" class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Baixar produtos.json</button>
               <button id="limpar-draft" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Descartar rascunho local</button>
             </div>
+            <section class="mt-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base font-bold">Publicacao permanente no GitHub</h3>
+                <button id="github-salvar" class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Salvar no GitHub</button>
+              </div>
+              <p class="mt-1 text-xs text-zinc-400">Use um token com permissao de conteudo no repositorio. O token fica so neste navegador.</p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <label class="text-xs text-zinc-400">Repositorio (owner/repo)
+                  <input id="gh-repo" placeholder="usuario/repositorio" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Branch
+                  <input id="gh-branch" value="main" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Arquivo alvo
+                  <input id="gh-path" value="produtos.json" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Token GitHub (PAT)
+                  <input id="gh-token" type="password" placeholder="github_pat_..." class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+              </div>
+              <label class="mt-3 inline-flex items-center gap-2 text-xs text-zinc-300">
+                <input id="gh-auto-publicar" type="checkbox" class="h-4 w-4 accent-emerald-500" />
+                Publicar automaticamente ao clicar em "Salvar alteracoes no site"
+              </label>
+              <p id="gh-status" class="mt-2 text-xs text-zinc-500">Nao conectado.</p>
+            </section>
             <section class="mt-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <h3 class="text-base font-bold">Backups rapidos do site</h3>
@@ -509,10 +667,11 @@
     const CHAVE_FINANCEIRO_PDV = 'brasa_pdv_financeiro_v1';
     const CHAVE_BACKUPS = 'mh_site_backups_v1';
     const CHAVE_PDV_HANDOFF = 'brasa_pdv_handoff_v1';
+    const CHAVE_GITHUB_CFG = 'mh_github_publish_cfg_v1';
     const CANAL_PDV = 'brasa_pdv_channel';
     const MAX_TENTATIVAS = 5;
     const BLOQUEIO_MS = 60000;
-    const SESSAO_MS = 30 * 60 * 1000;
+    const SESSAO_MS = 6 * 60 * 60 * 1000;
     const isPdvView = new URLSearchParams(window.location.search).get('view') === 'pdv';
 
     const SVG_PRODUTO_PADRAO = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500'>
@@ -560,11 +719,11 @@
       textoBotaoCardapio: 'Ver cardapio',
       textoBotaoFinalizar: 'Finalizar no WhatsApp',
       buscaPlaceholder: 'Buscar item...',
-      whatsapp: '5511999999999',
+      whatsapp: '+5581985770055',
       adminUsuario: CREDENCIAIS_PADRAO.usuario,
       adminSenha: CREDENCIAIS_PADRAO.senha,
       instagramUrl: 'https://instagram.com/',
-      telefone: '+5511999999999',
+      telefone: '+5581985770055',
       enderecoUrl: 'https://maps.google.com/?q=MH+Lanches',
       jingleUrl: 'music/mh.mp3',
       sobreImagem1: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80',
@@ -582,6 +741,7 @@
       appInstalarAtivo: true,
       favoritosPosicao: 'meio',
       categoriasOrdem: [],
+      categoriasPausadas: [],
       anuncios: [],
       layout: 'padrao',
       cores: { fundo: '#09090b', texto: '#f4f4f5', destaque: '#f97316', painel: '#18181b', borda: '#27272a' }
@@ -592,7 +752,8 @@
       buscaProduto: '',
       tab: 'produtos',
       pdv: { pedidos: [], faturadoHoje: 0, dia: '' },
-      caixa: { pedidoId: '', identificacao: '', status: 'novo', categoriaAtiva: 'TODOS', itens: [] }
+      caixa: { pedidoId: '', identificacao: '', status: 'novo', pago: false, categoriaAtiva: 'TODOS', itens: [] },
+      filtrosProduto: { valor: 'todos', status: 'todos' }
     };
     const canalPdv = 'BroadcastChannel' in window ? new BroadcastChannel(CANAL_PDV) : null;
     let tentativas = 0;
@@ -600,6 +761,7 @@
     let credenciaisAcesso = { ...CREDENCIAIS_PADRAO };
     let timerBloqueio;
     let timerSessao;
+    let ghRuntimeToken = '';
 
     const authBox = document.getElementById('auth-box');
     const painelAdmin = document.getElementById('painel-admin');
@@ -619,6 +781,8 @@
     const caixaTotal = document.getElementById('caixa-total');
     const caixaAtivo = document.getElementById('caixa-ativo');
     const caixaComandaId = document.getElementById('caixa-comanda-id');
+    const caixaPago = document.getElementById('caixa-pago');
+    const ghStatus = document.getElementById('gh-status');
 
     function setAuthStatus(texto, erro) {
       authStatus.textContent = texto;
@@ -628,6 +792,122 @@
     function setStatus(texto, erro) {
       status.textContent = texto;
       status.className = `mt-4 text-sm ${erro ? 'text-rose-400' : 'text-emerald-400'}`;
+    }
+
+    function setGhStatus(texto, erro) {
+      if (!ghStatus) return;
+      ghStatus.textContent = texto;
+      ghStatus.className = `mt-2 text-xs ${erro ? 'text-rose-400' : 'text-emerald-400'}`;
+    }
+
+    function carregarGithubCfg() {
+      try {
+        const raw = localStorage.getItem(CHAVE_GITHUB_CFG);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return {
+          repo: String(parsed.repo || '').trim(),
+          branch: String(parsed.branch || 'main').trim() || 'main',
+          path: String(parsed.path || 'produtos.json').trim() || 'produtos.json',
+          autoPublicar: parsed.autoPublicar !== false
+        };
+      } catch (_) {
+        return { repo: '', branch: 'main', path: 'produtos.json', autoPublicar: true };
+      }
+    }
+
+    function salvarGithubCfg(cfg) {
+      localStorage.setItem(CHAVE_GITHUB_CFG, JSON.stringify({
+        repo: cfg.repo,
+        branch: cfg.branch,
+        path: cfg.path,
+        autoPublicar: cfg.autoPublicar === true
+      }));
+    }
+
+    function lerGithubCfgFormulario() {
+      const cfg = {
+        repo: document.getElementById('gh-repo').value.trim(),
+        branch: document.getElementById('gh-branch').value.trim() || 'main',
+        path: document.getElementById('gh-path').value.trim() || 'produtos.json',
+        autoPublicar: document.getElementById('gh-auto-publicar').checked
+      };
+      ghRuntimeToken = document.getElementById('gh-token').value.trim();
+      salvarGithubCfg(cfg);
+      return cfg;
+    }
+
+    function preencherGithubCfgFormulario() {
+      const cfg = carregarGithubCfg();
+      document.getElementById('gh-repo').value = cfg.repo;
+      document.getElementById('gh-branch').value = cfg.branch;
+      document.getElementById('gh-path').value = cfg.path;
+      document.getElementById('gh-auto-publicar').checked = cfg.autoPublicar;
+      setGhStatus(cfg.repo ? 'Configuracao carregada. Informe o token para publicar.' : 'Nao conectado.', false);
+    }
+
+    function parseGithubRepo(repoCompleto) {
+      const [owner, repo] = String(repoCompleto || '').split('/').map((parte) => parte.trim());
+      if (!owner || !repo) throw new Error('Use o repositorio no formato owner/repo.');
+      return { owner, repo };
+    }
+
+    function toBase64Unicode(texto) {
+      const bytes = new TextEncoder().encode(texto);
+      let bin = '';
+      bytes.forEach((b) => { bin += String.fromCharCode(b); });
+      return btoa(bin);
+    }
+
+    async function publicarNoGithub(mensagem) {
+      const cfg = lerGithubCfgFormulario();
+      if (!ghRuntimeToken) throw new Error('Informe o token GitHub para publicar.');
+      if (!cfg.repo) throw new Error('Informe o repositorio GitHub.');
+      const { owner, repo } = parseGithubRepo(cfg.repo);
+      const endpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${cfg.path}`;
+      const headers = {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${ghRuntimeToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+
+      let sha;
+      const atual = await fetch(`${endpoint}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
+      if (atual.status === 200) {
+        const arquivoAtual = await atual.json();
+        sha = arquivoAtual.sha;
+      } else if (atual.status !== 404) {
+        throw new Error('Nao foi possivel ler o arquivo atual no GitHub.');
+      }
+
+      const conteudo = `${JSON.stringify(estado.dados, null, 2)}\n`;
+      const corpo = {
+        message: mensagem || 'Atualiza produtos.json pelo painel admin',
+        content: toBase64Unicode(conteudo),
+        branch: cfg.branch
+      };
+      if (sha) corpo.sha = sha;
+
+      const resposta = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(corpo)
+      });
+      if (!resposta.ok) {
+        const erro = await resposta.json().catch(() => ({}));
+        throw new Error(erro.message || 'Falha ao salvar arquivo no GitHub.');
+      }
+      return await resposta.json();
+    }
+
+    async function tentarPublicacaoAutomatica() {
+      const cfg = carregarGithubCfg();
+      if (!cfg.autoPublicar) return false;
+      if (!ghRuntimeToken) {
+        setGhStatus('Auto publicar ativo, mas token nao foi informado nesta sessao.', true);
+        return false;
+      }
+      await publicarNoGithub('Atualiza configuracao e cardapio via salvar configuracoes');
+      return true;
     }
 
     function normalizarUrlJingle(valor) {
@@ -835,6 +1115,32 @@
       }).filter((s) => s.nome);
     }
 
+    function normalizarDiasIndisponiveisProduto(lista) {
+      const dias = [];
+      (Array.isArray(lista) ? lista : []).forEach((valor) => {
+        const dia = Number(valor);
+        if (dia >= 0 && dia <= 6 && !dias.includes(dia)) dias.push(dia);
+      });
+      return dias.sort((a, b) => a - b);
+    }
+
+    function diasIndisponiveisProdutoSelecionados() {
+      const marcados = [...document.querySelectorAll('input[name="produto-dia-indisp"]:checked')]
+        .map((input) => Number(input.value));
+      return normalizarDiasIndisponiveisProduto(marcados);
+    }
+
+    function preencherDiasIndisponiveisProduto(dias) {
+      const selecionados = normalizarDiasIndisponiveisProduto(dias);
+      document.querySelectorAll('input[name="produto-dia-indisp"]').forEach((input) => {
+        input.checked = selecionados.includes(Number(input.value));
+      });
+    }
+
+    function nomeDiaSemana(diaNumero) {
+      return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][Number(diaNumero)] || '--';
+    }
+
     function normalizarAnuncio(item) {
       return {
         titulo: String(item && item.titulo || '').trim(),
@@ -871,6 +1177,7 @@
           valorSaborExtra: Number(item.extras && item.extras.valorSaborExtra) || 0,
           valorOpcionalExtra: Number(item.extras && item.extras.valorOpcionalExtra) || 0
         },
+        diasIndisponiveis: normalizarDiasIndisponiveisProduto(item.diasIndisponiveis),
         ordem: Number(item.ordem) || 0,
         regraMeia: 'media'
       };
@@ -885,6 +1192,19 @@
       return semDuplicar;
     }
 
+    function normalizarCategoriasPausadas(lista) {
+      const semDuplicar = [];
+      (Array.isArray(lista) ? lista : []).forEach((nome) => {
+        const limpo = String(nome || '').trim();
+        if (limpo && !semDuplicar.includes(limpo)) semDuplicar.push(limpo);
+      });
+      return semDuplicar;
+    }
+
+    function categoriaPausada(categoria) {
+      return normalizarCategoriasPausadas(estado.dados.config.categoriasPausadas).includes(String(categoria || '').trim());
+    }
+
     function categoriasDetectadas() {
       return [...new Set(estado.dados.produtos.map((p) => String(p.categoria || '').trim()).filter(Boolean))];
     }
@@ -895,6 +1215,8 @@
         if (!configuradas.includes(categoria)) configuradas.push(categoria);
       });
       estado.dados.config.categoriasOrdem = configuradas;
+      estado.dados.config.categoriasPausadas = normalizarCategoriasPausadas(estado.dados.config.categoriasPausadas)
+        .filter((categoria) => configuradas.includes(categoria));
     }
 
     function indiceCategoria(categoria) {
@@ -939,6 +1261,7 @@
           ...CONFIG_PADRAO,
           ...(dados.config || {}),
           categoriasOrdem: normalizarCategoriasOrdem(dados.config && dados.config.categoriasOrdem),
+          categoriasPausadas: normalizarCategoriasPausadas(dados.config && dados.config.categoriasPausadas),
           cores: { ...CONFIG_PADRAO.cores, ...((dados.config && dados.config.cores) || {}) },
           anuncios: Array.isArray(dados.config && dados.config.anuncios) ? dados.config.anuncios.map(normalizarAnuncio).filter((a) => a.titulo) : []
         },
@@ -979,12 +1302,14 @@
       }
       box.innerHTML = categorias.map((categoria, index) => {
         const total = estado.dados.produtos.filter((item) => item.categoria === categoria).length;
+        const pausada = categoriaPausada(categoria);
         return `
           <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2">
-            <p class="text-sm font-semibold">${categoria} <span class="text-zinc-500">(${total})</span></p>
+            <p class="text-sm font-semibold">${categoria} <span class="text-zinc-500">(${total})</span> ${pausada ? '<span class="ml-2 rounded border border-amber-700 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-amber-300">Categoria pausada</span>' : ''}</p>
             <div class="flex gap-2">
               <button data-cat-up="${categoria}" ${index === 0 ? 'disabled' : ''} class="rounded border border-zinc-700 px-2 py-1 text-xs ${index === 0 ? 'opacity-40' : ''}">Subir</button>
               <button data-cat-down="${categoria}" ${index === categorias.length - 1 ? 'disabled' : ''} class="rounded border border-zinc-700 px-2 py-1 text-xs ${index === categorias.length - 1 ? 'opacity-40' : ''}">Descer</button>
+              <button data-cat-toggle="${categoria}" class="rounded border px-2 py-1 text-xs ${pausada ? 'border-emerald-700 text-emerald-300' : 'border-amber-700 text-amber-300'}">${pausada ? 'Despausar' : 'Pausar'}</button>
               <button data-cat-rem="${categoria}" class="rounded border border-rose-700 px-2 py-1 text-xs text-rose-300">Excluir</button>
             </div>
           </div>
@@ -1002,6 +1327,7 @@
       document.getElementById('form-produto').reset();
       document.getElementById('produto-id').value = '';
       document.getElementById('tipo').value = 'simples';
+      preencherDiasIndisponiveisProduto([]);
       document.getElementById('remover-produto-edicao').classList.add('hidden');
       atualizarCamposTipo();
       const titulo = document.getElementById('produto-form-titulo');
@@ -1158,6 +1484,7 @@
       document.getElementById('pizza-opcionais').value = item.tipo === 'pizza' && Array.isArray(item.opcionais) ? item.opcionais.join('\n') : '';
       document.getElementById('pizza-limite-opcionais').value = item.limites && item.limites.opcionaisGratis ? item.limites.opcionaisGratis : 2;
       document.getElementById('pizza-extra-opcional').value = item.extras && item.extras.valorOpcionalExtra ? item.extras.valorOpcionalExtra : 4;
+      preencherDiasIndisponiveisProduto(item.diasIndisponiveis);
 
       atualizarCamposTipo();
       document.getElementById('remover-produto-edicao').classList.remove('hidden');
@@ -1167,19 +1494,39 @@
     }
 
     function renderProdutos() {
+      const diaAtualSemana = new Date().getDay();
       const termo = estado.buscaProduto.trim().toLowerCase();
+      const filtroValor = estado.filtrosProduto.valor;
+      const filtroStatus = estado.filtrosProduto.status;
       const lista = ordenarProdutosParaExibicao(estado.dados.produtos)
-        .filter((p) => !termo || p.nome.toLowerCase().includes(termo) || p.categoria.toLowerCase().includes(termo));
+        .filter((p) => {
+          const nomeCategoria = p.categoria.toLowerCase();
+          const porTexto = !termo || p.nome.toLowerCase().includes(termo) || nomeCategoria.includes(termo);
+          const preco = Number(p.preco || 0);
+          const porValor = filtroValor === 'todos'
+            || (filtroValor === 'ate20' && preco <= 20)
+            || (filtroValor === '20a40' && preco > 20 && preco <= 40)
+            || (filtroValor === 'acima40' && preco > 40);
+          const pausadoHoje = p.ativo === false || categoriaPausada(p.categoria) || normalizarDiasIndisponiveisProduto(p.diasIndisponiveis).includes(diaAtualSemana);
+          const porStatus = filtroStatus === 'todos'
+            || (filtroStatus === 'ativos' && !pausadoHoje)
+            || (filtroStatus === 'pausados' && pausadoHoje);
+          return porTexto && porValor && porStatus;
+        });
       if (!lista.length) {
         listaProdutos.innerHTML = '<p class="p-4 text-sm text-zinc-400">Nenhum produto encontrado.</p>';
         return;
       }
-      listaProdutos.innerHTML = lista.map((item) => `
-        <div class="grid gap-3 border-b border-zinc-800 p-4 sm:grid-cols-[1fr_auto] sm:items-center ${item.ativo === false ? 'bg-zinc-900/60' : ''}">
+      listaProdutos.innerHTML = lista.map((item) => {
+        const indisponivelHoje = item.ativo === false || categoriaPausada(item.categoria) || normalizarDiasIndisponiveisProduto(item.diasIndisponiveis).includes(diaAtualSemana);
+        const diasIndisponiveis = normalizarDiasIndisponiveisProduto(item.diasIndisponiveis).map(nomeDiaSemana).join(', ');
+        return `
+        <div class="grid gap-3 border-b border-zinc-800 p-4 sm:grid-cols-[1fr_auto] sm:items-center ${indisponivelHoje ? 'bg-zinc-900/60' : ''}">
           <div>
-            <p class="font-semibold">${item.nome} ${item.ativo === false ? '<span class="ml-2 rounded-md border border-rose-700 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-300">Em falta</span>' : ''}</p>
+            <p class="font-semibold">${item.nome} ${item.ativo === false ? '<span class="ml-2 rounded-md border border-rose-700 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-300">Pausado</span>' : ''} ${categoriaPausada(item.categoria) ? '<span class="ml-2 rounded-md border border-amber-700 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-300">Categoria pausada</span>' : ''} ${normalizarDiasIndisponiveisProduto(item.diasIndisponiveis).includes(diaAtualSemana) ? '<span class="ml-2 rounded-md border border-orange-700 bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-orange-300">Em falta hoje</span>' : ''}</p>
             <p class="text-sm text-zinc-400">${item.categoria} - ${formatarMoeda(item.preco)} - ${item.tipo || 'simples'}</p>
             <p class="mt-1 text-xs text-zinc-500">${item.descricao}</p>
+            ${diasIndisponiveis ? `<p class="mt-1 text-[11px] text-zinc-500">Indisponivel em: ${diasIndisponiveis}</p>` : ''}
           </div>
           <div class="flex gap-2">
             <button data-prod-up="${item.id}" class="rounded-lg border border-zinc-700 px-2 py-1.5 text-xs font-semibold">Subir</button>
@@ -1188,17 +1535,60 @@
             <button data-toggle-pausa="${item.id}" class="rounded-lg border px-3 py-1.5 text-xs font-semibold ${item.ativo === false ? 'border-emerald-700 text-emerald-300 hover:border-emerald-500' : 'border-amber-700 text-amber-300 hover:border-amber-500'}">${item.ativo === false ? 'Reativar' : 'Pausar'}</button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function renderTabs() {
+      const contextos = {
+        produtos: {
+          tag: 'Cadastro e manutencao',
+          titulo: 'Produtos',
+          descricao: 'Cadastre, pesquise, pause e organize os itens com agilidade.'
+        },
+        categorias: {
+          tag: 'Organizacao do cardapio',
+          titulo: 'Categorias do cardapio',
+          descricao: 'Crie categorias, ajuste ordem de exibicao e controle pausas por categoria.'
+        },
+        site: {
+          tag: 'Identidade e operacao',
+          titulo: 'Configuracao do site',
+          descricao: 'Atualize visual, horarios, textos e contatos em uma unica tela.'
+        },
+        pdv: {
+          tag: 'Operacao de caixa',
+          titulo: 'PDV e caixa',
+          descricao: 'Acompanhe comandas abertas e lance itens com fluxo rapido de atendimento.'
+        },
+        publicar: {
+          tag: 'Publicacao e seguranca',
+          titulo: 'Publicar alteracoes',
+          descricao: 'Publique no GitHub, faca backup e distribua atualizacoes permanentes.'
+        }
+      };
+      const contextoAtivo = contextos[estado.tab] || contextos.produtos;
+
       document.querySelectorAll('.tab-btn').forEach((btn) => {
         const ativo = btn.dataset.tab === estado.tab;
+        btn.dataset.active = ativo ? 'true' : 'false';
         btn.classList.toggle('bg-zinc-950', ativo);
         btn.classList.toggle('border-orange-400', ativo);
         btn.classList.toggle('text-orange-300', ativo);
+        if (ativo) {
+          btn.setAttribute('aria-current', 'page');
+        } else {
+          btn.removeAttribute('aria-current');
+        }
       });
       document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== estado.tab));
+
+      const tag = document.getElementById('admin-context-tag');
+      const titulo = document.getElementById('admin-context-title');
+      const desc = document.getElementById('admin-context-desc');
+      if (tag) tag.textContent = contextoAtivo.tag;
+      if (titulo) titulo.textContent = contextoAtivo.titulo;
+      if (desc) desc.textContent = contextoAtivo.descricao;
     }
 
     function diaAtual() {
@@ -1246,6 +1636,7 @@
         criadoEm: String((pedido && pedido.criadoEm) || new Date().toISOString()),
         origem: String((pedido && pedido.origem) || 'site'),
         status: ['novo', 'preparando', 'pronto'].includes(pedido && pedido.status) ? pedido.status : 'novo',
+        pago: Boolean(pedido && pedido.pago),
         cliente: {
           nome: String((pedido && pedido.cliente && pedido.cliente.nome) || ''),
           endereco: String((pedido && pedido.cliente && pedido.cliente.endereco) || ''),
@@ -1358,6 +1749,9 @@
       }
       pdvListaPedidos.innerHTML = pedidosOrdenados.map((pedido) => {
         const tagStatus = etiquetaStatus(pedido.status);
+        const tagPagamento = pedido.pago
+          ? '<span class="rounded-md border border-violet-700/70 bg-violet-500/10 px-2 py-1 text-[11px] text-violet-200">Paga</span>'
+          : '<span class="rounded-md border border-zinc-700 px-2 py-1 text-[11px] text-zinc-300">Pendente</span>';
         const formas = pedido.pagamento.formas.join(' + ') || 'Nao informado';
         const selecionado = estado.caixa.pedidoId && pedido.id === estado.caixa.pedidoId;
         const origem = pedido.origem === 'site' ? 'Delivery online' : 'Mesa/Balcao';
@@ -1365,7 +1759,10 @@
           <article data-pdv-select="${pedido.id}" class="cursor-pointer rounded-lg border p-3 transition hover:border-zinc-600 ${selecionado ? 'border-orange-400 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900'}">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <p class="font-bold">${pedido.numeroPedido}</p>
-              <span class="rounded-md border px-2 py-1 text-[11px] ${tagStatus.classe}">${tagStatus.texto}</span>
+              <div class="flex items-center gap-1">
+                <span class="rounded-md border px-2 py-1 text-[11px] ${tagStatus.classe}">${tagStatus.texto}</span>
+                ${tagPagamento}
+              </div>
             </div>
             <p class="mt-1 text-xs text-zinc-400">${new Date(pedido.criadoEm).toLocaleString('pt-BR')} - ${origem}</p>
             <p class="mt-1 text-sm font-semibold">${pedido.cliente.nome || 'Sem identificacao'}</p>
@@ -1380,6 +1777,7 @@
               <button data-pdv-abrir="${pedido.id}" class="rounded border border-zinc-600 px-2 py-1 text-xs font-semibold">Abrir no caixa</button>
               <button data-pdv-status="${pedido.id}" data-status="preparando" class="rounded border border-amber-600 px-2 py-1 text-xs font-semibold text-amber-200">Preparando</button>
               <button data-pdv-status="${pedido.id}" data-status="pronto" class="rounded border border-sky-600 px-2 py-1 text-xs font-semibold text-sky-200">Pronto</button>
+              <button data-pdv-pago="${pedido.id}" class="rounded border border-violet-600 px-2 py-1 text-xs font-semibold text-violet-200">${pedido.pago ? 'Desmarcar paga' : 'Marcar paga'}</button>
               <button data-pdv-imprimir="${pedido.id}" class="rounded border border-zinc-700 px-2 py-1 text-xs font-semibold">Imprimir</button>
               <button data-pdv-finalizar="${pedido.id}" class="rounded border border-emerald-600 px-2 py-1 text-xs font-semibold text-emerald-300">Finalizar</button>
             </div>
@@ -1434,9 +1832,10 @@
 
     function renderComandaCaixa() {
       caixaAtivo.textContent = estado.caixa.pedidoId
-        ? `Editando: ${estado.caixa.identificacao || 'Sem identificacao'}`
+        ? `Editando: ${estado.caixa.identificacao || 'Sem identificacao'}${estado.caixa.pago ? ' (Paga)' : ''}`
         : 'Nenhuma comanda selecionada.';
       caixaComandaId.textContent = tituloComandaAtiva();
+      caixaPago.checked = Boolean(estado.caixa.pago);
       document.getElementById('caixa-abrir-comanda').textContent = estado.caixa.pedidoId ? 'Salvar comanda' : '+ Abrir nova comanda';
       if (!estado.caixa.itens.length) {
         caixaComanda.innerHTML = '<p class="text-zinc-400">Nenhum item lancado.</p>';
@@ -1481,6 +1880,7 @@
       estado.caixa.pedidoId = pedido.id;
       estado.caixa.identificacao = pedido.cliente.nome || '';
       estado.caixa.status = pedido.status || 'novo';
+      estado.caixa.pago = Boolean(pedido.pago);
       estado.caixa.itens = pedido.itens.map((item) => ({
         nome: item.nome,
         valor: Number(item.precoFinal || 0),
@@ -1488,6 +1888,7 @@
       }));
       document.getElementById('caixa-identificacao').value = estado.caixa.identificacao;
       document.getElementById('caixa-status').value = estado.caixa.status;
+      caixaPago.checked = estado.caixa.pago;
       renderComandaCaixa();
       renderPedidosPdv();
     }
@@ -1498,6 +1899,7 @@
       if (!pedido) return;
       const identificacao = estado.caixa.identificacao.trim();
       pedido.status = estado.caixa.status;
+      pedido.pago = Boolean(estado.caixa.pago);
       pedido.cliente.nome = identificacao;
       pedido.origem = pedido.origem || 'caixa';
       pedido.itens = estado.caixa.itens.map((item) => ({
@@ -1531,6 +1933,7 @@
         const pedido = estado.pdv.pedidos.find((item) => item.id === estado.caixa.pedidoId);
         if (pedido) {
           pedido.status = estado.caixa.status;
+          pedido.pago = Boolean(estado.caixa.pago);
           pedido.cliente.nome = identificacao;
           pedido.origem = 'caixa';
           pedido.itens = itensPedido;
@@ -1549,6 +1952,7 @@
         criadoEm: new Date().toISOString(),
         origem: 'caixa',
         status: estado.caixa.status,
+        pago: Boolean(estado.caixa.pago),
         cliente: { nome: identificacao, endereco: '', referencia: '', tipoAtendimento: 'retirada' },
         pagamento: { formas: [], precisaTroco: '', trocoValor: 0 },
         itens: itensPedido,
@@ -1567,9 +1971,11 @@
       estado.caixa.pedidoId = '';
       estado.caixa.itens = [];
       estado.caixa.status = 'novo';
+      estado.caixa.pago = false;
       if (limparIdentificacao) estado.caixa.identificacao = '';
       document.getElementById('caixa-status').value = estado.caixa.status;
       document.getElementById('caixa-identificacao').value = estado.caixa.identificacao;
+      caixaPago.checked = estado.caixa.pago;
       renderComandaCaixa();
       renderPedidosPdv();
     }
@@ -1837,9 +2243,27 @@
         }
         estado.dados.config.categoriasOrdem = normalizarCategoriasOrdem(estado.dados.config.categoriasOrdem)
           .filter((categoria) => categoria !== nome);
+        estado.dados.config.categoriasPausadas = normalizarCategoriasPausadas(estado.dados.config.categoriasPausadas)
+          .filter((categoria) => categoria !== nome);
         salvarRascunho();
         renderCatalogoCaixa();
         setStatus('Categoria excluida.', false);
+      }
+
+      const catToggle = evento.target.closest('[data-cat-toggle]');
+      if (catToggle) {
+        const nome = String(catToggle.dataset.catToggle || '').trim();
+        if (!nome) return;
+        const pausadas = normalizarCategoriasPausadas(estado.dados.config.categoriasPausadas);
+        if (pausadas.includes(nome)) {
+          estado.dados.config.categoriasPausadas = pausadas.filter((categoria) => categoria !== nome);
+          setStatus(`Categoria ${nome} despausada no site do cliente.`, false);
+        } else {
+          estado.dados.config.categoriasPausadas = [...pausadas, nome];
+          setStatus(`Categoria ${nome} pausada no site do cliente.`, false);
+        }
+        salvarRascunho();
+        renderProdutos();
       }
 
       const prodUp = evento.target.closest('[data-prod-up]');
@@ -1917,6 +2341,20 @@
         }
       }
 
+      const atualizarPagamentoPedido = evento.target.closest('[data-pdv-pago]');
+      if (atualizarPagamentoPedido) {
+        const pedido = estado.pdv.pedidos.find((item) => item.id === atualizarPagamentoPedido.dataset.pdvPago);
+        if (pedido) {
+          pedido.pago = !pedido.pago;
+          if (estado.caixa.pedidoId === pedido.id) {
+            estado.caixa.pago = pedido.pago;
+            caixaPago.checked = estado.caixa.pago;
+          }
+          salvarPedidosPdv();
+          renderPedidosPdv();
+        }
+      }
+
       const imprimirPedido = evento.target.closest('[data-pdv-imprimir]');
       if (imprimirPedido) {
         const pedido = estado.pdv.pedidos.find((item) => item.id === imprimirPedido.dataset.pdvImprimir);
@@ -1936,6 +2374,7 @@
               montarLinhasItens(pedido.itens),
               '',
               `Pagamento: ${pedido.pagamento.formas.join(' + ') || '---'}`,
+              `Comanda: ${pedido.pago ? 'Paga' : 'Pendente'}`,
               `Troco: ${troco}`,
               '',
               `Observacoes: ${pedido.observacaoInterna || 'Nenhuma'}`,
@@ -2012,6 +2451,7 @@
         descricao: document.getElementById('descricao').value,
         preco: document.getElementById('preco').value,
         imagem: document.getElementById('imagem').value,
+        diasIndisponiveis: diasIndisponiveisProdutoSelecionados(),
         tipo
       };
 
@@ -2106,8 +2546,16 @@
       estado.buscaProduto = evento.target.value;
       renderProdutos();
     });
+    document.getElementById('filtro-valor-produto').addEventListener('change', (evento) => {
+      estado.filtrosProduto.valor = evento.target.value;
+      renderProdutos();
+    });
+    document.getElementById('filtro-status-produto').addEventListener('change', (evento) => {
+      estado.filtrosProduto.status = evento.target.value;
+      renderProdutos();
+    });
 
-    document.getElementById('form-config').addEventListener('submit', (evento) => {
+    document.getElementById('form-config').addEventListener('submit', async (evento) => {
       evento.preventDefault();
       const diasFuncionamento = diasFuncionamentoSelecionados();
       const jingleDigitado = document.getElementById('cfg-jingle').value.trim();
@@ -2166,6 +2614,16 @@
       salvarRascunho();
       atualizarStatusOperacaoAdmin();
       setStatus('Configuracao salva no rascunho local.', false);
+      try {
+        const publicou = await tentarPublicacaoAutomatica();
+        if (publicou) {
+          setStatus('Configuracao salva e publicada no GitHub com sucesso.', false);
+          setGhStatus('Publicacao automatica concluida.', false);
+        }
+      } catch (erro) {
+        setStatus('Configuracao salva localmente, mas falhou ao publicar: ' + erro.message, true);
+        setGhStatus('Erro de publicacao: ' + erro.message, true);
+      }
     });
 
     document.getElementById('cfg-status-entrega').addEventListener('change', atualizarStatusOperacaoAdmin);
@@ -2230,6 +2688,13 @@
     document.getElementById('caixa-status').addEventListener('change', (evento) => {
       estado.caixa.status = evento.target.value;
       persistirComandaAtiva();
+    });
+
+    caixaPago.addEventListener('change', (evento) => {
+      estado.caixa.pago = evento.target.checked;
+      persistirComandaAtiva();
+      renderComandaCaixa();
+      renderPedidosPdv();
     });
 
     document.getElementById('caixa-abrir-comanda').addEventListener('click', () => {
@@ -2325,7 +2790,31 @@
     });
 
     document.getElementById('carregar').addEventListener('click', carregarArquivo);
+    document.getElementById('github-salvar').addEventListener('click', async () => {
+      try {
+        setGhStatus('Publicando no GitHub...', false);
+        await publicarNoGithub('Atualiza produtos.json pelo painel admin');
+        setStatus('Arquivo produtos.json atualizado no GitHub com sucesso.', false);
+        setGhStatus('Publicado com sucesso.', false);
+      } catch (erro) {
+        setStatus('Falha ao publicar no GitHub: ' + erro.message, true);
+        setGhStatus('Erro de publicacao: ' + erro.message, true);
+      }
+    });
+    ['gh-repo', 'gh-branch', 'gh-path', 'gh-auto-publicar'].forEach((id) => {
+      document.getElementById(id).addEventListener('change', () => {
+        lerGithubCfgFormulario();
+        setGhStatus('Configuracao salva neste navegador.', false);
+      });
+    });
+    document.getElementById('gh-token').addEventListener('input', (evento) => {
+      ghRuntimeToken = evento.target.value.trim();
+      if (ghRuntimeToken) setGhStatus('Token informado para esta sessao.', false);
+    });
     document.getElementById('abrir-pdv-aba').addEventListener('click', () => {
+      abrirPdvEmNovaAba();
+    });
+    document.getElementById('abrir-pdv-aba-mobile').addEventListener('click', () => {
       abrirPdvEmNovaAba();
     });
     document.getElementById('limpar-draft').addEventListener('click', () => {
@@ -2356,6 +2845,7 @@
     carregarSeguranca();
     iniciarRelogioPdv();
     iniciarTimerBloqueio();
+    preencherGithubCfgFormulario();
     if (Date.now() < bloqueadoAte) {
       const restante = Math.ceil((bloqueadoAte - Date.now()) / 1000);
       setAuthStatus(`Painel bloqueado. Aguarde ${restante}s.`, true);

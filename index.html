@@ -51,7 +51,7 @@
     .glass { backdrop-filter: blur(10px); }
   </style>
 </head>
-  <body class="overflow-x-hidden bg-zinc-950 text-zinc-100 antialiased">
+  <body class="overflow-x-hidden bg-zinc-900 text-zinc-100 antialiased">
   <div id="pwa-banner" class="fixed inset-x-3 top-3 z-[70] hidden rounded-2xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-xl shadow-black/40 backdrop-blur sm:left-1/2 sm:max-w-xl sm:-translate-x-1/2">
     <p class="text-sm font-semibold text-zinc-100">📲 Quer acessar nosso cardapio mais rapido? Adicione nosso app rapido e pratico!</p>
     <p id="pwa-banner-hint" class="mt-1 text-xs italic text-amber-200/90">Nao e obrigatorio a instalacao vc pode continuar utilizando por aqui. Att. Henrique Dono e administrador da MH Lanches.</p>
@@ -61,13 +61,13 @@
     </div>
   </div>
   <section class="relative min-h-[92vh] overflow-hidden border-b border-zinc-800">
-    <div class="absolute inset-0 bg-zinc-950/62"></div>
+    <div class="absolute inset-0 bg-zinc-950/28"></div>
 
     <div class="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-3 pt-4 sm:px-6">
       <div class="relative">
         <a id="status-delivery" href="#menu" class="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-200 glass">
           <span id="status-dot" class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
-          <span id="status-label">ON!</span>
+          <span id="status-label">Estamos Funcionando!</span>
         </a>
         <div id="status-hint" class="absolute left-0 top-full z-20 mt-2 hidden min-w-[260px] rounded-xl border border-amber-300/35 bg-zinc-950/95 px-3 py-2 text-[11px] normal-case tracking-normal text-amber-100 shadow-lg shadow-black/40">
           <p class="font-bold uppercase tracking-[0.12em]">Apenas agendamentos</p>
@@ -139,7 +139,7 @@
       <div class="relative h-56 sm:h-72">
         <img id="sobre-img-1" src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80" alt="Cozinha da MH Lanches" class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 opacity-100">
         <img id="sobre-img-2" src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80" alt="Lanches da MH Lanches" class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 opacity-0">
-        <div class="absolute inset-0 bg-zinc-950/45"></div>
+        <div class="absolute inset-0 bg-zinc-950/20"></div>
       </div>
       <div class="px-5 py-4 sm:px-6 sm:py-5">
         <h3 class="text-lg font-bold">Sobre a MH Lanches</h3>
@@ -158,7 +158,7 @@
             <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
           </svg>
         </a>
-        <a id="footer-telefone" href="tel:+5511999999999" aria-label="Telefone MH Lanches" title="Telefone" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900/80 text-zinc-300 transition hover:border-emerald-400 hover:text-emerald-300">
+        <a id="footer-telefone" href="tel:+5581985770055" aria-label="Telefone MH Lanches" title="Telefone" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900/80 text-zinc-300 transition hover:border-emerald-400 hover:text-emerald-300">
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5.4 3.8h3.2c.5 0 .9.3 1 .8l.7 3.2c.1.5-.1 1-.6 1.3l-1.8 1.1a14.7 14.7 0 0 0 6 6l1.1-1.8c.3-.4.8-.7 1.3-.6l3.2.7c.5.1.8.5.8 1v3.2c0 .6-.5 1.1-1.1 1.1h-.9C10.1 20.8 3.2 13.9 3.2 5v-.9c0-.6.5-1.1 1.1-1.1Z" />
           </svg>
@@ -376,19 +376,20 @@
       textoBotaoCardapio: 'Ver cardapio',
       textoBotaoFinalizar: 'Finalizar no WhatsApp',
       buscaPlaceholder: 'Buscar item...',
-      whatsapp: '5511999999999',
+      whatsapp: '+5581985770055',
       taxaEntrega: 6.9,
       freteGratisAcima: 80,
       valorPedidoMinimo: 0,
       instagramUrl: 'https://instagram.com/',
       enderecoUrl: 'https://maps.google.com/?q=MH+Lanches',
-      telefone: '+5511999999999',
+      telefone: '+5581985770055',
       jingleUrl: 'music/mh.mp3',
       sobreImagem1: 'https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80',
       sobreImagem2: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80',
       sobreTexto: 'A MH Lanches nasceu como um pequeno atendimento de bairro e cresceu com foco em sabor, rapidez e carinho no preparo. Hoje seguimos o mesmo trajeto: ingredientes selecionados, padrao de qualidade e entrega caprichada para cada cliente.',
       favoritosPosicao: 'meio',
       categoriasOrdem: [],
+      categoriasPausadas: [],
       anuncios: [],
       statusEntrega: 'auto',
       diasFuncionamento: [0, 1, 2, 3, 4, 5, 6],
@@ -398,7 +399,7 @@
       appIconeUrl: ICONE_APP_PADRAO,
       appInstalarAtivo: true,
       layout: 'padrao',
-      cores: { fundo: '#09090b', texto: '#f4f4f5', destaque: '#f97316', painel: '#18181b', borda: '#27272a' }
+      cores: { fundo: '#111827', texto: '#f4f4f5', destaque: '#f97316', painel: '#18181b', borda: '#27272a' }
     };
 
     const CHAVE_DRAFT = 'brasa_delivery_dados_v1';
@@ -605,7 +606,7 @@
       const abertoAuto = dias.includes(hoje) && minutosAgora >= minutosAbertura && minutosAgora < minutosFechamento;
       const aberto = modo === 'on' ? true : modo === 'off' ? false : abertoAuto;
 
-      elStatusLabel.textContent = aberto ? 'ON!' : 'Fechada';
+      elStatusLabel.textContent = aberto ? 'Estamos Funcionando!' : 'Fechada';
       elStatusDot.className = `inline-block h-2 w-2 rounded-full ${aberto ? 'bg-emerald-400' : 'bg-red-400'}`;
       elStatusDelivery.className = `inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] glass ${aberto
         ? 'border-zinc-700 bg-zinc-900/70 text-zinc-200'
@@ -702,9 +703,19 @@
           valorSaborExtra: Number(item.extras && item.extras.valorSaborExtra) || 0,
           valorOpcionalExtra: Number(item.extras && item.extras.valorOpcionalExtra) || 0
         },
+        diasIndisponiveis: normalizarDiasIndisponiveisProduto(item.diasIndisponiveis),
         ordem: Number(item.ordem) || 0,
         regraMeia: item.regraMeia === 'media' ? 'media' : 'media'
       };
+    }
+
+    function normalizarDiasIndisponiveisProduto(lista) {
+      const dias = [];
+      (Array.isArray(lista) ? lista : []).forEach((valor) => {
+        const dia = Number(valor);
+        if (dia >= 0 && dia <= 6 && !dias.includes(dia)) dias.push(dia);
+      });
+      return dias.sort((a, b) => a - b);
     }
 
     function normalizarCategoriasOrdem(lista) {
@@ -714,6 +725,26 @@
         if (nome && !categorias.includes(nome)) categorias.push(nome);
       });
       return categorias;
+    }
+
+    function normalizarCategoriasPausadas(lista) {
+      const categorias = [];
+      (Array.isArray(lista) ? lista : []).forEach((categoria) => {
+        const nome = String(categoria || '').trim();
+        if (nome && !categorias.includes(nome)) categorias.push(nome);
+      });
+      return categorias;
+    }
+
+    function categoriaPausada(nomeCategoria) {
+      const nome = String(nomeCategoria || '').trim();
+      return normalizarCategoriasPausadas(estado.config.categoriasPausadas).includes(nome);
+    }
+
+    function produtoIndisponivelHoje(produto) {
+      const diaAtual = new Date().getDay();
+      const diasIndisponiveis = normalizarDiasIndisponiveisProduto(produto && produto.diasIndisponiveis);
+      return diasIndisponiveis.includes(diaAtual);
     }
 
     function normalizarDados(dados) {
@@ -731,6 +762,7 @@
           ...CONFIG_PADRAO,
           ...(dados.config || {}),
           categoriasOrdem: normalizarCategoriasOrdem(dados.config && dados.config.categoriasOrdem),
+          categoriasPausadas: normalizarCategoriasPausadas(dados.config && dados.config.categoriasPausadas),
           cores: { ...CONFIG_PADRAO.cores, ...((dados.config && dados.config.cores) || {}) },
           anuncios: anunciosNormalizados
         },
@@ -749,7 +781,7 @@
       document.getElementById('cart-title').textContent = cfg.textoCarrinho;
       document.getElementById('cta-menu-label').textContent = cfg.textoBotaoCardapio;
       document.getElementById('finalizar').textContent = cfg.textoBotaoFinalizar;
-      document.body.style.backgroundImage = `linear-gradient(rgba(9, 9, 11, 0.72), rgba(9, 9, 11, 0.72)), url('${cfg.heroImagem}')`;
+      document.body.style.backgroundImage = `linear-gradient(rgba(17, 24, 39, 0.34), rgba(17, 24, 39, 0.34)), url('${cfg.heroImagem}')`;
       document.body.style.backgroundAttachment = 'fixed';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundSize = 'cover';
@@ -760,7 +792,7 @@
       const telLimpo = String(cfg.telefone || '').replace(/\s+/g, '');
       document.getElementById('footer-instagram').href = cfg.instagramUrl || 'https://instagram.com/';
       document.getElementById('footer-endereco').href = cfg.enderecoUrl || 'https://maps.google.com/?q=MH+Lanches';
-      document.getElementById('footer-telefone').href = `tel:${telLimpo || '+5511999999999'}`;
+      document.getElementById('footer-telefone').href = `tel:${telLimpo || '+5581985770055'}`;
       const jingleUrl = normalizarUrlJingle(cfg.jingleUrl);
       if (jingleUrl) {
         const urlAtual = elJingle.getAttribute('src') || '';
@@ -915,7 +947,8 @@
       const categorias = categoriasComFavoritos(base);
       elCategorias.innerHTML = categorias.map((categoria) => {
         const ativo = categoria === estado.categoria;
-        return `<button data-categoria="${categoria}" class="whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition ${ativo ? 'border-orange-300 bg-orange-500 text-zinc-950' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500'}">${categoria}</button>`;
+        const pausada = categoria !== 'Todos' && categoria !== 'Favoritos' && categoriaPausada(categoria);
+        return `<button data-categoria="${categoria}" class="whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition ${ativo ? 'border-orange-300 bg-orange-500 text-zinc-950' : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500'} ${pausada ? 'opacity-70' : ''}">${categoria}${pausada ? ' (em falta)' : ''}</button>`;
       }).join('');
     }
 
@@ -930,7 +963,7 @@
       elLista.innerHTML = lista.map((produto) => {
         const custom = produto.tipo === 'pastel' || produto.tipo === 'pizza';
         const favorito = produtoFavorito(produto.id);
-        const indisponivel = produto.ativo === false;
+        const indisponivel = produto.ativo === false || categoriaPausada(produto.categoria) || produtoIndisponivelHoje(produto);
         return `
           <li class="group min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 animate-rise ${indisponivel ? 'opacity-70 grayscale' : ''}">
             <div class="relative">
@@ -1383,7 +1416,7 @@
       if (add) {
         const produto = estado.produtos.find((p) => p.id === Number(add.dataset.add));
         if (!produto) return;
-        if (produto.ativo === false) {
+        if (produto.ativo === false || categoriaPausada(produto.categoria) || produtoIndisponivelHoje(produto)) {
           alert('Este item esta em falta no momento.');
           return;
         }
@@ -1567,7 +1600,8 @@
         mensagemOriginal: texto
       });
 
-      window.open(`https://wa.me/${estado.config.whatsapp}?text=${encodeURIComponent(texto)}`, '_blank');
+      const whatsappNumero = String(estado.config.whatsapp || '').replace(/\D+/g, '') || '5581985770055';
+      window.open(`https://wa.me/${whatsappNumero}?text=${encodeURIComponent(texto)}`, '_blank');
       fecharModalCheckout();
     });
 

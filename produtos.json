@@ -9,11 +9,11 @@
     "textoBotaoCardapio": "Ver cardapio",
     "textoBotaoFinalizar": "Finalizar no WhatsApp",
     "buscaPlaceholder": "Buscar item...",
-    "whatsapp": "5511999999999",
+    "whatsapp": "+5581985770055",
     "adminUsuario": "ADMIN",
     "adminSenha": "123456",
     "instagramUrl": "https://instagram.com/",
-    "telefone": "+5511999999999",
+    "telefone": "+5581985770055",
     "enderecoUrl": "https://maps.google.com/?q=MH+Lanches",
     "jingleUrl": "music/mh.mp3",
     "sobreImagem1": "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80",
@@ -46,6 +46,7 @@
       "Bebidas",
       "Sobremesas"
     ],
+    "categoriasPausadas": [],
     "anuncios": [
       {
         "titulo": "Combo da noite com 20% OFF",
