@@ -52,6 +52,7 @@
     .pdv-only [data-panel="produtos"],
     .pdv-only [data-panel="categorias"],
     .pdv-only [data-panel="site"],
+    .pdv-only [data-panel="usuarios"],
     .pdv-only [data-panel="publicar"] { display: none !important; }
     .pdv-only #admin-panels { max-width: 100%; }
     .pdv-only [data-panel="pdv"] {
@@ -131,7 +132,8 @@
           <h1 class="mt-2 text-2xl font-black sm:text-3xl">Gestao completa MH LANCHES</h1>
           <p class="mt-2 text-sm text-zinc-400">Configure o site e monte e edite o cardapio.</p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="perfil-acesso" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-300">Perfil: --</span>
           <a href="index.html" target="_blank" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Ver site</a>
           <button id="sair-admin" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Sair</button>
         </div>
@@ -141,11 +143,12 @@
         <aside id="admin-sidebar" class="hidden rounded-2xl border border-zinc-800 bg-zinc-900/95 p-4 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <p class="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-400">Navegacao</p>
           <nav class="mt-4 grid gap-2">
-            <button data-tab="produtos" class="tab-btn rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-left text-sm font-semibold">Produtos</button>
-            <button data-tab="categorias" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Categorias do cardapio</button>
-            <button data-tab="site" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Site e visual</button>
+            <button data-tab="produtos" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-left text-sm font-semibold">Produtos</button>
+            <button data-tab="categorias" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Categorias do cardapio</button>
+            <button data-tab="site" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Site e visual</button>
+            <button data-tab="usuarios" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">👥 Usuarios</button>
             <button data-tab="pdv" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">PDV e caixa</button>
-            <button data-tab="publicar" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Publicar</button>
+            <button data-tab="publicar" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-sm font-semibold">Publicar</button>
             <button id="abrir-pdv-aba" type="button" class="rounded-lg border border-emerald-600 bg-emerald-500/10 px-3 py-2 text-left text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20">Abrir PDV em nova aba</button>
           </nav>
           <div class="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-400">
@@ -164,15 +167,17 @@
           <section id="mobile-tabbar" class="admin-mobile-tabs rounded-2xl border border-zinc-800 bg-zinc-900/90 p-3 lg:hidden">
             <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">Acesso rapido</p>
             <div class="mt-2 grid grid-cols-2 gap-2">
-              <button data-tab="produtos" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Produtos</button>
-              <button data-tab="categorias" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Categorias</button>
-              <button data-tab="site" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Site e visual</button>
-              <button data-tab="publicar" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Publicar</button>
+              <button data-tab="produtos" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Produtos</button>
+              <button data-tab="categorias" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Categorias</button>
+              <button data-tab="site" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Site e visual</button>
+              <button data-tab="usuarios" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Usuarios</button>
+              <button data-tab="publicar" data-admin-only="true" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">Publicar</button>
+              <button data-tab="pdv" class="tab-btn rounded-lg border border-zinc-700 px-3 py-2 text-left text-xs font-semibold">PDV</button>
             </div>
             <button id="abrir-pdv-aba-mobile" type="button" class="mt-2 w-full rounded-lg border border-emerald-700 bg-emerald-500/10 px-3 py-2 text-left text-xs font-semibold text-emerald-300">Abrir PDV em nova aba</button>
           </section>
 
-          <section data-panel="produtos" class="panel rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <section data-panel="produtos" data-admin-only="true" class="panel rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="text-xl font-bold">Produtos</h2>
               <button id="btn-abrir-cadastro-produto" type="button" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">Adicionar produto</button>
@@ -303,7 +308,7 @@
             <div id="lista-produtos" class="mt-6 overflow-hidden rounded-xl border border-zinc-800"></div>
           </section>
 
-          <section data-panel="categorias" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <section data-panel="categorias" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <h2 class="text-xl font-bold">Categorias do cardapio</h2>
             <p class="mt-1 text-sm text-zinc-400">Gerencie categorias separadamente dos produtos para organizar o cardapio com mais clareza.</p>
             <section class="mt-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
@@ -317,7 +322,7 @@
             </section>
           </section>
 
-          <section data-panel="site" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <section data-panel="site" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="text-xl font-bold">Configuracao do site</h2>
               <button type="submit" form="form-config" class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400">Salvar alteracoes no site</button>
@@ -496,6 +501,46 @@
             </section>
           </section>
 
+          <section data-panel="usuarios" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h2 class="text-xl font-bold">👥 Usuarios do sistema</h2>
+              <p class="text-xs text-zinc-400">Apenas administradores podem acessar.</p>
+            </div>
+            <p class="mt-1 text-sm text-zinc-400">Cadastre atendentes, ajuste niveis e desative acessos sem perder historico.</p>
+
+            <section class="mt-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <h3 class="text-base font-bold">Adicionar ou editar usuario</h3>
+              <form id="form-usuario" class="mt-3 grid gap-3 sm:grid-cols-2">
+                <input id="usuario-id" type="hidden">
+                <label class="text-xs text-zinc-400">Usuario
+                  <input id="usuario-nome" required class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="ex.: atendente01">
+                </label>
+                <label class="text-xs text-zinc-400">Senha
+                  <input id="usuario-senha" required class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="Senha de acesso">
+                </label>
+                <label class="text-xs text-zinc-400">Nivel de acesso
+                  <select id="usuario-nivel" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm">
+                    <option value="comum">Usuario comum (PDV)</option>
+                    <option value="admin">Administrador geral</option>
+                  </select>
+                </label>
+                <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200">
+                  <input id="usuario-ativo" type="checkbox" class="h-4 w-4 accent-emerald-500" checked>
+                  Usuario ativo
+                </label>
+                <div class="sm:col-span-2 flex flex-wrap gap-2">
+                  <button class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">Salvar usuario</button>
+                  <button id="usuario-limpar" type="button" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold">Limpar</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="mt-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <h3 class="text-base font-bold">Lista de usuarios</h3>
+              <div id="lista-usuarios-admin" class="mt-3 grid gap-2"></div>
+            </section>
+          </section>
+
           <section data-panel="pdv" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -585,7 +630,7 @@
             </div>
           </section>
 
-          <section data-panel="publicar" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
+          <section data-panel="publicar" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <h2 class="text-xl font-bold">Publicar alteracoes</h2>
             <p class="mt-1 text-sm text-zinc-400">Salve no GitHub para atualizar o arquivo produtos.json de forma permanente para todos os dispositivos.</p>
             <div class="mt-4 flex flex-wrap gap-2">
@@ -664,6 +709,7 @@
     const CHAVE_SEGURANCA = 'brasa_admin_lock_v1';
     const CHAVE_DRAFT = 'brasa_delivery_dados_v1';
     const CHAVE_PEDIDOS_PDV = 'brasa_pdv_pedidos_v1';
+    const CHAVE_PEDIDOS_PDV_EVENTO = 'brasa_pdv_pedidos_evento_v1';
     const CHAVE_FINANCEIRO_PDV = 'brasa_pdv_financeiro_v1';
     const CHAVE_BACKUPS = 'mh_site_backups_v1';
     const CHAVE_PDV_HANDOFF = 'brasa_pdv_handoff_v1';
@@ -739,6 +785,10 @@
       appNome: 'MH LANCHES',
       appIconeUrl: ICONE_APP_PADRAO,
       appInstalarAtivo: true,
+      usuarios: [
+        { id: 'admin_root', usuario: CREDENCIAIS_PADRAO.usuario, senha: CREDENCIAIS_PADRAO.senha, nivel: 'admin', ativo: true },
+        { id: 'mod_root', usuario: 'Usuario Mod', senha: '123456', nivel: 'comum', ativo: true }
+      ],
       favoritosPosicao: 'meio',
       categoriasOrdem: [],
       categoriasPausadas: [],
@@ -753,15 +803,17 @@
       tab: 'produtos',
       pdv: { pedidos: [], faturadoHoje: 0, dia: '' },
       caixa: { pedidoId: '', identificacao: '', status: 'novo', pago: false, categoriaAtiva: 'TODOS', itens: [] },
-      filtrosProduto: { valor: 'todos', status: 'todos' }
+      filtrosProduto: { valor: 'todos', status: 'todos' },
+      sessao: { usuario: '', nivel: 'comum' }
     };
     const canalPdv = 'BroadcastChannel' in window ? new BroadcastChannel(CANAL_PDV) : null;
     let tentativas = 0;
     let bloqueadoAte = 0;
-    let credenciaisAcesso = { ...CREDENCIAIS_PADRAO };
+    let usuariosAcesso = [...CONFIG_PADRAO.usuarios];
     let timerBloqueio;
     let timerSessao;
     let ghRuntimeToken = '';
+    let timerSyncPdv;
 
     const authBox = document.getElementById('auth-box');
     const painelAdmin = document.getElementById('painel-admin');
@@ -1025,10 +1077,169 @@
       }
     }
 
-    function normalizarCredenciais(config) {
-      const usuario = String(config && config.adminUsuario || CREDENCIAIS_PADRAO.usuario).trim() || CREDENCIAIS_PADRAO.usuario;
-      const senha = String(config && config.adminSenha || CREDENCIAIS_PADRAO.senha).trim() || CREDENCIAIS_PADRAO.senha;
-      return { usuario, senha };
+    function normalizarUsuario(item, indice) {
+      return {
+        id: String(item && item.id || `user_${Date.now()}_${indice}`),
+        usuario: String(item && item.usuario || '').trim() || `usuario${indice + 1}`,
+        senha: String(item && item.senha || '').trim() || '123456',
+        nivel: String(item && item.nivel || 'comum').toLowerCase() === 'admin' ? 'admin' : 'comum',
+        ativo: item && item.ativo === false ? false : true
+      };
+    }
+
+    function normalizarUsuarios(config) {
+      const adminUsuario = String(config && config.adminUsuario || CREDENCIAIS_PADRAO.usuario).trim() || CREDENCIAIS_PADRAO.usuario;
+      const adminSenha = String(config && config.adminSenha || CREDENCIAIS_PADRAO.senha).trim() || CREDENCIAIS_PADRAO.senha;
+      const listaBase = Array.isArray(config && config.usuarios) ? config.usuarios : [];
+      const lista = listaBase.map(normalizarUsuario).filter((item, index, arr) => arr.findIndex((u) => u.usuario.toUpperCase() === item.usuario.toUpperCase()) === index);
+      const idxAdminRoot = lista.findIndex((item) => item.id === 'admin_root');
+
+      if (idxAdminRoot >= 0) {
+        lista[idxAdminRoot].usuario = adminUsuario;
+        lista[idxAdminRoot].senha = adminSenha;
+        lista[idxAdminRoot].nivel = 'admin';
+        lista[idxAdminRoot].ativo = true;
+      } else {
+        lista.unshift({ id: 'admin_root', usuario: adminUsuario, senha: adminSenha, nivel: 'admin', ativo: true });
+      }
+
+      const idxModRoot = lista.findIndex((item) => item.id === 'mod_root' || item.usuario.toUpperCase() === 'USUARIO MOD');
+      if (idxModRoot >= 0) {
+        lista[idxModRoot].id = 'mod_root';
+        lista[idxModRoot].usuario = 'Usuario Mod';
+        lista[idxModRoot].senha = lista[idxModRoot].senha || '123456';
+        lista[idxModRoot].nivel = 'comum';
+      } else {
+        lista.push({ id: 'mod_root', usuario: 'Usuario Mod', senha: '123456', nivel: 'comum', ativo: true });
+      }
+
+      if (!lista.some((item) => item.nivel === 'admin' && item.ativo)) {
+        lista[0].nivel = 'admin';
+        lista[0].ativo = true;
+      }
+
+      return lista;
+    }
+
+    function obterAdminPrincipal(config) {
+      const usuarios = normalizarUsuarios(config);
+      return usuarios.find((item) => item.nivel === 'admin' && item.ativo) || usuarios[0];
+    }
+
+    function usuarioEhAdmin() {
+      return estado.sessao.nivel === 'admin';
+    }
+
+    function obterUsuarioPorLogin(nome, senha) {
+      const nomeLimpo = String(nome || '').trim().toUpperCase();
+      return usuariosAcesso.find((item) => item.ativo && item.usuario.toUpperCase() === nomeLimpo && item.senha === senha);
+    }
+
+    function carregarSessaoAtiva() {
+      try {
+        const sessao = JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || '{}');
+        estado.sessao = {
+          usuario: String(sessao.usuario || ''),
+          nivel: sessao.nivel === 'admin' ? 'admin' : 'comum'
+        };
+      } catch (_) {
+        estado.sessao = { usuario: '', nivel: 'comum' };
+      }
+    }
+
+    function salvarSessaoUsuario(usuario) {
+      const payload = {
+        expiraEm: Date.now() + SESSAO_MS,
+        usuario: String(usuario && usuario.usuario || ''),
+        nivel: usuario && usuario.nivel === 'admin' ? 'admin' : 'comum'
+      };
+      sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify(payload));
+      estado.sessao = { usuario: payload.usuario, nivel: payload.nivel };
+    }
+
+    function validarSenhaAdministrador(senha) {
+      return usuariosAcesso.some((item) => item.ativo && item.nivel === 'admin' && item.senha === senha);
+    }
+
+    function atualizarPerfilUi() {
+      const badge = document.getElementById('perfil-acesso');
+      if (!badge) return;
+      const nome = estado.sessao.usuario || '--';
+      const nivel = usuarioEhAdmin() ? 'ADM' : 'FUNCIONARIO';
+      badge.textContent = `${nome} • ${nivel}`;
+      badge.className = `rounded-lg border px-3 py-2 text-xs font-semibold ${usuarioEhAdmin() ? 'border-emerald-700 bg-emerald-500/10 text-emerald-200' : 'border-sky-700 bg-sky-500/10 text-sky-200'}`;
+    }
+
+    function atualizarPermissoesUi() {
+      const admin = usuarioEhAdmin();
+      document.querySelectorAll('[data-admin-only="true"]').forEach((el) => {
+        if (el.matches('.panel')) return;
+        el.classList.toggle('hidden', !admin);
+      });
+      if (!admin && estado.tab !== 'pdv') estado.tab = 'pdv';
+      atualizarPerfilUi();
+    }
+
+    function solicitarAcessoAdmin(destino) {
+      if (usuarioEhAdmin()) return true;
+      const senha = window.prompt('Area restrita. Informe a senha de ADM para continuar:');
+      if (!senha) return false;
+      if (!validarSenhaAdministrador(senha)) {
+        setStatus('Senha de administrador invalida. Acesso bloqueado.', true);
+        return false;
+      }
+      estado.sessao = { usuario: 'ADM (temporario)', nivel: 'admin' };
+      sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ expiraEm: Date.now() + SESSAO_MS, usuario: estado.sessao.usuario, nivel: estado.sessao.nivel }));
+      setStatus('Acesso elevado para administrador.', false);
+      atualizarPermissoesUi();
+      if (destino) {
+        estado.tab = destino;
+        renderTabs();
+      }
+      return true;
+    }
+
+    function limparFormUsuario() {
+      document.getElementById('usuario-id').value = '';
+      document.getElementById('usuario-nome').value = '';
+      document.getElementById('usuario-senha').value = '';
+      document.getElementById('usuario-nivel').value = 'comum';
+      document.getElementById('usuario-ativo').checked = true;
+    }
+
+    function preencherFormUsuario(id) {
+      const usuario = (estado.dados.config.usuarios || []).find((item) => item.id === id);
+      if (!usuario) return;
+      document.getElementById('usuario-id').value = usuario.id;
+      document.getElementById('usuario-nome').value = usuario.usuario;
+      document.getElementById('usuario-senha').value = usuario.senha;
+      document.getElementById('usuario-nivel').value = usuario.nivel;
+      document.getElementById('usuario-ativo').checked = usuario.ativo !== false;
+      estado.tab = 'usuarios';
+      renderTabs();
+    }
+
+    function renderUsuariosAdmin() {
+      const lista = document.getElementById('lista-usuarios-admin');
+      if (!lista) return;
+      const usuarios = normalizarUsuarios(estado.dados.config);
+      if (!usuarios.length) {
+        lista.innerHTML = '<p class="rounded-lg border border-zinc-800 bg-zinc-900 p-3 text-sm text-zinc-400">Nenhum usuario cadastrado.</p>';
+        return;
+      }
+      lista.innerHTML = usuarios.map((item) => `
+        <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+          <div>
+            <p class="font-semibold">${item.usuario} ${item.nivel === 'admin' ? '<span class="ml-2 rounded border border-emerald-700 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-300">ADM</span>' : '<span class="ml-2 rounded border border-sky-700 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-sky-300">Comum</span>'}</p>
+            <p class="text-xs text-zinc-400">Status: ${item.ativo ? 'Ativo' : 'Inativo'}</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button data-usuario-editar="${item.id}" class="rounded border border-zinc-700 px-2 py-1 text-xs">Editar</button>
+            <button data-usuario-toggle="${item.id}" class="rounded border border-amber-700 px-2 py-1 text-xs text-amber-300">${item.ativo ? 'Desativar' : 'Ativar'}</button>
+            <button data-usuario-remover="${item.id}" class="rounded border border-rose-700 px-2 py-1 text-xs text-rose-300">Excluir</button>
+          </div>
+        </div>
+      `).join('');
     }
 
     async function carregarCredenciaisAcesso() {
@@ -1036,19 +1247,19 @@
         const draft = localStorage.getItem(CHAVE_DRAFT);
         if (draft) {
           const dadosDraft = normalizarDados(JSON.parse(draft));
-          credenciaisAcesso = normalizarCredenciais(dadosDraft.config);
+          usuariosAcesso = normalizarUsuarios(dadosDraft.config);
           return;
         }
       } catch (_) {
-        credenciaisAcesso = { ...CREDENCIAIS_PADRAO };
+        usuariosAcesso = [...CONFIG_PADRAO.usuarios];
       }
       try {
         const resposta = await fetch('produtos.json', { cache: 'no-store' });
         if (!resposta.ok) throw new Error('Falha ao carregar credenciais.');
         const dadosArquivo = normalizarDados(await resposta.json());
-        credenciaisAcesso = normalizarCredenciais(dadosArquivo.config);
+        usuariosAcesso = normalizarUsuarios(dadosArquivo.config);
       } catch (_) {
-        credenciaisAcesso = { ...CREDENCIAIS_PADRAO };
+        usuariosAcesso = [...CONFIG_PADRAO.usuarios];
       }
     }
 
@@ -1256,10 +1467,15 @@
 
     function normalizarDados(dados) {
       if (Array.isArray(dados)) return { config: { ...CONFIG_PADRAO }, produtos: dados.map(normalizarProduto) };
+      const configBruta = { ...CONFIG_PADRAO, ...(dados.config || {}) };
+      const usuariosNormalizados = normalizarUsuarios(configBruta);
+      const adminPrincipal = obterAdminPrincipal({ ...configBruta, usuarios: usuariosNormalizados });
       return {
         config: {
-          ...CONFIG_PADRAO,
-          ...(dados.config || {}),
+          ...configBruta,
+          adminUsuario: adminPrincipal.usuario,
+          adminSenha: adminPrincipal.senha,
+          usuarios: usuariosNormalizados,
           categoriasOrdem: normalizarCategoriasOrdem(dados.config && dados.config.categoriasOrdem),
           categoriasPausadas: normalizarCategoriasPausadas(dados.config && dados.config.categoriasPausadas),
           cores: { ...CONFIG_PADRAO.cores, ...((dados.config && dados.config.cores) || {}) },
@@ -1281,10 +1497,12 @@
     function salvarRascunho() {
       sincronizarCategoriasConfig();
       garantirOrdemProdutos();
+      estado.dados.config.usuarios = normalizarUsuarios(estado.dados.config);
       localStorage.setItem(CHAVE_DRAFT, JSON.stringify(estado.dados, null, 2));
       infoTotal.textContent = String(estado.dados.produtos.length);
       preencherCategoriasSugestao();
       renderCategoriasAdmin();
+      renderUsuariosAdmin();
     }
 
     function preencherCategoriasSugestao() {
@@ -1540,6 +1758,10 @@
     }
 
     function renderTabs() {
+      const tabAdminOnly = ['produtos', 'categorias', 'site', 'usuarios', 'publicar'];
+      if (!usuarioEhAdmin() && tabAdminOnly.includes(estado.tab)) {
+        estado.tab = 'pdv';
+      }
       const contextos = {
         produtos: {
           tag: 'Cadastro e manutencao',
@@ -1556,6 +1778,11 @@
           titulo: 'Configuracao do site',
           descricao: 'Atualize visual, horarios, textos e contatos em uma unica tela.'
         },
+        usuarios: {
+          tag: 'Seguranca e acesso',
+          titulo: 'Usuarios do sistema',
+          descricao: 'Crie logins de atendentes, niveis de permissao e controle de contas ativas.'
+        },
         pdv: {
           tag: 'Operacao de caixa',
           titulo: 'PDV e caixa',
@@ -1570,6 +1797,7 @@
       const contextoAtivo = contextos[estado.tab] || contextos.produtos;
 
       document.querySelectorAll('.tab-btn').forEach((btn) => {
+        if (btn.dataset.adminOnly === 'true') btn.classList.toggle('hidden', !usuarioEhAdmin());
         const ativo = btn.dataset.tab === estado.tab;
         btn.dataset.active = ativo ? 'true' : 'false';
         btn.classList.toggle('bg-zinc-950', ativo);
@@ -1581,7 +1809,11 @@
           btn.removeAttribute('aria-current');
         }
       });
-      document.querySelectorAll('.panel').forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== estado.tab));
+      document.querySelectorAll('.panel').forEach((panel) => {
+        const exigeAdmin = panel.dataset.adminOnly === 'true';
+        const ocultar = panel.dataset.panel !== estado.tab || (exigeAdmin && !usuarioEhAdmin());
+        panel.classList.toggle('hidden', ocultar);
+      });
 
       const tag = document.getElementById('admin-context-tag');
       const titulo = document.getElementById('admin-context-title');
@@ -1699,6 +1931,17 @@
       carregarPedidosPdv();
       renderPedidosPdv();
       if (tocarSom && estado.pdv.pedidos.length > antes) tocarBeep();
+    }
+
+    function iniciarSincronizacaoPdvContinua() {
+      clearInterval(timerSyncPdv);
+      timerSyncPdv = setInterval(() => {
+        sincronizarPedidosExternos(false);
+      }, 2000);
+      window.addEventListener('focus', () => sincronizarPedidosExternos(false));
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) sincronizarPedidosExternos(false);
+      });
     }
 
     function atualizarResumoPdv() {
@@ -2041,9 +2284,11 @@
     function salvarEstado(dados) {
       validarEstrutura(dados);
       estado.dados = normalizarDados(dados);
+      usuariosAcesso = normalizarUsuarios(estado.dados.config);
       preencherFormConfig(estado.dados.config);
       salvarRascunho();
       renderProdutos();
+      renderUsuariosAdmin();
       renderCatalogoCaixa();
       renderComandaCaixa();
     }
@@ -2063,6 +2308,7 @@
     }
 
     function liberarPainel() {
+      carregarSessaoAtiva();
       authBox.classList.add('hidden');
       painelAdmin.classList.remove('hidden');
       if (isPdvView) {
@@ -2070,10 +2316,12 @@
         document.title = 'PDV em tempo real - MH Lanches';
         estado.tab = 'pdv';
       }
+      atualizarPermissoesUi();
       renderTabs();
       carregarFinanceiroPdv();
       carregarPedidosPdv();
       renderPedidosPdv();
+      iniciarSincronizacaoPdvContinua();
       carregarArquivo();
       atualizarInfoBackups();
       iniciarTimerSessao();
@@ -2082,7 +2330,12 @@
 
     function abrirPdvEmNovaAba() {
       const token = Math.random().toString(36).slice(2);
-      localStorage.setItem(CHAVE_PDV_HANDOFF, JSON.stringify({ token, expiraEm: Date.now() + 20000 }));
+      localStorage.setItem(CHAVE_PDV_HANDOFF, JSON.stringify({
+        token,
+        expiraEm: Date.now() + 20000,
+        usuario: estado.sessao.usuario || '',
+        nivel: estado.sessao.nivel || 'comum'
+      }));
       window.open(`admin.html?view=pdv&handoff=${token}`, '_blank', 'noopener');
     }
 
@@ -2098,7 +2351,11 @@
         const valido = salvo.token === tokenUrl && Date.now() < Number(salvo.expiraEm);
         if (!valido) return false;
         localStorage.removeItem(CHAVE_PDV_HANDOFF);
-        sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ expiraEm: Date.now() + SESSAO_MS }));
+        sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({
+          expiraEm: Date.now() + SESSAO_MS,
+          usuario: String(salvo.usuario || ''),
+          nivel: String(salvo.nivel || 'comum')
+        }));
         return true;
       } catch (_) {
         return false;
@@ -2112,9 +2369,8 @@
       const nome = document.getElementById('nome-admin').value.trim();
       const senha = document.getElementById('senha-admin').value;
 
-      const usuarioValido = nome.toUpperCase() === String(credenciaisAcesso.usuario || '').toUpperCase();
-      const senhaValida = senha === String(credenciaisAcesso.senha || '');
-      if (!usuarioValido || !senhaValida) {
+      const usuario = obterUsuarioPorLogin(nome, senha);
+      if (!usuario) {
         tentativas += 1;
         if (tentativas >= MAX_TENTATIVAS) {
           bloqueadoAte = Date.now() + BLOQUEIO_MS;
@@ -2128,9 +2384,71 @@
       tentativas = 0;
       bloqueadoAte = 0;
       salvarSeguranca();
-      sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({ expiraEm: Date.now() + SESSAO_MS }));
+      salvarSessaoUsuario(usuario);
       setAuthStatus('Acesso liberado.', false);
       liberarPainel();
+    });
+
+    document.getElementById('form-usuario').addEventListener('submit', (evento) => {
+      evento.preventDefault();
+      if (!usuarioEhAdmin()) {
+        setStatus('Apenas administrador pode gerenciar usuarios.', true);
+        return;
+      }
+      const idAtual = document.getElementById('usuario-id').value.trim();
+      const usuarioNome = document.getElementById('usuario-nome').value.trim();
+      const usuarioSenha = document.getElementById('usuario-senha').value.trim();
+      const usuarioNivel = document.getElementById('usuario-nivel').value === 'admin' ? 'admin' : 'comum';
+      const usuarioAtivo = document.getElementById('usuario-ativo').checked;
+
+      if (!usuarioNome || !usuarioSenha) {
+        setStatus('Informe usuario e senha para salvar.', true);
+        return;
+      }
+
+      const usuarios = normalizarUsuarios(estado.dados.config);
+      const conflito = usuarios.find((item) => item.usuario.toUpperCase() === usuarioNome.toUpperCase() && item.id !== idAtual);
+      if (conflito) {
+        setStatus('Ja existe um usuario com esse nome.', true);
+        return;
+      }
+
+      if (idAtual) {
+        const alvo = usuarios.find((item) => item.id === idAtual);
+        if (!alvo) {
+          setStatus('Usuario nao encontrado para edicao.', true);
+          return;
+        }
+        if (alvo.id === 'mod_root') {
+          alvo.usuario = 'Usuario Mod';
+          alvo.nivel = 'comum';
+        } else {
+          alvo.usuario = usuarioNome;
+          alvo.nivel = usuarioNivel;
+        }
+        alvo.senha = usuarioSenha;
+        alvo.ativo = usuarioAtivo;
+      } else {
+        usuarios.push(normalizarUsuario({
+          id: `user_${Date.now()}`,
+          usuario: usuarioNome,
+          senha: usuarioSenha,
+          nivel: usuarioNivel,
+          ativo: usuarioAtivo
+        }, usuarios.length));
+      }
+
+      estado.dados.config.usuarios = usuarios;
+      estado.dados.config.usuarios = normalizarUsuarios(estado.dados.config);
+      usuariosAcesso = [...estado.dados.config.usuarios];
+      salvarRascunho();
+      renderUsuariosAdmin();
+      limparFormUsuario();
+      setStatus('Usuario salvo com sucesso.', false);
+    });
+
+    document.getElementById('usuario-limpar').addEventListener('click', () => {
+      limparFormUsuario();
     });
 
     document.getElementById('tipo').addEventListener('change', atualizarCamposTipo);
@@ -2609,7 +2927,8 @@
           borda: document.getElementById('cfg-cor-borda').value
         }
       };
-      credenciaisAcesso = normalizarCredenciais(estado.dados.config);
+      estado.dados.config.usuarios = normalizarUsuarios(estado.dados.config);
+      usuariosAcesso = [...estado.dados.config.usuarios];
       document.getElementById('cfg-jingle').value = jingleNormalizado;
       salvarRascunho();
       atualizarStatusOperacaoAdmin();
@@ -2828,8 +3147,50 @@
       location.reload();
     });
 
+    document.getElementById('lista-usuarios-admin').addEventListener('click', (evento) => {
+      const editar = evento.target.closest('[data-usuario-editar]');
+      if (editar) {
+        if (!usuarioEhAdmin() && !solicitarAcessoAdmin('usuarios')) return;
+        preencherFormUsuario(editar.dataset.usuarioEditar);
+        return;
+      }
+
+      const toggle = evento.target.closest('[data-usuario-toggle]');
+      if (toggle) {
+        if (!usuarioEhAdmin() && !solicitarAcessoAdmin('usuarios')) return;
+        const usuarios = normalizarUsuarios(estado.dados.config);
+        const alvo = usuarios.find((item) => item.id === toggle.dataset.usuarioToggle);
+        if (!alvo || alvo.id === 'admin_root') {
+          setStatus('Nao e permitido desativar o administrador principal.', true);
+          return;
+        }
+        alvo.ativo = !alvo.ativo;
+        estado.dados.config.usuarios = normalizarUsuarios({ ...estado.dados.config, usuarios });
+        usuariosAcesso = [...estado.dados.config.usuarios];
+        salvarRascunho();
+        renderUsuariosAdmin();
+        setStatus(alvo.ativo ? 'Usuario ativado.' : 'Usuario desativado.', false);
+        return;
+      }
+
+      const remover = evento.target.closest('[data-usuario-remover]');
+      if (remover) {
+        if (!usuarioEhAdmin() && !solicitarAcessoAdmin('usuarios')) return;
+        if (['admin_root', 'mod_root'].includes(remover.dataset.usuarioRemover)) {
+          setStatus('Nao e permitido excluir usuarios padrao do sistema.', true);
+          return;
+        }
+        const usuarios = normalizarUsuarios(estado.dados.config).filter((item) => item.id !== remover.dataset.usuarioRemover);
+        estado.dados.config.usuarios = normalizarUsuarios({ ...estado.dados.config, usuarios });
+        usuariosAcesso = [...estado.dados.config.usuarios];
+        salvarRascunho();
+        renderUsuariosAdmin();
+        setStatus('Usuario removido.', false);
+      }
+    });
+
     window.addEventListener('storage', (evento) => {
-      if (evento.key === CHAVE_PEDIDOS_PDV) sincronizarPedidosExternos(true);
+      if (evento.key === CHAVE_PEDIDOS_PDV || evento.key === CHAVE_PEDIDOS_PDV_EVENTO) sincronizarPedidosExternos(true);
       if (evento.key === CHAVE_FINANCEIRO_PDV) {
         carregarFinanceiroPdv();
         atualizarResumoPdv();
@@ -2861,6 +3222,10 @@
     try {
       const sessao = JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || '{}');
       if (!painelLiberado && sessao.expiraEm && Date.now() < sessao.expiraEm) {
+        estado.sessao = {
+          usuario: String(sessao.usuario || ''),
+          nivel: sessao.nivel === 'admin' ? 'admin' : 'comum'
+        };
         liberarPainel();
       } else if (!painelLiberado) {
         sessionStorage.removeItem(CHAVE_SESSAO);

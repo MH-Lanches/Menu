@@ -294,7 +294,11 @@
             <div class="mt-3 grid gap-3 sm:grid-cols-2">
               <label class="grid gap-1 text-sm sm:col-span-2">
                 <span class="font-semibold">Endereco</span>
-                <input id="cliente-endereco" type="text" class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 outline-none ring-orange-400 focus:ring-2" placeholder="Rua, numero e bairro">
+                <input id="cliente-endereco" type="text" class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 outline-none ring-orange-400 focus:ring-2" placeholder="Rua e numero">
+              </label>
+              <label class="grid gap-1 text-sm sm:col-span-2">
+                <span class="font-semibold">Bairro</span>
+                <input id="cliente-bairro" type="text" class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 outline-none ring-orange-400 focus:ring-2" placeholder="Digite seu bairro">
               </label>
               <label class="grid gap-1 text-sm sm:col-span-2">
                 <span class="font-semibold">Ponto de referencia</span>
@@ -342,7 +346,6 @@
         </div>
 
         <div class="flex flex-wrap justify-end gap-2">
-          <button type="button" id="cancelar-checkout" class="rounded-md border border-zinc-700 px-4 py-2 text-sm font-semibold">Cancelar</button>
           <button id="submit-checkout" type="submit" class="hidden rounded-md bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 transition hover:bg-emerald-400">Enviar pedido para WhatsApp</button>
         </div>
       </form>
@@ -424,6 +427,8 @@
     const CHAVE_FAVORITOS = 'brasa_delivery_favoritos_v1';
     const CHAVE_PEDIDO_SEQ = 'brasa_delivery_pedido_seq_v1';
     const CHAVE_PEDIDOS_PDV = 'brasa_pdv_pedidos_v1';
+    const CHAVE_PEDIDOS_PDV_EVENTO = 'brasa_pdv_pedidos_evento_v1';
+    const CHAVE_CLIENTE_PEDIDO = 'mh_cliente_pedido_v1';
     const CANAL_PDV = 'brasa_pdv_channel';
     const canalPdv = 'BroadcastChannel' in window ? new BroadcastChannel(CANAL_PDV) : null;
     const estado = {
@@ -530,6 +535,23 @@
       return '#menu';
     }
 
+    function numeroSeguro(valor, padrao = 0) {
+      const numero = Number(valor);
+      return Number.isFinite(numero) ? numero : padrao;
+    }
+
+    function calcularEntregaPorSubtotal(subtotal) {
+      const valorSubtotal = Math.max(0, numeroSeguro(subtotal, 0));
+      if (valorSubtotal <= 0) return { entrega: 0, freteGratis: false };
+
+      const taxa = Math.max(0, numeroSeguro(estado.config.taxaEntrega, 0));
+      const limiteFreteGratis = numeroSeguro(estado.config.freteGratisAcima, -1);
+      const freteGratisHabilitado = limiteFreteGratis > 0;
+      const freteGratisAplicado = freteGratisHabilitado && valorSubtotal >= limiteFreteGratis;
+
+      return { entrega: freteGratisAplicado ? 0 : taxa, freteGratis: freteGratisAplicado };
+    }
+
     function emModoAppInstalado() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     }
@@ -549,6 +571,44 @@
 
     function promptAppOculto() {
       return localStorage.getItem(CHAVE_OCULTAR_PROMPT_APP) === '1';
+    }
+
+    function obterDadosClienteSalvos() {
+      try {
+        const bruto = localStorage.getItem(CHAVE_CLIENTE_PEDIDO);
+        if (!bruto) return { nome: '', endereco: '', bairro: '', referencia: '' };
+        const dados = JSON.parse(bruto);
+        return {
+          nome: String((dados && dados.nome) || '').trim(),
+          endereco: String((dados && dados.endereco) || '').trim(),
+          bairro: String((dados && dados.bairro) || '').trim(),
+          referencia: String((dados && dados.referencia) || '').trim()
+        };
+      } catch (_) {
+        return { nome: '', endereco: '', bairro: '', referencia: '' };
+      }
+    }
+
+    function aplicarDadosClienteSalvos() {
+      const dados = obterDadosClienteSalvos();
+      const inputNome = document.getElementById('cliente-nome');
+      const inputEndereco = document.getElementById('cliente-endereco');
+      const inputBairro = document.getElementById('cliente-bairro');
+      const inputReferencia = document.getElementById('cliente-referencia');
+      if (inputNome && dados.nome) inputNome.value = dados.nome;
+      if (inputEndereco && dados.endereco) inputEndereco.value = dados.endereco;
+      if (inputBairro && dados.bairro) inputBairro.value = dados.bairro;
+      if (inputReferencia && dados.referencia) inputReferencia.value = dados.referencia;
+    }
+
+    function salvarDadosCliente(dados) {
+      const payload = {
+        nome: String((dados && dados.nome) || '').trim(),
+        endereco: String((dados && dados.endereco) || '').trim(),
+        bairro: String((dados && dados.bairro) || '').trim(),
+        referencia: String((dados && dados.referencia) || '').trim()
+      };
+      localStorage.setItem(CHAVE_CLIENTE_PEDIDO, JSON.stringify(payload));
     }
 
     function atualizarManifestoPwa(cfg) {
@@ -1123,13 +1183,14 @@
       const itens = estado.carrinho;
       const qtd = itens.reduce((acc, item) => acc + item.quantidade, 0);
       const subtotal = itens.reduce((acc, item) => acc + (item.precoFinal * item.quantidade), 0);
-      const entrega = subtotal === 0 ? 0 : subtotal >= Number(estado.config.freteGratisAcima || 0) ? 0 : Number(estado.config.taxaEntrega || 0);
+      const entregaInfo = calcularEntregaPorSubtotal(subtotal);
+      const entrega = entregaInfo.entrega;
       const total = subtotal + entrega;
       elResumo.textContent = `${qtd} ${qtd === 1 ? 'item' : 'itens'} no carrinho`;
       elContadorCarrinhoFlutuante.textContent = String(qtd);
       elBtnCarrinhoFlutuante.classList.toggle('opacity-80', qtd === 0);
       elSubtotal.textContent = formatarMoeda(subtotal);
-      elEntrega.textContent = entrega === 0 ? 'Gratis' : formatarMoeda(entrega);
+      elEntrega.textContent = entregaInfo.freteGratis ? 'Gratis' : formatarMoeda(entrega);
       elTotal.textContent = formatarMoeda(total);
       const minimo = Number(estado.config.valorPedidoMinimo || 0);
       if (minimo > 0 && subtotal < minimo) {
@@ -1344,7 +1405,7 @@
 
     function calcularTotais(tipoAtendimento = 'entrega') {
       const subtotal = estado.carrinho.reduce((acc, item) => acc + (item.precoFinal * item.quantidade), 0);
-      const entregaBase = subtotal >= Number(estado.config.freteGratisAcima || 0) ? 0 : Number(estado.config.taxaEntrega || 0);
+      const entregaBase = calcularEntregaPorSubtotal(subtotal).entrega;
       const entrega = tipoAtendimento === 'retirada' ? 0 : entregaBase;
       return { subtotal, entrega, total: subtotal + entrega };
     }
@@ -1373,13 +1434,18 @@
     }
 
     function registrarPedidoNoPdv(pedido) {
+      let lista = [];
       try {
         const atual = JSON.parse(localStorage.getItem(CHAVE_PEDIDOS_PDV) || '[]');
-        const lista = Array.isArray(atual) ? atual : [];
-        lista.push(pedido);
-        localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(lista));
-        if (canalPdv) canalPdv.postMessage({ tipo: 'novo-pedido', pedidoId: pedido.id });
-      } catch (_) {}
+        lista = Array.isArray(atual) ? atual : [];
+      } catch (_) {
+        lista = [];
+      }
+      lista.push(pedido);
+      localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(lista));
+      // Evento auxiliar para forcar sincronizacao entre abas/dispositivos no mesmo navegador.
+      localStorage.setItem(CHAVE_PEDIDOS_PDV_EVENTO, JSON.stringify({ pedidoId: pedido.id, em: Date.now() }));
+      if (canalPdv) canalPdv.postMessage({ tipo: 'novo-pedido', pedidoId: pedido.id });
     }
 
     function pagamentosSelecionados() {
@@ -1399,6 +1465,7 @@
       const avisoEntrega = document.getElementById('aviso-entrega-ajuste');
       const botaoSubmit = document.getElementById('submit-checkout');
       const inputEndereco = document.getElementById('cliente-endereco');
+      const inputBairro = document.getElementById('cliente-bairro');
       const inputReferencia = document.getElementById('cliente-referencia');
       const entrega = tipoAtendimento === 'entrega';
       boxEndereco.classList.toggle('hidden', !entrega);
@@ -1407,10 +1474,9 @@
       avisoEntrega.classList.toggle('hidden', !entrega);
       botaoSubmit.classList.toggle('hidden', !tipoAtendimento);
       inputEndereco.required = entrega;
+      inputBairro.required = entrega;
       inputReferencia.required = entrega;
       if (!entrega) {
-        inputEndereco.value = '';
-        inputReferencia.value = '';
         document.querySelectorAll('input[name="pagamento-entrega"]').forEach((el) => { el.checked = false; });
         document.querySelectorAll('input[name="precisa-troco"]').forEach((el) => { el.checked = false; });
         document.getElementById('troco-valor').value = '';
@@ -1424,6 +1490,7 @@
 
     function abrirModalCheckout() {
       elFormCheckout.reset();
+      aplicarDadosClienteSalvos();
       document.querySelectorAll('input[name="tipo-atendimento"]').forEach((el) => { el.checked = false; });
       document.getElementById('troco-box').classList.add('hidden');
       document.getElementById('troco-valor-box').classList.add('hidden');
@@ -1464,6 +1531,7 @@
         `- Tipo: ${dados.tipoAtendimento === 'retirada' ? 'Retirada no local' : 'Entrega'}`,
         `- Nome: ${dados.nome}`,
         `- Endereco: ${dados.tipoAtendimento === 'retirada' ? 'nao se aplica' : dados.endereco}`,
+        `- Bairro: ${dados.tipoAtendimento === 'retirada' ? 'nao se aplica' : dados.bairro}`,
         `- Referencia: ${dados.tipoAtendimento === 'retirada' ? 'nao se aplica' : dados.referencia}`,
         '==================================',
         '💳 *PAGAMENTO:*',
@@ -1581,7 +1649,6 @@
     });
 
     document.getElementById('fechar-checkout').addEventListener('click', fecharModalCheckout);
-    document.getElementById('cancelar-checkout').addEventListener('click', fecharModalCheckout);
 
     elFormCheckout.addEventListener('change', (evento) => {
       const atendimento = evento.target.closest('input[name="tipo-atendimento"]');
@@ -1624,6 +1691,7 @@
 
       const nome = document.getElementById('cliente-nome').value.trim();
       const endereco = document.getElementById('cliente-endereco').value.trim();
+      const bairro = document.getElementById('cliente-bairro').value.trim();
       const referencia = document.getElementById('cliente-referencia').value.trim();
       const tipoAtendimento = document.querySelector('input[name="tipo-atendimento"]:checked')?.value || '';
       const pagamentos = pagamentosSelecionados();
@@ -1634,8 +1702,8 @@
         alert('Preencha seu nome e escolha entre entrega ou retirada.');
         return;
       }
-      if (tipoAtendimento === 'entrega' && (!endereco || !referencia)) {
-        alert('Para entrega, preencha endereco e ponto de referencia.');
+      if (tipoAtendimento === 'entrega' && (!endereco || !bairro || !referencia)) {
+        alert('Para entrega, preencha endereco, bairro e ponto de referencia.');
         return;
       }
       if (!pagamentos.length) {
@@ -1662,6 +1730,7 @@
       const texto = montarMensagemWhatsapp({
         nome,
         endereco,
+        bairro,
         referencia,
         tipoAtendimento,
         pagamentos,
@@ -1681,6 +1750,7 @@
         cliente: {
           nome,
           endereco: tipoAtendimento === 'retirada' ? '' : endereco,
+          bairro: tipoAtendimento === 'retirada' ? '' : bairro,
           referencia: tipoAtendimento === 'retirada' ? '' : referencia,
           tipoAtendimento
         },
@@ -1699,6 +1769,14 @@
         totais,
         observacaoInterna: '',
         mensagemOriginal: texto
+      });
+
+      const dadosJaSalvos = obterDadosClienteSalvos();
+      salvarDadosCliente({
+        nome,
+        endereco: tipoAtendimento === 'entrega' ? endereco : (dadosJaSalvos.endereco || ''),
+        bairro: tipoAtendimento === 'entrega' ? bairro : (dadosJaSalvos.bairro || ''),
+        referencia: tipoAtendimento === 'entrega' ? referencia : (dadosJaSalvos.referencia || '')
       });
 
       const whatsappNumero = String(estado.config.whatsapp || '').replace(/\D+/g, '') || '5581985770055';
@@ -1773,6 +1851,7 @@
     });
 
     carregarFavoritos();
+    aplicarDadosClienteSalvos();
     carregarProdutos();
   </script>
 </body>
