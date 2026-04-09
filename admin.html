@@ -43,7 +43,7 @@
       backdrop-filter: blur(8px);
     }
 
-    .pdv-only body { background: #050507; }
+    .pdv-only body { background: #050507; overflow: hidden; }
     .pdv-only main { max-width: 100%; padding: 1rem; }
     .pdv-only #admin-grid { display: block; }
     .pdv-only #admin-header,
@@ -63,6 +63,8 @@
       border-color: #27272a;
       background: linear-gradient(180deg, #121217 0%, #0a0a0d 100%);
       min-height: calc(100vh - 2rem);
+      max-height: calc(100vh - 2rem);
+      overflow: hidden;
     }
 
     /* Melhor enquadramento do PDV para uso continuo em desktop */
@@ -83,6 +85,7 @@
       min-height: 0;
       overflow-y: auto;
       padding-right: 0.25rem;
+      overscroll-behavior: contain;
     }
 
     #caixa-catalogo {
@@ -703,8 +706,25 @@
                   <button id="caixa-abrir-comanda" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">+ Abrir nova comanda</button>
                   <button id="caixa-nova" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Limpar selecao</button>
                 </div>
-                <div class="mt-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-                  <p class="text-sm font-semibold">Pagamento da comanda</p>
+                <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+                  <p class="text-sm font-semibold">Catalogo por abas de categoria</p>
+                  <div id="caixa-categorias" class="mt-3 flex flex-wrap gap-2"></div>
+                  <div id="caixa-catalogo" class="mt-3 grid gap-2 sm:grid-cols-2"></div>
+                  <div id="caixa-outros-box" class="mt-3 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
+                    <input id="caixa-outro-nome" placeholder="OUTROS: nome do item" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                    <input id="caixa-outro-valor" type="number" min="0" step="0.01" placeholder="Valor" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                    <button id="caixa-add-outro" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Adicionar</button>
+                  </div>
+                </div>
+
+                <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <p class="text-sm font-semibold">Pagamento da comanda</p>
+                    <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-200">
+                      <input id="caixa-pago" type="checkbox" class="h-4 w-4 accent-violet-500">
+                      Comanda paga
+                    </label>
+                  </div>
                   <p class="mt-1 text-xs text-zinc-400">Selecione ate 2 formas de pagamento para fechar o atendimento.</p>
                   <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold">
@@ -732,22 +752,6 @@
                       <input id="caixa-dinheiro-troco-para" type="number" min="0" step="0.01" placeholder="Troco para quanto?" class="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm">
                     </div>
                     <p id="caixa-dinheiro-troco-calculo" class="mt-2 text-xs text-emerald-300"></p>
-                  </div>
-                </div>
-
-                <label class="mt-2 inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs font-semibold text-zinc-200">
-                  <input id="caixa-pago" type="checkbox" class="h-4 w-4 accent-violet-500">
-                  Comanda paga
-                </label>
-
-                <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-                  <p class="text-sm font-semibold">Catalogo por abas de categoria</p>
-                  <div id="caixa-categorias" class="mt-3 flex flex-wrap gap-2"></div>
-                  <div id="caixa-catalogo" class="mt-3 grid gap-2 sm:grid-cols-2"></div>
-                  <div id="caixa-outros-box" class="mt-3 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
-                    <input id="caixa-outro-nome" placeholder="OUTROS: nome do item" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
-                    <input id="caixa-outro-valor" type="number" min="0" step="0.01" placeholder="Valor" class="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
-                    <button id="caixa-add-outro" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Adicionar</button>
                   </div>
                 </div>
 
@@ -1057,6 +1061,7 @@
       vendasHistorico: [],
       caixa: {
         pedidoId: '',
+        emEdicao: false,
         identificacao: '',
         status: 'novo',
         pago: false,
@@ -1131,6 +1136,7 @@
         const produtosPath = String(parsed.produtosPath || parsed.path || 'produtos.json').trim() || 'produtos.json';
         const configPath = String(parsed.configPath || 'config.json').trim() || 'config.json';
         const pedidosPath = String(parsed.pedidosPath || 'pedidos.json').trim() || 'pedidos.json';
+        const cuponsPath = String(parsed.cuponsPath || 'cupons.json').trim() || 'cupons.json';
         const pdvIntervaloSeg = Math.min(60, Math.max(10, Number(parsed.pdvIntervaloSeg || 15)));
         return {
           repo: String(parsed.repo || '').trim(),
@@ -1138,11 +1144,12 @@
           produtosPath,
           configPath,
           pedidosPath,
+          cuponsPath,
           pdvIntervaloSeg,
           autoPublicar: parsed.autoPublicar !== false
         };
       } catch (_) {
-        return { repo: '', branch: 'main', produtosPath: 'produtos.json', configPath: 'config.json', pedidosPath: 'pedidos.json', pdvIntervaloSeg: 15, autoPublicar: true };
+        return { repo: '', branch: 'main', produtosPath: 'produtos.json', configPath: 'config.json', pedidosPath: 'pedidos.json', cuponsPath: 'cupons.json', pdvIntervaloSeg: 15, autoPublicar: true };
       }
     }
 
@@ -1153,6 +1160,7 @@
         produtosPath: cfg.produtosPath,
         configPath: cfg.configPath,
         pedidosPath: cfg.pedidosPath,
+        cuponsPath: cfg.cuponsPath,
         pdvIntervaloSeg: cfg.pdvIntervaloSeg,
         autoPublicar: cfg.autoPublicar === true
       }));
@@ -1165,6 +1173,7 @@
         produtosPath: document.getElementById('gh-produtos-path').value.trim() || 'produtos.json',
         configPath: document.getElementById('gh-config-path').value.trim() || 'config.json',
         pedidosPath: document.getElementById('gh-pedidos-path').value.trim() || 'pedidos.json',
+        cuponsPath: document.getElementById('gh-cupons-path').value.trim() || 'cupons.json',
         pdvIntervaloSeg: Math.min(60, Math.max(10, Number(document.getElementById('gh-pdv-intervalo').value || 15))),
         autoPublicar: document.getElementById('gh-auto-publicar').checked
       };
@@ -1182,6 +1191,7 @@
       document.getElementById('gh-produtos-path').value = cfg.produtosPath;
       document.getElementById('gh-config-path').value = cfg.configPath;
       document.getElementById('gh-pedidos-path').value = cfg.pedidosPath;
+      document.getElementById('gh-cupons-path').value = cfg.cuponsPath;
       document.getElementById('gh-pdv-intervalo').value = String(cfg.pdvIntervaloSeg);
       document.getElementById('gh-auto-publicar').checked = cfg.autoPublicar;
       ghRuntimeToken = localStorage.getItem(CHAVE_GITHUB_TOKEN) || '';
@@ -1358,6 +1368,15 @@
             localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(pedidosUnificados));
             return `${JSON.stringify({ atualizadoEm: new Date().toISOString(), pedidos: pedidosUnificados }, null, 2)}\n`;
           }
+        }),
+        escreverArquivoGithub({
+          owner,
+          repo,
+          branch: cfg.branch,
+          path: cfg.cuponsPath,
+          headers,
+          mensagem: mensagem || 'Atualiza cupons.json pelo painel admin',
+          conteudo: `${JSON.stringify({ atualizadoEm: new Date().toISOString(), cupons: estado.cupons }, null, 2)}\n`
         })
       ]);
 
@@ -2325,6 +2344,143 @@
       document.getElementById('anuncio-link').value = anuncio.link || '';
     }
 
+    function normalizarCupom(cupom, indice) {
+      const tipoNormalizado = String(cupom && cupom.tipo || '').toLowerCase();
+      return {
+        id: String(cupom && cupom.id || `cupom_${Date.now()}_${indice}`),
+        codigo: String(cupom && cupom.codigo || '').trim().toUpperCase(),
+        tipo: ['porcentagem', 'valor_fixo', 'frete_gratis'].includes(tipoNormalizado) ? tipoNormalizado : 'porcentagem',
+        valor: Math.max(0, Number(cupom && cupom.valor || 0)),
+        quantidadeTotal: Math.max(0, Number(cupom && cupom.quantidadeTotal || 0)),
+        usosRealizados: Math.max(0, Number(cupom && cupom.usosRealizados || 0)),
+        valorMinimo: Math.max(0, Number(cupom && cupom.valorMinimo || 0)),
+        validade: String(cupom && cupom.validade || '').trim(),
+        ativo: cupom && cupom.ativo === false ? false : true,
+        atualizadoEm: String(cupom && cupom.atualizadoEm || new Date().toISOString())
+      };
+    }
+
+    function normalizarListaCupons(lista) {
+      const mapa = new Map();
+      (Array.isArray(lista) ? lista : []).forEach((item, indice) => {
+        const normalizado = normalizarCupom(item, indice);
+        if (!normalizado.codigo) return;
+        mapa.set(normalizado.codigo, normalizado);
+      });
+      return [...mapa.values()];
+    }
+
+    function salvarCuponsRascunho() {
+      const payload = {
+        atualizadoEm: new Date().toISOString(),
+        cupons: estado.cupons
+      };
+      localStorage.setItem(CHAVE_CUPONS_DRAFT, JSON.stringify(payload, null, 2));
+    }
+
+    async function carregarCuponsAdmin() {
+      let lista = [];
+      try {
+        const resposta = await fetch('cupons.json', { cache: 'no-store' });
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          lista = Array.isArray(dados && dados.cupons) ? dados.cupons : [];
+        }
+      } catch (_) {}
+
+      try {
+        const draft = localStorage.getItem(CHAVE_CUPONS_DRAFT);
+        if (draft) {
+          const dadosDraft = JSON.parse(draft);
+          const listaDraft = Array.isArray(dadosDraft && dadosDraft.cupons) ? dadosDraft.cupons : [];
+          if (listaDraft.length || Array.isArray(dadosDraft && dadosDraft.cupons)) {
+            lista = listaDraft;
+          }
+        }
+      } catch (_) {}
+
+      estado.cupons = normalizarListaCupons(lista);
+      renderCuponsAdmin();
+    }
+
+    function limparFormCupom() {
+      document.getElementById('cupom-id').value = '';
+      document.getElementById('cupom-codigo-admin').value = '';
+      document.getElementById('cupom-tipo-admin').value = 'porcentagem';
+      document.getElementById('cupom-valor-admin').value = '';
+      document.getElementById('cupom-quantidade-admin').value = '';
+      document.getElementById('cupom-minimo-admin').value = '';
+      document.getElementById('cupom-validade-admin').value = '';
+      document.getElementById('cupom-ativo-admin').checked = true;
+    }
+
+    function preencherFormCupom(id) {
+      const cupom = estado.cupons.find((item) => item.id === id);
+      if (!cupom) return;
+      document.getElementById('cupom-id').value = cupom.id;
+      document.getElementById('cupom-codigo-admin').value = cupom.codigo;
+      document.getElementById('cupom-tipo-admin').value = cupom.tipo;
+      document.getElementById('cupom-valor-admin').value = cupom.valor ? String(cupom.valor) : '';
+      document.getElementById('cupom-quantidade-admin').value = cupom.quantidadeTotal ? String(cupom.quantidadeTotal) : '';
+      document.getElementById('cupom-minimo-admin').value = cupom.valorMinimo ? String(cupom.valorMinimo) : '';
+      document.getElementById('cupom-validade-admin').value = cupom.validade || '';
+      document.getElementById('cupom-ativo-admin').checked = cupom.ativo !== false;
+    }
+
+    function statusCupom(cupom) {
+      if (!cupom.ativo) return { texto: 'Inativo', classe: 'border-zinc-700 text-zinc-300 bg-zinc-800/40' };
+      const agora = Date.now();
+      if (cupom.validade) {
+        const fim = new Date(`${cupom.validade}T23:59:59`).getTime();
+        if (!Number.isNaN(fim) && agora > fim) return { texto: 'Expirado', classe: 'border-rose-700/70 text-rose-300 bg-rose-500/10' };
+      }
+      if (cupom.quantidadeTotal > 0 && cupom.usosRealizados >= cupom.quantidadeTotal) {
+        return { texto: 'Esgotado', classe: 'border-amber-700/70 text-amber-300 bg-amber-500/10' };
+      }
+      return { texto: 'Ativo', classe: 'border-emerald-700/70 text-emerald-300 bg-emerald-500/10' };
+    }
+
+    function descricaoDescontoCupom(cupom) {
+      if (cupom.tipo === 'frete_gratis') return 'Frete gratis';
+      if (cupom.tipo === 'valor_fixo') return `${formatarMoeda(cupom.valor)} de desconto`;
+      return `${cupom.valor}% de desconto`;
+    }
+
+    function renderCuponsAdmin() {
+      const lista = document.getElementById('lista-cupons-admin');
+      if (!lista) return;
+      if (!estado.cupons.length) {
+        lista.innerHTML = '<p class="rounded-lg border border-zinc-800 bg-zinc-900 p-3 text-sm text-zinc-400">Nenhum cupom cadastrado ainda.</p>';
+        return;
+      }
+      lista.innerHTML = estado.cupons.map((cupom) => {
+        const statusAtual = statusCupom(cupom);
+        const limite = cupom.quantidadeTotal > 0 ? `${cupom.usosRealizados}/${cupom.quantidadeTotal}` : `${cupom.usosRealizados}/ilimitado`;
+        return `
+          <article class="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-sm font-bold">${cupom.codigo}</p>
+                <p class="text-xs text-zinc-400">${descricaoDescontoCupom(cupom)}</p>
+              </div>
+              <span class="rounded-md border px-2 py-1 text-[11px] font-semibold ${statusAtual.classe}">${statusAtual.texto}</span>
+            </div>
+            <div class="mt-2 grid gap-1 text-xs text-zinc-400 sm:grid-cols-2">
+              <p>Usos: <span class="font-semibold text-zinc-200">${limite}</span></p>
+              <p>Minimo: <span class="font-semibold text-zinc-200">${cupom.valorMinimo > 0 ? formatarMoeda(cupom.valorMinimo) : 'Nao exige'}</span></p>
+              <p>Validade: <span class="font-semibold text-zinc-200">${cupom.validade || 'Sem data'}</span></p>
+              <p>Atualizado: <span class="font-semibold text-zinc-200">${new Date(cupom.atualizadoEm).toLocaleString('pt-BR')}</span></p>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button data-cupom-editar="${cupom.id}" class="rounded border border-zinc-700 px-3 py-1 text-xs font-semibold">Editar</button>
+              <button data-cupom-toggle="${cupom.id}" class="rounded border px-3 py-1 text-xs font-semibold ${cupom.ativo ? 'border-amber-700 text-amber-300' : 'border-emerald-700 text-emerald-300'}">${cupom.ativo ? 'Desativar' : 'Ativar'}</button>
+              <button data-cupom-excluir="${cupom.id}" class="rounded border border-rose-700 px-3 py-1 text-xs font-semibold text-rose-300">Excluir</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
     function preencherFormProduto(item) {
       document.getElementById('produto-id').value = String(item.id);
       document.getElementById('nome').value = item.nome;
@@ -2545,6 +2701,7 @@
         const hoje = diaAtual();
         estado.pdv.dia = String(salvo.dia || hoje);
         estado.pdv.faturadoHoje = Number(salvo.faturadoHoje || 0);
+        if (!Number.isFinite(estado.pdv.faturadoHoje)) estado.pdv.faturadoHoje = 0;
         if (estado.pdv.dia !== hoje) {
           estado.pdv.dia = hoje;
           estado.pdv.faturadoHoje = 0;
@@ -2722,6 +2879,7 @@
 
     function atualizarResumoPdv() {
       const andamento = estado.pdv.pedidos.length;
+      if (!Number.isFinite(estado.pdv.faturadoHoje)) estado.pdv.faturadoHoje = 0;
       pdvTotalOnline.textContent = `${andamento} ${andamento === 1 ? 'pedido' : 'pedidos'}`;
       pdvResumoAndamento.textContent = String(andamento);
       pdvResumoFaturado.textContent = formatarMoeda(estado.pdv.faturadoHoje);
@@ -2883,6 +3041,36 @@
 
     function totalCaixa() {
       return estado.caixa.itens.reduce((acc, item) => acc + (item.valor * item.quantidade), 0);
+    }
+
+    function criarComandaAutomaticaBalcao() {
+      const novoPedido = normalizarPedidoPdv({
+        id: `caixa_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        numeroPedido: gerarNumeroComanda(),
+        criadoEm: new Date().toISOString(),
+        origem: 'caixa',
+        status: 'novo',
+        pago: false,
+        cliente: { nome: 'Balcao', endereco: '', referencia: '', tipoAtendimento: 'retirada' },
+        pagamento: { formas: [], precisaTroco: '', trocoPara: 0, trocoValor: 0 },
+        itens: [],
+        totais: { subtotal: 0, entrega: 0, total: 0 },
+        observacaoInterna: ''
+      });
+      estado.pdv.pedidos.unshift(novoPedido);
+      estado.caixa.pedidoId = novoPedido.id;
+      estado.caixa.emEdicao = true;
+      estado.caixa.identificacao = 'Balcao';
+      estado.caixa.status = 'novo';
+      estado.caixa.pago = false;
+      estado.caixa.pagamento = { formas: [], precisaTroco: '', trocoPara: 0 };
+      estado.caixa.itens = [];
+      document.getElementById('caixa-identificacao').value = 'Balcao';
+      document.getElementById('caixa-status').value = 'novo';
+      caixaPago.checked = false;
+      salvarPedidosPdv();
+      renderPedidosPdv();
+      renderComandaCaixa();
     }
 
     function normalizarPagamentoCaixa(pagamento) {
