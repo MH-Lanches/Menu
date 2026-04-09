@@ -46,6 +46,23 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .record-spin { animation: recordSpin 2.2s linear infinite; }
+    @keyframes addPulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(0.94); }
+      100% { transform: scale(1); }
+    }
+    @keyframes cartBump {
+      0%, 100% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-3px) scale(1.04); }
+      60% { transform: translateY(0) scale(0.98); }
+    }
+    @keyframes badgePop {
+      0%, 100% { transform: scale(1); }
+      45% { transform: scale(1.22); }
+    }
+    .btn-add-feedback { animation: addPulse .28s ease-out; }
+    .cart-receive { animation: cartBump .42s ease-out; }
+    .badge-receive { animation: badgePop .35s ease-out; }
     .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 999px; }
     .glass { backdrop-filter: blur(10px); }
@@ -130,6 +147,7 @@
       </div>
       <p id="aviso-minimo" class="mt-3 text-xs text-amber-300"></p>
 
+      <button id="continuar-comprando" class="mt-4 w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-3 font-semibold text-zinc-100 transition hover:border-zinc-400 hover:bg-zinc-800">Adicionar mais produtos</button>
       <button id="finalizar" class="mt-6 w-full rounded-xl bg-emerald-500 px-4 py-3 font-bold text-zinc-950 shadow-md shadow-emerald-900/30 transition hover:bg-emerald-400">Finalizar no WhatsApp</button>
     </aside>
   </main>
@@ -230,7 +248,7 @@
       <div class="flex items-start justify-between gap-4">
         <div>
           <p class="text-xs uppercase tracking-[0.2em] text-zinc-400">Finalizar pedido</p>
-          <h3 class="mt-1 text-2xl font-black">Confirmar dados para WhatsApp</h3>
+          <h3 class="mt-1 text-2xl font-black">Confirmar dados para a compra</h3>
         </div>
         <button id="fechar-checkout" class="rounded-md border border-zinc-700 px-3 py-1 text-sm">Fechar</button>
       </div>
@@ -240,7 +258,7 @@
           <p class="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">1. Dados iniciais</p>
           <label class="mt-3 grid gap-1 text-sm">
             <span class="font-semibold">Nome</span>
-            <input id="cliente-nome" type="text" required class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 outline-none ring-orange-400 focus:ring-2" placeholder="Digite seu nome completo">
+            <input id="cliente-nome" type="text" required class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 outline-none ring-orange-400 focus:ring-2" placeholder="Digite seu nome">
           </label>
         </section>
 
@@ -488,6 +506,28 @@
       } catch (_) {
         return '';
       }
+    }
+
+    function escaparHtml(texto) {
+      return String(texto || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function normalizarLinkAnuncio(link) {
+      const valor = String(link || '').trim();
+      if (!valor) return '#menu';
+      if (valor.startsWith('#')) return valor;
+      try {
+        const parsed = new URL(valor, window.location.href);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.toString();
+      } catch (_) {
+        return '#menu';
+      }
+      return '#menu';
     }
 
     function emModoAppInstalado() {
@@ -755,7 +795,7 @@
             texto: String((item && (item.texto || item.descricao)) || '').trim(),
             imagem: String((item && item.imagem) || '').trim(),
             link: String((item && item.link) || '').trim()
-          })).filter((item) => item.titulo)
+          })).filter((item) => item.titulo || item.texto)
         : [];
       return {
         config: {
@@ -879,12 +919,14 @@
         main.parentNode.insertBefore(section, main);
       }
       const anuncios = Array.isArray(estado.config.anuncios)
-        ? estado.config.anuncios.filter((a) => a && a.titulo).map((a) => ({
-            titulo: String(a.titulo || '').trim(),
-            texto: String((a.texto || a.descricao) || '').trim(),
-            imagem: String(a.imagem || '').trim(),
-            link: String(a.link || '').trim()
+        ? estado.config.anuncios
+          .map((a) => ({
+            titulo: String((a && a.titulo) || '').trim(),
+            texto: String((a && (a.texto || a.descricao)) || '').trim(),
+            imagem: String((a && a.imagem) || '').trim(),
+            link: String((a && a.link) || '').trim()
           }))
+          .filter((a) => a.titulo || a.texto || a.imagem)
         : [];
       if (!anuncios.length) {
         section.innerHTML = '';
@@ -903,14 +945,20 @@
         atual = index;
         track.innerHTML = anuncios.map((anuncio, i) => {
           const ativo = i === atual;
+          const titulo = escaparHtml(anuncio.titulo || 'Oferta especial MH Lanches');
+          const texto = escaparHtml(anuncio.texto || 'Confira a promocao disponivel no cardapio.');
+          const link = normalizarLinkAnuncio(anuncio.link);
+          const imagem = anuncio.imagem
+            ? `<img src="${escaparHtml(anuncio.imagem)}" alt="${titulo}" class="absolute inset-0 h-full w-full object-cover">`
+            : `<div class="absolute inset-0 h-full w-full bg-gradient-to-br from-orange-300/40 via-zinc-100/10 to-zinc-900/60"></div>`;
           return `
-            <a href="${anuncio.link || '#menu'}" class="absolute inset-0 transition duration-500 ${ativo ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
-              ${anuncio.imagem ? `<img src="${anuncio.imagem}" alt="${anuncio.titulo}" class="h-full w-full object-cover">` : `<div class="h-full w-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"></div>`}
-               <div class="absolute inset-0 bg-zinc-950/55"></div>
-               <div class="relative flex h-full flex-col justify-end p-4 sm:p-8">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-orange-300">Promocao</p>
-                  <h3 class="mt-2 max-w-2xl break-words text-xl font-black text-zinc-50 sm:text-3xl">${anuncio.titulo}</h3>
-                  <p class="mt-2 max-w-xl break-words text-sm text-zinc-100 sm:text-base">${anuncio.texto || 'Confira a promocao disponivel no cardapio.'}</p>
+            <a href="${link}" class="absolute inset-0 transition duration-500 ${ativo ? 'opacity-100' : 'opacity-0 pointer-events-none'}">
+              ${imagem}
+              <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/78 via-zinc-950/38 to-zinc-900/10"></div>
+              <div class="absolute inset-0 z-20 flex h-full flex-col items-center justify-center p-4 text-center sm:p-8">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-orange-100">Promocao</p>
+                <h3 class="mt-2 max-w-3xl break-words text-xl font-black text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.85)] sm:text-3xl">${titulo}</h3>
+                <p class="mt-2 max-w-2xl break-words text-sm text-zinc-50 [text-shadow:0_2px_8px_rgba(0,0,0,0.85)] sm:text-base">${texto}</p>
               </div>
             </a>
           `;
@@ -1010,6 +1058,57 @@
       void elAside.offsetWidth;
       elAside.classList.add('animate-pulse-soft');
       renderCarrinho();
+    }
+
+    function animarCliqueAdicionar(botao) {
+      if (!botao) return;
+      botao.classList.remove('btn-add-feedback');
+      void botao.offsetWidth;
+      botao.classList.add('btn-add-feedback');
+      setTimeout(() => botao.classList.remove('btn-add-feedback'), 320);
+    }
+
+    function animarCarrinhoRecebendo() {
+      elBtnCarrinhoFlutuante.classList.remove('cart-receive');
+      elContadorCarrinhoFlutuante.classList.remove('badge-receive');
+      void elBtnCarrinhoFlutuante.offsetWidth;
+      elBtnCarrinhoFlutuante.classList.add('cart-receive');
+      elContadorCarrinhoFlutuante.classList.add('badge-receive');
+      setTimeout(() => {
+        elBtnCarrinhoFlutuante.classList.remove('cart-receive');
+        elContadorCarrinhoFlutuante.classList.remove('badge-receive');
+      }, 450);
+    }
+
+    // Cria um "voo" visual do botao clicado ate o icone de carrinho.
+    function animarItemVoando(origem) {
+      if (!origem || !elBtnCarrinhoFlutuante) return;
+      const origemRect = origem.getBoundingClientRect();
+      const alvoRect = elBtnCarrinhoFlutuante.getBoundingClientRect();
+      const bolha = document.createElement('span');
+      bolha.textContent = '●';
+      bolha.className = 'pointer-events-none fixed z-[80] text-orange-400';
+      bolha.style.left = `${origemRect.left + (origemRect.width / 2)}px`;
+      bolha.style.top = `${origemRect.top + (origemRect.height / 2)}px`;
+      bolha.style.transform = 'translate(-50%, -50%) scale(1)';
+      bolha.style.opacity = '0.95';
+      bolha.style.transition = 'transform .55s cubic-bezier(.2,.8,.2,1), opacity .55s ease-out';
+      document.body.appendChild(bolha);
+
+      requestAnimationFrame(() => {
+        const dx = (alvoRect.left + (alvoRect.width / 2)) - (origemRect.left + (origemRect.width / 2));
+        const dy = (alvoRect.top + (alvoRect.height / 2)) - (origemRect.top + (origemRect.height / 2));
+        bolha.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.25)`;
+        bolha.style.opacity = '0.15';
+      });
+
+      bolha.addEventListener('transitionend', () => bolha.remove(), { once: true });
+    }
+
+    function registrarAnimacaoAdicao(origem) {
+      animarCliqueAdicionar(origem);
+      animarItemVoando(origem);
+      animarCarrinhoRecebendo();
     }
 
     function alterarQuantidade(index, delta) {
@@ -1430,6 +1529,7 @@
             resumo: `${formatarMoeda(produto.preco)} por unidade`,
             detalhes: { tipo: 'simples' }
           });
+          registrarAnimacaoAdicao(add);
         }
       }
 
@@ -1462,6 +1562,7 @@
         resumo: dados.resumo,
         detalhes: dados.detalhes
       });
+      registrarAnimacaoAdicao(document.getElementById('confirmar-custom'));
       fecharModalCustom();
     });
 
@@ -1607,6 +1708,12 @@
 
     document.getElementById('cta-menu').addEventListener('click', (evento) => {
       evento.preventDefault();
+      const alvo = document.getElementById('menu');
+      alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => destacarAlvo(alvo), 280);
+    });
+
+    document.getElementById('continuar-comprando').addEventListener('click', () => {
       const alvo = document.getElementById('menu');
       alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(() => destacarAlvo(alvo), 280);
