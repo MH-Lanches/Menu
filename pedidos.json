@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-09T19:20:42.463Z",
+  "atualizadoEm": "2026-04-09T19:26:27.445Z",
   "pedidos": [
     {
       "id": "caixa_1775762348462_681",
@@ -55,15 +55,21 @@
         },
         {
           "nome": "Pizza Premium",
-          "quantidade": 3,
+          "quantidade": 4,
           "precoFinal": 59.9,
+          "resumo": ""
+        },
+        {
+          "nome": "Pizza Frango Catupiry G",
+          "quantidade": 1,
+          "precoFinal": 55.9,
           "resumo": ""
         }
       ],
       "totais": {
-        "subtotal": 346.1,
+        "subtotal": 461.9,
         "entrega": 0,
-        "total": 346.1
+        "total": 461.9
       },
       "observacaoInterna": "",
       "mensagemOriginal": ""
