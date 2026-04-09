@@ -70,7 +70,7 @@
   </style>
 </head>
   <body class="overflow-x-hidden bg-zinc-900 text-zinc-100 antialiased">
-  <div id="pwa-banner" class="fixed inset-x-3 top-3 z-[70] hidden rounded-2xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-xl shadow-black/40 backdrop-blur sm:left-1/2 sm:max-w-xl sm:-translate-x-1/2">
+  <div id="pwa-banner" class="fixed inset-x-3 top-8 z-[70] hidden rounded-2xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-xl shadow-black/40 backdrop-blur sm:left-1/2 sm:top-10 sm:max-w-xl sm:-translate-x-1/2">
     <p class="text-sm font-semibold text-zinc-100">📍 Adicione à Tela Inicial</p>
     <p id="pwa-banner-hint" class="mt-1 text-xs italic text-amber-200/90">Tenha a MH Lanches sempre pertinho! Instale nosso atalho e facilite seus pedidos. 🥰✨</p>
     <div class="mt-3 flex flex-wrap gap-2">
@@ -102,8 +102,8 @@
 
     <div class="relative mx-auto flex min-h-[84vh] max-w-6xl flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
       <div class="glass animate-rise w-full max-w-3xl rounded-2xl border border-zinc-700/80 bg-zinc-900/55 px-5 py-8 sm:px-8">
-        <p id="brand-hero" class="mt-1 text-3xl font-black leading-tight text-orange-300 sm:text-5xl">MH Lanches</p>
-        <h1 id="hero-title" class="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-100 sm:text-sm">Delivery rapido para matar a fome sem sair de casa.</h1>
+        <img id="brand-hero-logo" src="https://drive.google.com/thumbnail?id=1GTwyQKe8rfraPoiZ71vb97DBDxCll8_0&sz=w1200" alt="MH Lanches" class="mx-auto mt-2 h-20 w-auto sm:h-28" />
+        <h1 id="hero-title" class="mt-4 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-100 sm:text-sm">MH Lanches Mais que uma lanchonete.</h1>
         <p id="hero-subtitle" class="mx-auto mt-4 max-w-2xl text-sm text-zinc-200 sm:text-base">Pizzas, burgers e combos com pedido rapido e atendimento simples pelo WhatsApp.</p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
         <a id="cta-menu" href="#menu" class="cta-primary group inline-flex items-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-sm font-bold text-zinc-950 transition duration-200 hover:-translate-y-0.5 hover:bg-orange-400 active:translate-y-0 active:scale-[0.98]">
@@ -399,12 +399,15 @@
     </svg>`;
     const IMAGEM_PRODUTO_PADRAO = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(SVG_PRODUTO_PADRAO)}`;
     const ICONE_APP_PADRAO = 'https://i.ibb.co/kgnfg3g3/MH-Logo.png';
+    const HERO_IMAGEM_PADRAO = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=2200&q=80';
+    const HERO_TOPO_IMAGEM_PADRAO = 'https://drive.google.com/thumbnail?id=1GTwyQKe8rfraPoiZ71vb97DBDxCll8_0&sz=w1200';
 
     const CONFIG_PADRAO = {
       marca: 'MH Lanches',
-      heroTitulo: 'Delivery rapido para matar a fome sem sair de casa.',
+      heroTitulo: 'MH Lanches Mais que uma lanchonete.',
       heroSubtitulo: 'Pizzas, burgers e combos com pedido rapido e atendimento simples pelo WhatsApp.',
-      heroImagem: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1800&q=80',
+      heroImagem: HERO_IMAGEM_PADRAO,
+      heroTopoImagem: HERO_TOPO_IMAGEM_PADRAO,
       textoMenu: 'Cardapio',
       textoCarrinho: 'Seu pedido',
       textoBotaoCardapio: 'Ver cardapio',
@@ -532,6 +535,28 @@
         return parsed.toString();
       } catch (_) {
         return '';
+      }
+    }
+
+    function normalizarUrlImagem(valor, fallback = HERO_IMAGEM_PADRAO) {
+      const bruto = String(valor || '').trim();
+      if (!bruto) return fallback;
+      let url = bruto;
+      const matchIframe = bruto.match(/src\s*=\s*["']([^"']+)["']/i);
+      if (matchIframe && matchIframe[1]) url = matchIframe[1].trim();
+      try {
+        const parsed = new URL(url, window.location.href);
+        const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+        if (host === 'drive.google.com') {
+          let fileId = '';
+          const matchPath = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+          if (matchPath && matchPath[1]) fileId = matchPath[1];
+          if (!fileId) fileId = parsed.searchParams.get('id') || '';
+          if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2200`;
+        }
+        return parsed.toString();
+      } catch (_) {
+        return fallback;
       }
     }
 
@@ -1030,14 +1055,17 @@
       const cfg = estado.config;
       document.title = `${cfg.marca} - Delivery`;
       atualizarManifestoPwa(cfg);
-      document.getElementById('brand-hero').textContent = cfg.marca;
+      const brandLogoEl = document.getElementById('brand-hero-logo');
+      brandLogoEl.src = normalizarUrlImagem(cfg.heroTopoImagem || cfg.appIconeUrl || HERO_TOPO_IMAGEM_PADRAO, HERO_TOPO_IMAGEM_PADRAO);
+      brandLogoEl.alt = cfg.marca;
       document.getElementById('hero-title').textContent = cfg.heroTitulo;
       document.getElementById('hero-subtitle').textContent = cfg.heroSubtitulo;
       document.getElementById('menu-title').textContent = cfg.textoMenu;
       document.getElementById('cart-title').textContent = cfg.textoCarrinho;
       document.getElementById('cta-menu-label').textContent = cfg.textoBotaoCardapio;
       document.getElementById('finalizar').textContent = cfg.textoBotaoFinalizar;
-      document.body.style.backgroundImage = `linear-gradient(rgba(17, 24, 39, 0.34), rgba(17, 24, 39, 0.34)), url('${cfg.heroImagem}')`;
+      const heroImagem = normalizarUrlImagem(cfg.heroImagem);
+      document.body.style.backgroundImage = `linear-gradient(rgba(17, 24, 39, 0.34), rgba(17, 24, 39, 0.34)), url('${heroImagem}')`;
       document.body.style.backgroundAttachment = 'fixed';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundSize = 'cover';

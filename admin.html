@@ -374,6 +374,27 @@
                   </label>
                 </div>
               </section>
+              <section class="sm:col-span-2 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+                <h3 class="text-sm font-bold">📄 Editar layout da nota / comanda</h3>
+                <p class="mt-1 text-xs text-zinc-400">Personalize o cabecalho e rodape da impressao termica do PDV.</p>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label class="text-xs text-zinc-400 sm:col-span-2">Logo da impressao (URL)
+                    <input id="cfg-nota-logo" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="https://.../logo.png">
+                  </label>
+                  <label class="text-xs text-zinc-400">Titulo principal (fonte grande)
+                    <input id="cfg-nota-titulo" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="MH LANCHES">
+                  </label>
+                  <label class="text-xs text-zinc-400">Subtitulo (fonte media)
+                    <input id="cfg-nota-subtitulo" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="Mais que uma lanchonete">
+                  </label>
+                  <label class="text-xs text-zinc-400">Tipo da nota (fonte pequena)
+                    <input id="cfg-nota-tipo" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="Comanda / Balcao">
+                  </label>
+                  <label class="text-xs text-zinc-400">Texto do rodape
+                    <input id="cfg-nota-rodape" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm" placeholder="Relatorio Gerencial nao fiscal!">
+                  </label>
+                </div>
+              </section>
               <label class="text-xs text-zinc-400 sm:col-span-2">Imagem institucional 1 (URL)
                 <input id="cfg-sobre-imagem-1" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm" placeholder="Imagem que aparece no fim do site">
               </label>
@@ -389,8 +410,13 @@
               <label class="text-xs text-zinc-400 sm:col-span-2">Subtitulo
                 <input id="cfg-hero-subtitulo" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
               </label>
-              <label class="text-xs text-zinc-400 sm:col-span-2">Imagem principal (URL)
-                <input id="cfg-hero-imagem" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+              <label class="text-xs text-zinc-400 sm:col-span-2">Imagem da capa do site (Hero)
+                <input id="cfg-hero-imagem" placeholder="Cole URL direta ou link de preview do Google Drive" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                <span class="mt-1 block text-[11px] text-zinc-500">Voce pode trocar essa imagem quando quiser por aqui.</span>
+              </label>
+              <label class="text-xs text-zinc-400 sm:col-span-2">Imagem acima do texto inicial (atalho rapido)
+                <input id="cfg-hero-topo-imagem" placeholder="Imagem exibida acima do titulo inicial" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
+                <span class="mt-1 block text-[11px] text-zinc-500">Use URL direta ou preview do Google Drive para trocar a imagem de destaque do topo.</span>
               </label>
               <label class="text-xs text-zinc-400">Titulo menu
                 <input id="cfg-texto-menu" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm">
@@ -810,6 +836,7 @@
     const CHAVE_PDV_HANDOFF = 'brasa_pdv_handoff_v1';
     const CHAVE_GITHUB_CFG = 'mh_github_publish_cfg_v1';
     const CHAVE_GITHUB_TOKEN = 'mh_github_publish_token_v1';
+    const CHAVE_GITHUB_LOCK_PREFIX = 'mh_github_lock_v1';
     const CANAL_PDV = 'brasa_pdv_channel';
     const MAX_TENTATIVAS = 5;
     const BLOQUEIO_MS = 60000;
@@ -850,12 +877,15 @@
     const IMAGEM_PRODUTO_PADRAO = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(SVG_PRODUTO_PADRAO)}`;
 
     const ICONE_APP_PADRAO = 'https://i.ibb.co/kgnfg3g3/MH-Logo.png';
+    const HERO_IMAGEM_PADRAO = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=2200&q=80';
+    const HERO_TOPO_IMAGEM_PADRAO = 'https://drive.google.com/thumbnail?id=1GTwyQKe8rfraPoiZ71vb97DBDxCll8_0&sz=w1200';
 
     const CONFIG_PADRAO = {
       marca: 'MH Lanches',
       heroTitulo: 'Delivery rapido para matar a fome sem sair de casa.',
       heroSubtitulo: 'Pizzas, burgers e combos com pedido rapido e atendimento simples pelo WhatsApp.',
-      heroImagem: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1800&q=80',
+      heroImagem: HERO_IMAGEM_PADRAO,
+      heroTopoImagem: HERO_TOPO_IMAGEM_PADRAO,
       textoMenu: 'Cardapio do dia',
       textoCarrinho: 'Seu pedido',
       textoBotaoCardapio: 'Ver cardapio',
@@ -881,6 +911,11 @@
       appNome: 'MH LANCHES',
       appIconeUrl: ICONE_APP_PADRAO,
       appInstalarAtivo: true,
+      notaLogoUrl: ICONE_APP_PADRAO,
+      notaTitulo: 'MH LANCHES',
+      notaSubtitulo: 'Mais que uma lanchonete',
+      notaTipo: 'Comanda / Balcao',
+      notaRodape: 'Relatorio Gerencial nao fiscal!',
       usuarios: [
         { id: 'admin_root', usuario: CREDENCIAIS_PADRAO.usuario, senha: CREDENCIAIS_PADRAO.senha, nivel: 'admin', ativo: true },
         { id: 'mod_root', usuario: 'Usuario Mod', senha: '123456', nivel: 'comum', ativo: true }
@@ -914,6 +949,8 @@
     let timerSyncPdvGithub;
     let timerSyncPdv;
     let timerBackupAuto;
+    let watcherPedidosRemotos;
+    let listenersSyncPdvRegistrados = false;
 
     const authBox = document.getElementById('auth-box');
     const painelAdmin = document.getElementById('painel-admin');
@@ -1034,6 +1071,54 @@
       return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
+    function chaveLockGithubArquivo({ owner, repo, branch, path }) {
+      return `${CHAVE_GITHUB_LOCK_PREFIX}:${owner}/${repo}:${branch}:${path}`;
+    }
+
+    async function comLockGithubArquivo({ owner, repo, branch, path }, executar) {
+      const chave = chaveLockGithubArquivo({ owner, repo, branch, path });
+      const token = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const timeoutMs = 12000;
+      const ttlMs = 9000;
+      const inicio = Date.now();
+
+      while (Date.now() - inicio < timeoutMs) {
+        let lockAtual = null;
+        try {
+          lockAtual = JSON.parse(localStorage.getItem(chave) || 'null');
+        } catch (_) {
+          lockAtual = null;
+        }
+        const expiraEm = lockAtual && Number(lockAtual.expiraEm || 0);
+        if (!lockAtual || !expiraEm || expiraEm <= Date.now()) {
+          const lockNovo = { token, expiraEm: Date.now() + ttlMs };
+          localStorage.setItem(chave, JSON.stringify(lockNovo));
+          let confirmado = null;
+          try {
+            confirmado = JSON.parse(localStorage.getItem(chave) || 'null');
+          } catch (_) {
+            confirmado = null;
+          }
+          if (confirmado && confirmado.token === token) {
+            try {
+              return await executar();
+            } finally {
+              try {
+                const lockFinal = JSON.parse(localStorage.getItem(chave) || 'null');
+                if (lockFinal && lockFinal.token === token) {
+                  localStorage.removeItem(chave);
+                }
+              } catch (_) {}
+            }
+          }
+        }
+        await aguardar(120 + Math.floor(Math.random() * 120));
+      }
+
+      // Fallback para nao bloquear operacao se o lock ficar preso por alguma extensao/politica de storage.
+      return await executar();
+    }
+
     async function lerArquivoGithub({ owner, repo, branch, path, headers }) {
       const endpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
       const atual = await fetch(`${endpoint}?ref=${encodeURIComponent(branch)}`, { headers });
@@ -1044,38 +1129,43 @@
       return { endpoint, sha: String(arquivoAtual.sha || ''), existe: true, conteudo };
     }
 
-    async function escreverArquivoGithub({ owner, repo, branch, path, headers, mensagem, conteudo, resolverConteudo, tentativas = 4 }) {
-      let ultimaMensagemErro = '';
-      for (let tentativa = 1; tentativa <= tentativas; tentativa += 1) {
-        const atual = await lerArquivoGithub({ owner, repo, branch, path, headers });
-        const conteudoFinal = typeof resolverConteudo === 'function'
-          ? resolverConteudo(atual.conteudo, atual)
-          : conteudo;
-        const corpo = {
-          message: mensagem,
-          content: toBase64Unicode(conteudoFinal),
-          branch
-        };
-        if (atual.sha) corpo.sha = atual.sha;
-        const resposta = await fetch(atual.endpoint, {
-          method: 'PUT',
-          headers: { ...headers, 'Content-Type': 'application/json' },
-          body: JSON.stringify(corpo)
-        });
-        if (resposta.ok) return await resposta.json();
+    async function escreverArquivoGithub({ owner, repo, branch, path, headers, mensagem, conteudo, resolverConteudo, tentativas = 8 }) {
+      return await comLockGithubArquivo({ owner, repo, branch, path }, async () => {
+        let ultimaMensagemErro = '';
+        for (let tentativa = 1; tentativa <= tentativas; tentativa += 1) {
+          const atual = await lerArquivoGithub({ owner, repo, branch, path, headers });
+          const conteudoFinal = typeof resolverConteudo === 'function'
+            ? resolverConteudo(atual.conteudo, atual)
+            : conteudo;
+          const corpo = {
+            message: mensagem,
+            content: toBase64Unicode(conteudoFinal),
+            branch
+          };
+          if (atual.sha) corpo.sha = atual.sha;
+          const resposta = await fetch(atual.endpoint, {
+            method: 'PUT',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify(corpo)
+          });
+          if (resposta.ok) return await resposta.json();
 
-        const erro = await resposta.json().catch(() => ({}));
-        ultimaMensagemErro = String(erro.message || `Falha ao salvar ${path} no GitHub.`);
-        const conflitoSha = resposta.status === 409
-          || resposta.status === 422
-          || /does not match|sha|update is not a fast forward/i.test(ultimaMensagemErro);
-        if (conflitoSha && tentativa < tentativas) {
-          await aguardar(220 * tentativa);
-          continue;
+          const erro = await resposta.json().catch(() => ({}));
+          const errosDetalhados = Array.isArray(erro.errors)
+            ? erro.errors.map((item) => String(item && (item.message || item.code || item.field || ''))).join(' | ')
+            : '';
+          ultimaMensagemErro = String(erro.message || errosDetalhados || `Falha ao salvar ${path} no GitHub.`);
+          const conflitoSha = resposta.status === 409
+            || resposta.status === 422
+            || /does not match|sha|update is not a fast forward/i.test(ultimaMensagemErro);
+          if (conflitoSha && tentativa < tentativas) {
+            await aguardar(250 * tentativa + Math.floor(Math.random() * 180));
+            continue;
+          }
+          throw new Error(ultimaMensagemErro);
         }
-        throw new Error(ultimaMensagemErro);
-      }
-      throw new Error(ultimaMensagemErro || `Falha ao salvar ${path} no GitHub.`);
+        throw new Error(ultimaMensagemErro || `Falha ao salvar ${path} no GitHub.`);
+      });
     }
 
     function unificarPedidosParaPublicacao(pedidosLocais, pedidosRemotos) {
@@ -1196,6 +1286,28 @@
         return parsed.toString();
       } catch (_) {
         return '';
+      }
+    }
+
+    function normalizarUrlImagemHero(valor, fallback = HERO_IMAGEM_PADRAO) {
+      const bruto = String(valor || '').trim();
+      if (!bruto) return fallback;
+      let url = bruto;
+      const matchIframe = bruto.match(/src\s*=\s*["']([^"']+)["']/i);
+      if (matchIframe && matchIframe[1]) url = matchIframe[1].trim();
+      try {
+        const parsed = new URL(url, window.location.href);
+        const host = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+        if (host === 'drive.google.com') {
+          let fileId = '';
+          const matchPath = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+          if (matchPath && matchPath[1]) fileId = matchPath[1];
+          if (!fileId) fileId = parsed.searchParams.get('id') || '';
+          if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2200`;
+        }
+        return parsed.toString();
+      } catch (_) {
+        return fallback;
       }
     }
 
@@ -1972,12 +2084,18 @@
       document.getElementById('cfg-app-instalar-ativo').checked = cfg.appInstalarAtivo !== false;
       document.getElementById('cfg-app-nome').value = cfg.appNome || 'MH LANCHES';
       document.getElementById('cfg-app-icone').value = cfg.appIconeUrl || ICONE_APP_PADRAO;
+      document.getElementById('cfg-nota-logo').value = cfg.notaLogoUrl || cfg.appIconeUrl || ICONE_APP_PADRAO;
+      document.getElementById('cfg-nota-titulo').value = cfg.notaTitulo || 'MH LANCHES';
+      document.getElementById('cfg-nota-subtitulo').value = cfg.notaSubtitulo || 'Mais que uma lanchonete';
+      document.getElementById('cfg-nota-tipo').value = cfg.notaTipo || 'Comanda / Balcao';
+      document.getElementById('cfg-nota-rodape').value = cfg.notaRodape || 'Relatorio Gerencial nao fiscal!';
       document.getElementById('cfg-sobre-imagem-1').value = cfg.sobreImagem1 || CONFIG_PADRAO.sobreImagem1;
       document.getElementById('cfg-sobre-imagem-2').value = cfg.sobreImagem2 || CONFIG_PADRAO.sobreImagem2;
       document.getElementById('cfg-sobre-texto').value = cfg.sobreTexto || CONFIG_PADRAO.sobreTexto;
       document.getElementById('cfg-hero-titulo').value = cfg.heroTitulo;
       document.getElementById('cfg-hero-subtitulo').value = cfg.heroSubtitulo;
       document.getElementById('cfg-hero-imagem').value = cfg.heroImagem;
+      document.getElementById('cfg-hero-topo-imagem').value = cfg.heroTopoImagem || cfg.appIconeUrl || HERO_TOPO_IMAGEM_PADRAO;
       document.getElementById('cfg-texto-menu').value = cfg.textoMenu;
       document.getElementById('cfg-texto-carrinho').value = cfg.textoCarrinho;
       document.getElementById('cfg-texto-btn-cardapio').value = cfg.textoBotaoCardapio;
@@ -2337,23 +2455,50 @@
 
     async function carregarPedidosPdvGithub() {
       const cfg = carregarGithubCfg();
-      if (!cfg.repo || !ghRuntimeToken) return false;
-      const { owner, repo } = parseGithubRepo(cfg.repo);
-      const headers = {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${ghRuntimeToken}`,
-        'X-GitHub-Api-Version': '2022-11-28'
-      };
-      const arquivo = await lerArquivoGithub({
-        owner,
-        repo,
-        branch: cfg.branch,
-        path: cfg.pedidosPath,
-        headers
-      });
-      if (!arquivo.existe || !arquivo.conteudo) return false;
-      const listaRemota = extrairListaPedidosRemotos(arquivo.conteudo).map(normalizarPedidoPdv);
+      let listaRemota = [];
+      let carregouRemoto = false;
+
+      // 1) Tenta via API do GitHub (quando houver repo + token)
+      if (cfg.repo && ghRuntimeToken) {
+        try {
+          const { owner, repo } = parseGithubRepo(cfg.repo);
+          const headers = {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${ghRuntimeToken}`,
+            'X-GitHub-Api-Version': '2022-11-28'
+          };
+          const arquivo = await lerArquivoGithub({
+            owner,
+            repo,
+            branch: cfg.branch,
+            path: cfg.pedidosPath,
+            headers
+          });
+          if (arquivo.existe && arquivo.conteudo) {
+            listaRemota = extrairListaPedidosRemotos(arquivo.conteudo).map(normalizarPedidoPdv);
+            carregouRemoto = true;
+          }
+        } catch (_) {
+          // Fallback publico abaixo
+        }
+      }
+
+      // 2) Fallback publico para GitHub Pages (nao depende de token)
+      if (!carregouRemoto) {
+        const arquivoPedidos = String(cfg.pedidosPath || 'pedidos.json').trim() || 'pedidos.json';
+        const separador = arquivoPedidos.includes('?') ? '&' : '?';
+        const url = `${arquivoPedidos}${separador}ts=${Date.now()}`;
+        const resposta = await fetch(url, { cache: 'no-store' });
+        if (resposta.ok) {
+          const dados = await resposta.json();
+          listaRemota = extrairListaPedidosRemotos(JSON.stringify(dados)).map(normalizarPedidoPdv);
+          carregouRemoto = true;
+        }
+      }
+
+      if (!carregouRemoto) return false;
       if (!listaRemota.length && !estado.pdv.pedidos.length) return false;
+
       const mudou = JSON.stringify(listaRemota) !== JSON.stringify(estado.pdv.pedidos);
       if (mudou) {
         estado.pdv.pedidos = listaRemota;
@@ -2382,21 +2527,61 @@
       timerSyncPdv = setInterval(() => {
         sincronizarPedidosExternos(false);
       }, 2000);
-      clearInterval(timerSyncPdvGithub);
-      timerSyncPdvGithub = setInterval(async () => {
-        try {
-          const antes = estado.pdv.pedidos.length;
-          const mudou = await carregarPedidosPdvGithub();
-          if (mudou) {
+      if (watcherPedidosRemotos && typeof watcherPedidosRemotos.stop === 'function') {
+        watcherPedidosRemotos.stop();
+      }
+      const cfgPoll = carregarGithubCfg();
+      if (window.MHPdv && typeof window.MHPdv.startPedidosPolling === 'function') {
+        watcherPedidosRemotos = window.MHPdv.startPedidosPolling({
+          url: String(cfgPoll.pedidosPath || 'pedidos.json').trim() || 'pedidos.json',
+          intervalMs: Math.max(10000, Number(cfgPoll.pdvIntervaloSeg || 15) * 1000),
+          onUpdate: (pedidosRemotos) => {
+            const listaRemota = (Array.isArray(pedidosRemotos) ? pedidosRemotos : []).map(normalizarPedidoPdv);
+            const antes = estado.pdv.pedidos.length;
+            const mudou = JSON.stringify(listaRemota) !== JSON.stringify(estado.pdv.pedidos);
+            if (!mudou) return;
+            estado.pdv.pedidos = listaRemota;
+            localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(listaRemota));
             renderPedidosPdv();
             if (estado.pdv.pedidos.length > antes) tocarBeep();
           }
-        } catch (_) {}
-      }, carregarGithubCfg().pdvIntervaloSeg * 1000);
-      window.addEventListener('focus', () => sincronizarPedidosExternos(false));
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) sincronizarPedidosExternos(false);
-      });
+        });
+      } else {
+        clearInterval(timerSyncPdvGithub);
+        timerSyncPdvGithub = setInterval(async () => {
+          try {
+            const antes = estado.pdv.pedidos.length;
+            const mudou = await carregarPedidosPdvGithub();
+            if (mudou) {
+              renderPedidosPdv();
+              if (estado.pdv.pedidos.length > antes) tocarBeep();
+            }
+          } catch (_) {}
+        }, Math.max(10000, Number(cfgPoll.pdvIntervaloSeg || 15) * 1000));
+      }
+      // Revalida remoto ao voltar foco para nao depender apenas de storage local.
+      if (!listenersSyncPdvRegistrados) {
+        window.addEventListener('focus', async () => {
+          sincronizarPedidosExternos(false);
+          try {
+            const antes = estado.pdv.pedidos.length;
+            const mudou = await carregarPedidosPdvGithub();
+            if (mudou) {
+              renderPedidosPdv();
+              if (estado.pdv.pedidos.length > antes) tocarBeep();
+            }
+          } catch (_) {}
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            sincronizarPedidosExternos(false);
+            carregarPedidosPdvGithub().then((mudou) => {
+              if (mudou) renderPedidosPdv();
+            }).catch(() => {});
+          }
+        });
+        listenersSyncPdvRegistrados = true;
+      }
     }
 
     function atualizarResumoPdv() {
@@ -2415,18 +2600,54 @@
       return `Comanda ativa: ${estado.caixa.identificacao || 'Sem identificacao'}`;
     }
 
+    function escaparHtml(texto) {
+      return String(texto || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function obterLayoutNota() {
+      const cfg = estado.dados.config || {};
+      return {
+        logo: cfg.notaLogoUrl || cfg.appIconeUrl || ICONE_APP_PADRAO,
+        titulo: cfg.notaTitulo || 'MH LANCHES',
+        subtitulo: cfg.notaSubtitulo || 'Mais que uma lanchonete',
+        tipo: cfg.notaTipo || 'Comanda / Balcao',
+        rodape: cfg.notaRodape || 'Relatorio Gerencial nao fiscal!'
+      };
+    }
+
     function imprimirTermica(titulo, blocoTexto) {
       const janela = window.open('', '_blank', 'width=380,height=640');
       if (!janela) return;
+      const layoutNota = obterLayoutNota();
       const data = new Date().toLocaleString('pt-BR');
       janela.document.write(`<!doctype html><html><head><meta charset="UTF-8"><title>${titulo}</title><style>
         body { font-family: Arial, sans-serif; width: 58mm; margin: 0 auto; padding: 6px; color: #000; }
-        h1 { font-size: 13px; margin: 0 0 6px; }
+        .topo { text-align: center; }
+        .logo { display: block; width: 68px; height: 68px; margin: 0 auto 4px; object-fit: contain; }
+        .titulo-loja { font-size: 18px; font-weight: 800; line-height: 1.2; margin: 0; text-transform: uppercase; }
+        .subtitulo-loja { font-size: 12px; font-weight: 600; line-height: 1.2; margin: 3px 0 0; }
+        .tipo-nota { font-size: 10px; line-height: 1.2; margin: 4px 0 0; text-transform: uppercase; letter-spacing: .4px; }
+        .pedido-ref { font-size: 10px; margin: 3px 0 0; font-weight: 700; }
         pre { white-space: pre-wrap; font-size: 11px; margin: 0; line-height: 1.35; }
-        .line { border-top: 1px dashed #000; margin: 6px 0; }
+        .line { border-top: 1px dashed #000; margin: 7px 0; }
+        .rodape { text-align: center; font-size: 10px; font-weight: 700; margin-top: 6px; }
       </style></head><body>
-      <h1>${titulo}</h1>
-      <pre>${data}\n${'='.repeat(32)}\n${blocoTexto}</pre>
+      <div class="topo">
+        ${layoutNota.logo ? `<img class="logo" src="${escaparHtml(layoutNota.logo)}" alt="Logo da loja">` : ''}
+        <p class="titulo-loja">${escaparHtml(layoutNota.titulo)}</p>
+        <p class="subtitulo-loja">${escaparHtml(layoutNota.subtitulo)}</p>
+        <p class="tipo-nota">${escaparHtml(layoutNota.tipo)}</p>
+        <p class="pedido-ref">${escaparHtml(titulo)}</p>
+      </div>
+      <div class="line"></div>
+      <pre>${escaparHtml(data)}\n${escaparHtml(blocoTexto)}</pre>
+      <div class="line"></div>
+      <p class="rodape">${escaparHtml(layoutNota.rodape)}</p>
       <script>window.onload=function(){window.print();setTimeout(function(){window.close();},200);};<\/script>
       </body></html>`);
       janela.document.close();
@@ -3334,7 +3555,11 @@
       evento.preventDefault();
       const diasFuncionamento = diasFuncionamentoSelecionados();
       const jingleDigitado = document.getElementById('cfg-jingle').value.trim();
+      const heroImagemDigitada = document.getElementById('cfg-hero-imagem').value.trim();
+      const heroTopoImagemDigitada = document.getElementById('cfg-hero-topo-imagem').value.trim();
       const jingleNormalizado = normalizarUrlJingle(jingleDigitado);
+      const heroImagemNormalizada = normalizarUrlImagemHero(heroImagemDigitada);
+      const heroTopoImagemNormalizada = normalizarUrlImagemHero(heroTopoImagemDigitada, HERO_TOPO_IMAGEM_PADRAO);
       if (!diasFuncionamento.length) {
         setStatus('Selecione ao menos um dia de funcionamento.', true);
         return;
@@ -3356,12 +3581,18 @@
         appInstalarAtivo: document.getElementById('cfg-app-instalar-ativo').checked,
         appNome: document.getElementById('cfg-app-nome').value.trim() || 'MH LANCHES',
         appIconeUrl: document.getElementById('cfg-app-icone').value.trim() || ICONE_APP_PADRAO,
+        notaLogoUrl: document.getElementById('cfg-nota-logo').value.trim() || document.getElementById('cfg-app-icone').value.trim() || ICONE_APP_PADRAO,
+        notaTitulo: document.getElementById('cfg-nota-titulo').value.trim() || 'MH LANCHES',
+        notaSubtitulo: document.getElementById('cfg-nota-subtitulo').value.trim() || 'Mais que uma lanchonete',
+        notaTipo: document.getElementById('cfg-nota-tipo').value.trim() || 'Comanda / Balcao',
+        notaRodape: document.getElementById('cfg-nota-rodape').value.trim() || 'Relatorio Gerencial nao fiscal!',
         sobreImagem1: document.getElementById('cfg-sobre-imagem-1').value.trim() || CONFIG_PADRAO.sobreImagem1,
         sobreImagem2: document.getElementById('cfg-sobre-imagem-2').value.trim() || CONFIG_PADRAO.sobreImagem2,
         sobreTexto: document.getElementById('cfg-sobre-texto').value.trim() || CONFIG_PADRAO.sobreTexto,
         heroTitulo: document.getElementById('cfg-hero-titulo').value.trim() || CONFIG_PADRAO.heroTitulo,
         heroSubtitulo: document.getElementById('cfg-hero-subtitulo').value.trim() || CONFIG_PADRAO.heroSubtitulo,
-        heroImagem: document.getElementById('cfg-hero-imagem').value.trim() || CONFIG_PADRAO.heroImagem,
+        heroImagem: heroImagemNormalizada,
+        heroTopoImagem: heroTopoImagemNormalizada,
         textoMenu: document.getElementById('cfg-texto-menu').value.trim() || CONFIG_PADRAO.textoMenu,
         textoCarrinho: document.getElementById('cfg-texto-carrinho').value.trim() || CONFIG_PADRAO.textoCarrinho,
         textoBotaoCardapio: document.getElementById('cfg-texto-btn-cardapio').value.trim() || CONFIG_PADRAO.textoBotaoCardapio,
