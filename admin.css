@@ -1,0 +1,17 @@
+/* Camada global do painel admin/pdv. */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
