@@ -15,7 +15,7 @@
   "instagramUrl": "https://instagram.com/",
   "telefone": "+5581985770055",
   "enderecoUrl": "https://maps.google.com/?q=MH+Lanches",
-  "jingleUrl": "music/mh.mp3",
+  "jingleUrl": "https://mh-lanches.github.io/Menu/music/mh.mp3",
   "sobreImagem1": "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80",
   "sobreImagem2": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80",
   "sobreTexto": "A MH Lanches nasceu como um pequeno atendimento de bairro e cresceu com foco em sabor, rapidez e carinho no preparo. Hoje seguimos o mesmo trajeto: ingredientes selecionados, padrao de qualidade e entrega caprichada para cada cliente.",
@@ -23,17 +23,41 @@
   "freteGratisAcima": 80,
   "valorPedidoMinimo": 25,
   "statusEntrega": "auto",
-  "diasFuncionamento": [0, 1, 2, 3, 4, 5, 6],
+  "diasFuncionamento": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
   "horarioAbertura": "18:00",
   "horarioFechamento": "23:00",
   "appNome": "MH LANCHES",
-  "appIconeUrl": "https://i.ibb.co/kgnfg3g3/MH-Logo.png",
+  "appIconeUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%2309090b'/%3E%3Ctext x='256' y='318' text-anchor='middle' font-size='250'%3E%F0%9F%8D%94%3C/text%3E%3C/svg%3E",
   "appInstalarAtivo": true,
   "notaLogoUrl": "https://i.ibb.co/kgnfg3g3/MH-Logo.png",
   "notaTitulo": "MH LANCHES",
   "notaSubtitulo": "Mais que uma lanchonete",
   "notaTipo": "Comanda / Balcao",
   "notaRodape": "Relatorio Gerencial nao fiscal!",
+  "usuarios": [
+    {
+      "id": "admin_root",
+      "usuario": "ADMIN",
+      "senha": "123456",
+      "nivel": "admin",
+      "ativo": true
+    },
+    {
+      "id": "mod_root",
+      "usuario": "Usuario Mod",
+      "senha": "123456",
+      "nivel": "comum",
+      "ativo": true
+    }
+  ],
   "favoritosPosicao": "meio",
   "categoriasOrdem": [
     "Hamburguers",
