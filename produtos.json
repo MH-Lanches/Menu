@@ -16,7 +16,7 @@
     "instagramUrl": "https://instagram.com/",
     "telefone": "+5581985770055",
     "enderecoUrl": "https://maps.google.com/?q=MH+Lanches",
-    "jingleUrl": "https://mh-lanches.github.io/Menu/music/mh.mp3",
+    "jingleUrl": "music/mh.mp3",
     "sobreImagem1": "https://images.unsplash.com/photo-1561758033-d89a9ad46330?auto=format&fit=crop&w=1400&q=80",
     "sobreImagem2": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1400&q=80",
     "sobreTexto": "A MH Lanches nasceu como um pequeno atendimento de bairro e cresceu com foco em sabor, rapidez e carinho no preparo. Hoje seguimos o mesmo trajeto: ingredientes selecionados, padrao de qualidade e entrega caprichada para cada cliente.",
@@ -36,29 +36,13 @@
     "horarioAbertura": "18:00",
     "horarioFechamento": "23:00",
     "appNome": "MH LANCHES",
-    "appIconeUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%2309090b'/%3E%3Ctext x='256' y='318' text-anchor='middle' font-size='250'%3E%F0%9F%8D%94%3C/text%3E%3C/svg%3E",
+    "appIconeUrl": "https://i.ibb.co/kgnfg3g3/MH-Logo.png",
     "appInstalarAtivo": true,
     "notaLogoUrl": "https://i.ibb.co/kgnfg3g3/MH-Logo.png",
     "notaTitulo": "MH LANCHES",
     "notaSubtitulo": "Mais que uma lanchonete",
     "notaTipo": "Comanda / Balcao",
     "notaRodape": "Relatorio Gerencial nao fiscal!",
-    "usuarios": [
-      {
-        "id": "admin_root",
-        "usuario": "ADMIN",
-        "senha": "123456",
-        "nivel": "admin",
-        "ativo": true
-      },
-      {
-        "id": "mod_root",
-        "usuario": "Usuario Mod",
-        "senha": "123456",
-        "nivel": "comum",
-        "ativo": true
-      }
-    ],
     "favoritosPosicao": "meio",
     "categoriasOrdem": [
       "Hamburguers",
@@ -98,133 +82,43 @@
       "nome": "Pastel Festival",
       "descricao": "Escolha multiplos sabores e opcionais com calculo automatico de extras.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "pastel",
       "preco": 34.9,
+      "ordem": 1,
       "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
       "sabores": [
-        {
-          "nome": "Carne",
-          "ativo": true
-        },
-        {
-          "nome": "Queijo",
-          "ativo": true
-        },
-        {
-          "nome": "Frango com catupiry",
-          "ativo": true
-        },
-        {
-          "nome": "Pizza",
-          "ativo": true
-        },
-        {
-          "nome": "Calabresa",
-          "ativo": true
-        },
-        {
-          "nome": "Palmito",
-          "ativo": true
-        },
-        {
-          "nome": "Bacon com cheddar",
-          "ativo": true
-        },
-        {
-          "nome": "Strogonoff de carne",
-          "ativo": true
-        },
-        {
-          "nome": "Strogonoff de frango",
-          "ativo": true
-        },
-        {
-          "nome": "Milho com queijo",
-          "ativo": true
-        },
-        {
-          "nome": "Brocolis com bacon",
-          "ativo": true
-        },
-        {
-          "nome": "Carne seca com queijo",
-          "ativo": true
-        },
-        {
-          "nome": "Costela com barbecue",
-          "ativo": true
-        },
-        {
-          "nome": "Napolitano",
-          "ativo": true
-        },
-        {
-          "nome": "Portugues",
-          "ativo": true
-        },
-        {
-          "nome": "Atum",
-          "ativo": true
-        },
-        {
-          "nome": "Camarao cremoso",
-          "ativo": true
-        },
-        {
-          "nome": "Dois queijos",
-          "ativo": true
-        },
-        {
-          "nome": "Quatro queijos",
-          "ativo": true
-        },
-        {
-          "nome": "Banana com canela",
-          "ativo": true
-        }
+        "Carne",
+        "Queijo",
+        "Frango com catupiry",
+        "Pizza",
+        "Calabresa",
+        "Palmito",
+        "Bacon com cheddar",
+        "Strogonoff de carne",
+        "Strogonoff de frango",
+        "Milho com queijo",
+        "Brocolis com bacon",
+        "Carne seca com queijo",
+        "Costela com barbecue",
+        "Napolitano",
+        "Portugues",
+        "Atum",
+        "Camarao cremoso",
+        "Dois queijos",
+        "Quatro queijos",
+        "Banana com canela"
       ],
       "opcionais": [
-        {
-          "nome": "Queijo extra",
-          "ativo": true
-        },
-        {
-          "nome": "Catupiry extra",
-          "ativo": true
-        },
-        {
-          "nome": "Cheddar extra",
-          "ativo": true
-        },
-        {
-          "nome": "Bacon crocante",
-          "ativo": true
-        },
-        {
-          "nome": "Ovo",
-          "ativo": true
-        },
-        {
-          "nome": "Azeitona",
-          "ativo": true
-        },
-        {
-          "nome": "Molho especial",
-          "ativo": true
-        },
-        {
-          "nome": "Pimenta da casa",
-          "ativo": true
-        },
-        {
-          "nome": "Vinagrete",
-          "ativo": true
-        },
-        {
-          "nome": "Milho extra",
-          "ativo": true
-        }
+        "Queijo extra",
+        "Catupiry extra",
+        "Cheddar extra",
+        "Bacon crocante",
+        "Ovo",
+        "Azeitona",
+        "Molho especial",
+        "Pimenta da casa",
+        "Vinagrete",
+        "Milho extra"
       ],
       "limites": {
         "saboresGratis": 5,
@@ -233,19 +127,16 @@
       "extras": {
         "valorSaborExtra": 2,
         "valorOpcionalExtra": 1.5
-      },
-      "diasIndisponiveis": [],
-      "ordem": 1,
-      "regraMeia": "media"
+      }
     },
     {
       "id": 2,
       "nome": "Pizza Premium",
       "descricao": "Escolha pizza inteira ou meia pizza com calculo por media dos sabores.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "pizza",
       "preco": 59.9,
+      "ordem": 1,
       "imagem": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80",
       "sabores": [
         {
@@ -297,8 +188,6 @@
         "valorSaborExtra": 0,
         "valorOpcionalExtra": 4
       },
-      "diasIndisponiveis": [],
-      "ordem": 1,
       "regraMeia": "media"
     },
     {
@@ -306,1173 +195,510 @@
       "nome": "Refrigerante 350ml",
       "descricao": "Lata gelada para acompanhar seu pedido.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 6.5,
-      "imagem": "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 1,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 4,
       "nome": "MH Burger Classico",
       "descricao": "Pao brioche, burger 120g, queijo e molho da casa.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 21.9,
-      "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 1,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 5,
       "nome": "MH Burger Duplo",
       "descricao": "Dois burgers, queijo duplo e cebola caramelizada.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 29.9,
-      "imagem": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 6,
       "nome": "Burger Bacon Supreme",
       "descricao": "Burger 160g, bacon crocante e cheddar cremoso.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 31.9,
-      "imagem": "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 7,
       "nome": "Burger Frango Crispy",
       "descricao": "File de frango empanado, alface e maionese temperada.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 24.9,
-      "imagem": "https://images.unsplash.com/photo-1603064752734-4c48eff53d05?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1603064752734-4c48eff53d05?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 8,
       "nome": "Burger BBQ",
       "descricao": "Burger, queijo prato, cebola crispy e molho barbecue.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 28.9,
-      "imagem": "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 9,
       "nome": "Burger Salada",
       "descricao": "Burger artesanal, tomate, alface e queijo mussarela.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 23.9,
-      "imagem": "https://images.unsplash.com/photo-1610614819513-58e34989848b?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1610614819513-58e34989848b?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 10,
       "nome": "Burger Egg",
       "descricao": "Burger, ovo, queijo e maionese verde.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 26.9,
-      "imagem": "https://images.unsplash.com/photo-1585238342024-78d387f4a707?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 7,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1585238342024-78d387f4a707?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 11,
       "nome": "Burger Onion",
       "descricao": "Burger com aneis de cebola e queijo cheddar.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 27.9,
-      "imagem": "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 8,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 12,
       "nome": "Burger Costela",
       "descricao": "Blend de costela, queijo coalho e molho especial.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 33.9,
-      "imagem": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 9,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 13,
       "nome": "Burger Picante",
       "descricao": "Burger com pimenta jalapeno, pepper jack e molho hot.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 29.5,
-      "imagem": "https://images.unsplash.com/photo-1547584370-2cc98b8b8dc8?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 10,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1547584370-2cc98b8b8dc8?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 14,
       "nome": "Burger Veggie",
       "descricao": "Hamburguer vegetal, queijo, tomate e molho de ervas.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 25.9,
-      "imagem": "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 11,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 15,
       "nome": "Burger Kids",
       "descricao": "Mini burger com queijo e batata smile.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 18.9,
-      "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 12,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 16,
       "nome": "Batata Frita P",
       "descricao": "Porcao individual crocante.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 13.9,
-      "imagem": "https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 1,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 17,
       "nome": "Batata Frita G",
       "descricao": "Porcao grande para compartilhar.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 21.9,
-      "imagem": "https://images.unsplash.com/photo-1630383249896-424e482df921?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1630383249896-424e482df921?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 18,
       "nome": "Batata com Cheddar e Bacon",
       "descricao": "Batata frita com cheddar cremoso e bacon.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 26.9,
-      "imagem": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 19,
       "nome": "Onion Rings",
       "descricao": "Aneis de cebola empanados e crocantes.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 18.9,
-      "imagem": "https://images.unsplash.com/photo-1639024471283-03518883512d?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1639024471283-03518883512d?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 20,
       "nome": "Isca de Frango",
       "descricao": "Tiras de frango empanadas com molho especial.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 24.9,
-      "imagem": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 21,
       "nome": "Nuggets 12 unidades",
       "descricao": "Nuggets crocantes com molho barbecue.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 17.5,
-      "imagem": "https://images.unsplash.com/photo-1608039755401-742074f0548d?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1608039755401-742074f0548d?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 22,
       "nome": "Polenta Frita",
       "descricao": "Cubos de polenta frita com parmesao.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 16.9,
-      "imagem": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 7,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 23,
       "nome": "Mandioca Frita",
       "descricao": "Mandioca crocante por fora e macia por dentro.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 19.9,
-      "imagem": "https://images.unsplash.com/photo-1518131672697-613becd4fab5?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 8,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1518131672697-613becd4fab5?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 24,
       "nome": "Mini Pastel Mix",
       "descricao": "Porcao com 12 mini pasteis sortidos.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 27.9,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 9,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 25,
       "nome": "Porcao Suprema",
       "descricao": "Batata, onion rings e iscas de frango.",
       "categoria": "Porcoes",
-      "ativo": true,
       "tipo": "simples",
       "preco": 39.9,
-      "imagem": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 10,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 26,
       "nome": "Refrigerante 600ml",
       "descricao": "Garrafa gelada para acompanhar o combo.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 9.5,
-      "imagem": "https://images.unsplash.com/photo-1624517452488-04869289c4ca?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1624517452488-04869289c4ca?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 27,
       "nome": "Refrigerante 2L",
       "descricao": "Ideal para compartilhar com a familia.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 14.9,
-      "imagem": "https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 28,
       "nome": "Suco Natural Laranja",
       "descricao": "Suco de laranja 400ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 10.9,
-      "imagem": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 29,
       "nome": "Suco Natural Maracuja",
       "descricao": "Suco de maracuja 400ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 10.9,
-      "imagem": "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 30,
       "nome": "Suco Natural Morango",
       "descricao": "Suco de morango 400ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 11.9,
-      "imagem": "https://images.unsplash.com/photo-1553530666-ba11a90e3b3d?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1553530666-ba11a90e3b3d?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 31,
       "nome": "Agua sem gas",
       "descricao": "Garrafa 500ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 4.5,
-      "imagem": "https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 7,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 32,
       "nome": "Agua com gas",
       "descricao": "Garrafa 500ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 5,
-      "imagem": "https://images.unsplash.com/photo-1616118132534-381148898bb4?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 8,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1616118132534-381148898bb4?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 33,
       "nome": "Cha gelado",
       "descricao": "Cha gelado limao 450ml.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 7.9,
-      "imagem": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 9,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 34,
       "nome": "Milk-shake chocolate",
       "descricao": "Cremoso 400ml com calda de chocolate.",
       "categoria": "Bebidas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 15.9,
-      "imagem": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 10,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 35,
       "nome": "Brownie com sorvete",
       "descricao": "Brownie quente com bola de sorvete de creme.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 18.9,
-      "imagem": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 1,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 36,
       "nome": "Petit gateau",
       "descricao": "Bolinho quente de chocolate com sorvete.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 19.9,
-      "imagem": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 37,
       "nome": "Churros recheado",
       "descricao": "Churros com doce de leite e canela.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 14.9,
-      "imagem": "https://images.unsplash.com/photo-1616587226960-4a03badbe8bf?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1616587226960-4a03badbe8bf?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 38,
       "nome": "Mousse de maracuja",
       "descricao": "Pote individual gelado.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 9.9,
-      "imagem": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 39,
       "nome": "Mousse de chocolate",
       "descricao": "Pote individual cremoso.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 9.9,
-      "imagem": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 40,
       "nome": "Pudim tradicional",
       "descricao": "Fatia generosa com calda de caramelo.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 11.9,
-      "imagem": "https://images.unsplash.com/photo-1599785209707-a456fc1337bb?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1599785209707-a456fc1337bb?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 41,
       "nome": "Torta de limao",
       "descricao": "Fatia gelada de torta artesanal.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 12.9,
-      "imagem": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 7,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 42,
       "nome": "Sorvete 2 bolas",
       "descricao": "Sabores chocolate, creme ou morango.",
       "categoria": "Sobremesas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 10.9,
-      "imagem": "https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 8,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 43,
       "nome": "Pastel de Carne",
       "descricao": "Pastel tradicional de carne temperada.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "simples",
       "preco": 12.9,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 44,
       "nome": "Pastel de Queijo",
       "descricao": "Pastel de queijo derretido.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "simples",
       "preco": 11.9,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 45,
       "nome": "Pastel de Frango",
       "descricao": "Frango desfiado com requeijao.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "simples",
       "preco": 12.5,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 46,
       "nome": "Pastel de Pizza",
       "descricao": "Queijo, presunto e tomate.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "simples",
       "preco": 12.5,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 47,
       "nome": "Pastel de Calabresa",
       "descricao": "Calabresa moida com cebola.",
       "categoria": "Pasteis",
-      "ativo": true,
       "tipo": "simples",
       "preco": 13.5,
-      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 48,
       "nome": "Pizza Calabresa G",
       "descricao": "Pizza grande calabresa tradicional.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 52.9,
-      "imagem": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 2,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 49,
       "nome": "Pizza Frango Catupiry G",
       "descricao": "Pizza grande de frango com catupiry.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 55.9,
-      "imagem": "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 3,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 50,
       "nome": "Pizza Portuguesa G",
       "descricao": "Pizza grande portuguesa completa.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 54.9,
-      "imagem": "https://images.unsplash.com/photo-1601924582975-7e6f87f2d3f0?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 4,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1601924582975-7e6f87f2d3f0?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 51,
       "nome": "Pizza Quatro Queijos G",
       "descricao": "Pizza grande com blend de quatro queijos.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 58.9,
-      "imagem": "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 5,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 52,
       "nome": "Pizza Marguerita G",
       "descricao": "Pizza grande marguerita com manjericao.",
       "categoria": "Pizzas",
-      "ativo": true,
       "tipo": "simples",
       "preco": 51.9,
-      "imagem": "https://images.unsplash.com/photo-1552539618-7eec9b4d1796?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 6,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1552539618-7eec9b4d1796?auto=format&fit=crop&w=900&q=80"
     },
     {
       "id": 53,
       "nome": "Combo Fome Zero",
       "descricao": "Burger classico + batata P + refrigerante 350ml.",
       "categoria": "Hamburguers",
-      "ativo": true,
       "tipo": "simples",
       "preco": 33.9,
-      "imagem": "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=900&q=80",
-      "sabores": [],
-      "opcionais": [],
-      "limites": {
-        "saboresGratis": 0,
-        "opcionaisGratis": 0
-      },
-      "extras": {
-        "valorSaborExtra": 0,
-        "valorOpcionalExtra": 0
-      },
-      "diasIndisponiveis": [],
       "ordem": 13,
-      "regraMeia": "media"
+      "imagem": "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=900&q=80"
     }
   ]
 }
