@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-09T19:19:10.095Z",
+  "atualizadoEm": "2026-04-09T19:20:42.463Z",
   "pedidos": [
     {
       "id": "caixa_1775762348462_681",
@@ -55,15 +55,15 @@
         },
         {
           "nome": "Pizza Premium",
-          "quantidade": 2,
+          "quantidade": 3,
           "precoFinal": 59.9,
           "resumo": ""
         }
       ],
       "totais": {
-        "subtotal": 286.2,
+        "subtotal": 346.1,
         "entrega": 0,
-        "total": 286.2
+        "total": 346.1
       },
       "observacaoInterna": "",
       "mensagemOriginal": ""
