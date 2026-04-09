@@ -632,7 +632,7 @@
 
           <section data-panel="publicar" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
             <h2 class="text-xl font-bold">Publicar alteracoes</h2>
-            <p class="mt-1 text-sm text-zinc-400">Salve no GitHub para atualizar o arquivo produtos.json de forma permanente para todos os dispositivos.</p>
+            <p class="mt-1 text-sm text-zinc-400">Salve no GitHub para atualizar produtos.json, config.json e pedidos.json de forma permanente para todos os dispositivos.</p>
             <div class="mt-4 flex flex-wrap gap-2">
               <button id="carregar" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold hover:border-zinc-500">Recarregar produtos.json</button>
               <button id="copiar" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">Copiar JSON</button>
@@ -652,8 +652,17 @@
                 <label class="text-xs text-zinc-400">Branch
                   <input id="gh-branch" value="main" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
                 </label>
-                <label class="text-xs text-zinc-400">Arquivo alvo
-                  <input id="gh-path" value="produtos.json" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                <label class="text-xs text-zinc-400">Arquivo de produtos
+                  <input id="gh-produtos-path" value="produtos.json" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Arquivo de configuracoes
+                  <input id="gh-config-path" value="config.json" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Arquivo de pedidos
+                  <input id="gh-pedidos-path" value="pedidos.json" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
+                </label>
+                <label class="text-xs text-zinc-400">Atualizacao do PDV (segundos)
+                  <input id="gh-pdv-intervalo" type="number" min="10" max="60" value="15" class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
                 </label>
                 <label class="text-xs text-zinc-400">Token GitHub (PAT)
                   <input id="gh-token" type="password" placeholder="github_pat_..." class="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100" />
@@ -714,6 +723,7 @@
     const CHAVE_BACKUPS = 'mh_site_backups_v1';
     const CHAVE_PDV_HANDOFF = 'brasa_pdv_handoff_v1';
     const CHAVE_GITHUB_CFG = 'mh_github_publish_cfg_v1';
+    const CHAVE_GITHUB_TOKEN = 'mh_github_publish_token_v1';
     const CANAL_PDV = 'brasa_pdv_channel';
     const MAX_TENTATIVAS = 5;
     const BLOQUEIO_MS = 60000;
@@ -813,6 +823,8 @@
     let timerBloqueio;
     let timerSessao;
     let ghRuntimeToken = '';
+    let timerGithubPedidosPublish;
+    let timerSyncPdvGithub;
     let timerSyncPdv;
 
     const authBox = document.getElementById('auth-box');
@@ -856,14 +868,21 @@
       try {
         const raw = localStorage.getItem(CHAVE_GITHUB_CFG);
         const parsed = raw ? JSON.parse(raw) : {};
+        const produtosPath = String(parsed.produtosPath || parsed.path || 'produtos.json').trim() || 'produtos.json';
+        const configPath = String(parsed.configPath || 'config.json').trim() || 'config.json';
+        const pedidosPath = String(parsed.pedidosPath || 'pedidos.json').trim() || 'pedidos.json';
+        const pdvIntervaloSeg = Math.min(60, Math.max(10, Number(parsed.pdvIntervaloSeg || 15)));
         return {
           repo: String(parsed.repo || '').trim(),
           branch: String(parsed.branch || 'main').trim() || 'main',
-          path: String(parsed.path || 'produtos.json').trim() || 'produtos.json',
+          produtosPath,
+          configPath,
+          pedidosPath,
+          pdvIntervaloSeg,
           autoPublicar: parsed.autoPublicar !== false
         };
       } catch (_) {
-        return { repo: '', branch: 'main', path: 'produtos.json', autoPublicar: true };
+        return { repo: '', branch: 'main', produtosPath: 'produtos.json', configPath: 'config.json', pedidosPath: 'pedidos.json', pdvIntervaloSeg: 15, autoPublicar: true };
       }
     }
 
@@ -871,7 +890,10 @@
       localStorage.setItem(CHAVE_GITHUB_CFG, JSON.stringify({
         repo: cfg.repo,
         branch: cfg.branch,
-        path: cfg.path,
+        produtosPath: cfg.produtosPath,
+        configPath: cfg.configPath,
+        pedidosPath: cfg.pedidosPath,
+        pdvIntervaloSeg: cfg.pdvIntervaloSeg,
         autoPublicar: cfg.autoPublicar === true
       }));
     }
@@ -880,10 +902,15 @@
       const cfg = {
         repo: document.getElementById('gh-repo').value.trim(),
         branch: document.getElementById('gh-branch').value.trim() || 'main',
-        path: document.getElementById('gh-path').value.trim() || 'produtos.json',
+        produtosPath: document.getElementById('gh-produtos-path').value.trim() || 'produtos.json',
+        configPath: document.getElementById('gh-config-path').value.trim() || 'config.json',
+        pedidosPath: document.getElementById('gh-pedidos-path').value.trim() || 'pedidos.json',
+        pdvIntervaloSeg: Math.min(60, Math.max(10, Number(document.getElementById('gh-pdv-intervalo').value || 15))),
         autoPublicar: document.getElementById('gh-auto-publicar').checked
       };
+      document.getElementById('gh-pdv-intervalo').value = String(cfg.pdvIntervaloSeg);
       ghRuntimeToken = document.getElementById('gh-token').value.trim();
+      if (ghRuntimeToken) localStorage.setItem(CHAVE_GITHUB_TOKEN, ghRuntimeToken);
       salvarGithubCfg(cfg);
       return cfg;
     }
@@ -892,8 +919,13 @@
       const cfg = carregarGithubCfg();
       document.getElementById('gh-repo').value = cfg.repo;
       document.getElementById('gh-branch').value = cfg.branch;
-      document.getElementById('gh-path').value = cfg.path;
+      document.getElementById('gh-produtos-path').value = cfg.produtosPath;
+      document.getElementById('gh-config-path').value = cfg.configPath;
+      document.getElementById('gh-pedidos-path').value = cfg.pedidosPath;
+      document.getElementById('gh-pdv-intervalo').value = String(cfg.pdvIntervaloSeg);
       document.getElementById('gh-auto-publicar').checked = cfg.autoPublicar;
+      ghRuntimeToken = localStorage.getItem(CHAVE_GITHUB_TOKEN) || '';
+      if (ghRuntimeToken) document.getElementById('gh-token').value = ghRuntimeToken;
       setGhStatus(cfg.repo ? 'Configuracao carregada. Informe o token para publicar.' : 'Nao conectado.', false);
     }
 
@@ -910,45 +942,108 @@
       return btoa(bin);
     }
 
-    async function publicarNoGithub(mensagem) {
-      const cfg = lerGithubCfgFormulario();
-      if (!ghRuntimeToken) throw new Error('Informe o token GitHub para publicar.');
-      if (!cfg.repo) throw new Error('Informe o repositorio GitHub.');
-      const { owner, repo } = parseGithubRepo(cfg.repo);
-      const endpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${cfg.path}`;
-      const headers = {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${ghRuntimeToken}`,
-        'X-GitHub-Api-Version': '2022-11-28'
-      };
+    async function lerArquivoGithub({ owner, repo, branch, path, headers }) {
+      const endpoint = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+      const atual = await fetch(`${endpoint}?ref=${encodeURIComponent(branch)}`, { headers });
+      if (atual.status === 404) return { endpoint, sha: '', existe: false, conteudo: '' };
+      if (!atual.ok) throw new Error(`Nao foi possivel ler ${path} no GitHub.`);
+      const arquivoAtual = await atual.json();
+      const conteudo = arquivoAtual && arquivoAtual.content ? atob(arquivoAtual.content.replace(/\n/g, '')) : '';
+      return { endpoint, sha: String(arquivoAtual.sha || ''), existe: true, conteudo };
+    }
 
-      let sha;
-      const atual = await fetch(`${endpoint}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
-      if (atual.status === 200) {
-        const arquivoAtual = await atual.json();
-        sha = arquivoAtual.sha;
-      } else if (atual.status !== 404) {
-        throw new Error('Nao foi possivel ler o arquivo atual no GitHub.');
-      }
-
-      const conteudo = `${JSON.stringify(estado.dados, null, 2)}\n`;
+    async function escreverArquivoGithub({ owner, repo, branch, path, headers, mensagem, conteudo }) {
+      const atual = await lerArquivoGithub({ owner, repo, branch, path, headers });
       const corpo = {
-        message: mensagem || 'Atualiza produtos.json pelo painel admin',
+        message: mensagem,
         content: toBase64Unicode(conteudo),
-        branch: cfg.branch
+        branch
       };
-      if (sha) corpo.sha = sha;
-
-      const resposta = await fetch(endpoint, {
+      if (atual.sha) corpo.sha = atual.sha;
+      const resposta = await fetch(atual.endpoint, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(corpo)
       });
       if (!resposta.ok) {
         const erro = await resposta.json().catch(() => ({}));
-        throw new Error(erro.message || 'Falha ao salvar arquivo no GitHub.');
+        throw new Error(erro.message || `Falha ao salvar ${path} no GitHub.`);
       }
       return await resposta.json();
+    }
+
+    async function publicarNoGithub(mensagem) {
+      const cfg = lerGithubCfgFormulario();
+      if (!ghRuntimeToken) throw new Error('Informe o token GitHub para publicar.');
+      if (!cfg.repo) throw new Error('Informe o repositorio GitHub.');
+      const { owner, repo } = parseGithubRepo(cfg.repo);
+      const headers = {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${ghRuntimeToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+
+      const payloadPedidos = {
+        atualizadoEm: new Date().toISOString(),
+        pedidos: estado.pdv.pedidos
+      };
+
+      await Promise.all([
+        escreverArquivoGithub({
+          owner,
+          repo,
+          branch: cfg.branch,
+          path: cfg.produtosPath,
+          headers,
+          mensagem: mensagem || 'Atualiza produtos.json pelo painel admin',
+          conteudo: `${JSON.stringify(estado.dados, null, 2)}\n`
+        }),
+        escreverArquivoGithub({
+          owner,
+          repo,
+          branch: cfg.branch,
+          path: cfg.configPath,
+          headers,
+          mensagem: mensagem || 'Atualiza config.json pelo painel admin',
+          conteudo: `${JSON.stringify(estado.dados.config, null, 2)}\n`
+        }),
+        escreverArquivoGithub({
+          owner,
+          repo,
+          branch: cfg.branch,
+          path: cfg.pedidosPath,
+          headers,
+          mensagem: mensagem || 'Atualiza pedidos.json pelo painel admin',
+          conteudo: `${JSON.stringify(payloadPedidos, null, 2)}\n`
+        })
+      ]);
+
+      return true;
+    }
+
+    async function publicarPedidosNoGithub(mensagem) {
+      const cfg = carregarGithubCfg();
+      if (!cfg.repo || !ghRuntimeToken) return false;
+      const { owner, repo } = parseGithubRepo(cfg.repo);
+      const headers = {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${ghRuntimeToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+      const payloadPedidos = {
+        atualizadoEm: new Date().toISOString(),
+        pedidos: estado.pdv.pedidos
+      };
+      await escreverArquivoGithub({
+        owner,
+        repo,
+        branch: cfg.branch,
+        path: cfg.pedidosPath,
+        headers,
+        mensagem: mensagem || 'Atualiza pedidos.json pelo painel PDV',
+        conteudo: `${JSON.stringify(payloadPedidos, null, 2)}\n`
+      });
+      return true;
     }
 
     async function tentarPublicacaoAutomatica() {
@@ -1921,9 +2016,57 @@
       }
     }
 
+    function agendarPublicacaoPedidosGithub() {
+      clearTimeout(timerGithubPedidosPublish);
+      timerGithubPedidosPublish = setTimeout(async () => {
+        try {
+          await publicarPedidosNoGithub('Sincroniza pedidos do PDV');
+        } catch (erro) {
+          setGhStatus('Falha ao sincronizar pedidos no GitHub: ' + erro.message, true);
+        }
+      }, 1200);
+    }
+
+    function extrairListaPedidosRemotos(conteudo) {
+      try {
+        const parsed = JSON.parse(conteudo || '{}');
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.pedidos)) return parsed.pedidos;
+      } catch (_) {}
+      return [];
+    }
+
+    async function carregarPedidosPdvGithub() {
+      const cfg = carregarGithubCfg();
+      if (!cfg.repo || !ghRuntimeToken) return false;
+      const { owner, repo } = parseGithubRepo(cfg.repo);
+      const headers = {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${ghRuntimeToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+      const arquivo = await lerArquivoGithub({
+        owner,
+        repo,
+        branch: cfg.branch,
+        path: cfg.pedidosPath,
+        headers
+      });
+      if (!arquivo.existe || !arquivo.conteudo) return false;
+      const listaRemota = extrairListaPedidosRemotos(arquivo.conteudo).map(normalizarPedidoPdv);
+      if (!listaRemota.length && !estado.pdv.pedidos.length) return false;
+      const mudou = JSON.stringify(listaRemota) !== JSON.stringify(estado.pdv.pedidos);
+      if (mudou) {
+        estado.pdv.pedidos = listaRemota;
+        localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(listaRemota));
+      }
+      return mudou;
+    }
+
     function salvarPedidosPdv() {
       localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(estado.pdv.pedidos));
       atualizarResumoPdv();
+      agendarPublicacaoPedidosGithub();
     }
 
     function sincronizarPedidosExternos(tocarSom) {
@@ -1938,6 +2081,17 @@
       timerSyncPdv = setInterval(() => {
         sincronizarPedidosExternos(false);
       }, 2000);
+      clearInterval(timerSyncPdvGithub);
+      timerSyncPdvGithub = setInterval(async () => {
+        try {
+          const antes = estado.pdv.pedidos.length;
+          const mudou = await carregarPedidosPdvGithub();
+          if (mudou) {
+            renderPedidosPdv();
+            if (estado.pdv.pedidos.length > antes) tocarBeep();
+          }
+        } catch (_) {}
+      }, carregarGithubCfg().pdvIntervaloSeg * 1000);
       window.addEventListener('focus', () => sincronizarPedidosExternos(false));
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) sincronizarPedidosExternos(false);
@@ -3112,23 +3266,29 @@
     document.getElementById('github-salvar').addEventListener('click', async () => {
       try {
         setGhStatus('Publicando no GitHub...', false);
-        await publicarNoGithub('Atualiza produtos.json pelo painel admin');
-        setStatus('Arquivo produtos.json atualizado no GitHub com sucesso.', false);
+        await publicarNoGithub('Atualiza arquivos do sistema pelo painel admin');
+        setStatus('Arquivos produtos.json, config.json e pedidos.json atualizados no GitHub.', false);
         setGhStatus('Publicado com sucesso.', false);
       } catch (erro) {
         setStatus('Falha ao publicar no GitHub: ' + erro.message, true);
         setGhStatus('Erro de publicacao: ' + erro.message, true);
       }
     });
-    ['gh-repo', 'gh-branch', 'gh-path', 'gh-auto-publicar'].forEach((id) => {
+    ['gh-repo', 'gh-branch', 'gh-produtos-path', 'gh-config-path', 'gh-pedidos-path', 'gh-pdv-intervalo', 'gh-auto-publicar'].forEach((id) => {
       document.getElementById(id).addEventListener('change', () => {
         lerGithubCfgFormulario();
         setGhStatus('Configuracao salva neste navegador.', false);
+        iniciarSincronizacaoPdvContinua();
       });
     });
     document.getElementById('gh-token').addEventListener('input', (evento) => {
       ghRuntimeToken = evento.target.value.trim();
-      if (ghRuntimeToken) setGhStatus('Token informado para esta sessao.', false);
+      if (ghRuntimeToken) {
+        localStorage.setItem(CHAVE_GITHUB_TOKEN, ghRuntimeToken);
+        setGhStatus('Token informado e salvo neste navegador.', false);
+      } else {
+        localStorage.removeItem(CHAVE_GITHUB_TOKEN);
+      }
     });
     document.getElementById('abrir-pdv-aba').addEventListener('click', () => {
       abrirPdvEmNovaAba();
