@@ -43,7 +43,7 @@
       backdrop-filter: blur(8px);
     }
 
-    .pdv-only body { background: #050507; overflow: hidden; }
+    .pdv-only body { background: #050507; }
     .pdv-only main { max-width: 100%; padding: 1rem; }
     .pdv-only #admin-grid { display: block; }
     .pdv-only #admin-header,
@@ -63,8 +63,6 @@
       border-color: #27272a;
       background: linear-gradient(180deg, #121217 0%, #0a0a0d 100%);
       min-height: calc(100vh - 2rem);
-      max-height: calc(100vh - 2rem);
-      overflow: hidden;
     }
 
     /* Melhor enquadramento do PDV para uso continuo em desktop */
@@ -80,24 +78,34 @@
       overflow: hidden;
     }
 
+    .pdv-card-body {
+      min-height: 0;
+      overflow: hidden;
+    }
+
     .pdv-scroll {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
       padding-right: 0.25rem;
-      overscroll-behavior: contain;
     }
 
     #caixa-catalogo {
       min-height: 210px;
-      max-height: 40vh;
+      max-height: 36vh;
       overflow-y: auto;
       padding-right: 0.25rem;
     }
 
     #caixa-comanda {
       min-height: 180px;
-      max-height: 28vh;
+      max-height: 24vh;
+      overflow-y: auto;
+    }
+
+    #pdv-lista-pedidos {
+      min-height: 260px;
+      max-height: 52vh;
       overflow-y: auto;
     }
 
@@ -109,11 +117,15 @@
       }
 
       #caixa-catalogo {
-        max-height: 44vh;
+        max-height: 38vh;
       }
 
       #caixa-comanda {
-        max-height: 30vh;
+        max-height: 24vh;
+      }
+
+      #pdv-lista-pedidos {
+        max-height: 56vh;
       }
     }
 
@@ -123,11 +135,15 @@
     }
 
     .pdv-only #caixa-catalogo {
-      max-height: 46vh;
+      max-height: 40vh;
     }
 
     .pdv-only #caixa-comanda {
-      max-height: 32vh;
+      max-height: 26vh;
+    }
+
+    .pdv-only #pdv-lista-pedidos {
+      max-height: 58vh;
     }
 
     @media (max-width: 1023px) {
@@ -141,7 +157,8 @@
       }
 
       #caixa-catalogo,
-      #caixa-comanda {
+      #caixa-comanda,
+      #pdv-lista-pedidos {
         min-height: 0;
         max-height: none;
       }
@@ -681,6 +698,16 @@
                   <h3 class="text-lg font-bold">Comandas abertas</h3>
                   <span id="pdv-total-online" class="rounded-md border border-zinc-700 px-2 py-1 text-xs">0 abertos</span>
                 </div>
+                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div class="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-zinc-400">Pedidos em andamento</p>
+                    <p id="pdv-resumo-andamento" class="mt-1 text-2xl font-black">0</p>
+                  </div>
+                  <div class="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+                    <p class="text-[11px] uppercase tracking-[0.16em] text-zinc-400">Total faturado hoje</p>
+                    <p id="pdv-resumo-faturado" class="mt-1 text-2xl font-black">R$ 0,00</p>
+                  </div>
+                </div>
                 <div class="mt-3 flex flex-wrap gap-2 text-[11px] text-zinc-400">
                   <span class="rounded-md border border-emerald-700/70 bg-emerald-500/10 px-2 py-1">Novo</span>
                   <span class="rounded-md border border-amber-700/70 bg-amber-500/10 px-2 py-1">Em producao</span>
@@ -704,8 +731,9 @@
                     <option value="pronto">Pronto</option>
                   </select>
                   <button id="caixa-abrir-comanda" type="button" class="rounded-lg bg-orange-500 px-3 py-2 text-sm font-bold text-zinc-950 hover:bg-orange-400">+ Abrir nova comanda</button>
-                  <button id="caixa-nova" type="button" class="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-semibold hover:border-zinc-500">Limpar selecao</button>
+                  <button id="caixa-toggle-edicao" type="button" class="rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-200 hover:border-sky-500">Editar comanda</button>
                 </div>
+
                 <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
                   <p class="text-sm font-semibold">Catalogo por abas de categoria</p>
                   <div id="caixa-categorias" class="mt-3 flex flex-wrap gap-2"></div>
@@ -717,14 +745,8 @@
                   </div>
                 </div>
 
-                <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <p class="text-sm font-semibold">Pagamento da comanda</p>
-                    <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-200">
-                      <input id="caixa-pago" type="checkbox" class="h-4 w-4 accent-violet-500">
-                      Comanda paga
-                    </label>
-                  </div>
+                <div class="mt-3 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+                  <p class="text-sm font-semibold">Pagamento da comanda</p>
                   <p class="mt-1 text-xs text-zinc-400">Selecione ate 2 formas de pagamento para fechar o atendimento.</p>
                   <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     <label class="inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold">
@@ -753,6 +775,10 @@
                     </div>
                     <p id="caixa-dinheiro-troco-calculo" class="mt-2 text-xs text-emerald-300"></p>
                   </div>
+                  <label class="mt-3 inline-flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-semibold text-zinc-200">
+                    <input id="caixa-pago" type="checkbox" class="h-4 w-4 accent-violet-500">
+                    Comanda paga
+                  </label>
                 </div>
 
                 <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
@@ -771,16 +797,7 @@
               </section>
             </div>
 
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-              <div class="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-zinc-400">Pedidos em andamento</p>
-                <p id="pdv-resumo-andamento" class="mt-2 text-2xl font-black">0</p>
-              </div>
-              <div class="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-                <p class="text-xs uppercase tracking-[0.2em] text-zinc-400">Total faturado hoje</p>
-                <p id="pdv-resumo-faturado" class="mt-2 text-2xl font-black">R$ 0,00</p>
-              </div>
-            </div>
+            
           </section>
 
           <section data-panel="relatorios" data-admin-only="true" class="panel hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6">
@@ -1061,9 +1078,9 @@
       vendasHistorico: [],
       caixa: {
         pedidoId: '',
-        emEdicao: false,
         identificacao: '',
         status: 'novo',
+        editando: false,
         pago: false,
         categoriaAtiva: 'TODOS',
         itens: [],
@@ -1104,6 +1121,7 @@
     const caixaTotal = document.getElementById('caixa-total');
     const caixaAtivo = document.getElementById('caixa-ativo');
     const caixaComandaId = document.getElementById('caixa-comanda-id');
+    const caixaToggleEdicao = document.getElementById('caixa-toggle-edicao');
     const caixaPago = document.getElementById('caixa-pago');
     const caixaPagamentoInputs = [...document.querySelectorAll('.caixa-pagamento')];
     const caixaPagamentoAviso = document.getElementById('caixa-pagamento-aviso');
@@ -2701,7 +2719,6 @@
         const hoje = diaAtual();
         estado.pdv.dia = String(salvo.dia || hoje);
         estado.pdv.faturadoHoje = Number(salvo.faturadoHoje || 0);
-        if (!Number.isFinite(estado.pdv.faturadoHoje)) estado.pdv.faturadoHoje = 0;
         if (estado.pdv.dia !== hoje) {
           estado.pdv.dia = hoje;
           estado.pdv.faturadoHoje = 0;
@@ -2879,7 +2896,6 @@
 
     function atualizarResumoPdv() {
       const andamento = estado.pdv.pedidos.length;
-      if (!Number.isFinite(estado.pdv.faturadoHoje)) estado.pdv.faturadoHoje = 0;
       pdvTotalOnline.textContent = `${andamento} ${andamento === 1 ? 'pedido' : 'pedidos'}`;
       pdvResumoAndamento.textContent = String(andamento);
       pdvResumoFaturado.textContent = formatarMoeda(estado.pdv.faturadoHoje);
@@ -3041,36 +3057,6 @@
 
     function totalCaixa() {
       return estado.caixa.itens.reduce((acc, item) => acc + (item.valor * item.quantidade), 0);
-    }
-
-    function criarComandaAutomaticaBalcao() {
-      const novoPedido = normalizarPedidoPdv({
-        id: `caixa_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        numeroPedido: gerarNumeroComanda(),
-        criadoEm: new Date().toISOString(),
-        origem: 'caixa',
-        status: 'novo',
-        pago: false,
-        cliente: { nome: 'Balcao', endereco: '', referencia: '', tipoAtendimento: 'retirada' },
-        pagamento: { formas: [], precisaTroco: '', trocoPara: 0, trocoValor: 0 },
-        itens: [],
-        totais: { subtotal: 0, entrega: 0, total: 0 },
-        observacaoInterna: ''
-      });
-      estado.pdv.pedidos.unshift(novoPedido);
-      estado.caixa.pedidoId = novoPedido.id;
-      estado.caixa.emEdicao = true;
-      estado.caixa.identificacao = 'Balcao';
-      estado.caixa.status = 'novo';
-      estado.caixa.pago = false;
-      estado.caixa.pagamento = { formas: [], precisaTroco: '', trocoPara: 0 };
-      estado.caixa.itens = [];
-      document.getElementById('caixa-identificacao').value = 'Balcao';
-      document.getElementById('caixa-status').value = 'novo';
-      caixaPago.checked = false;
-      salvarPedidosPdv();
-      renderPedidosPdv();
-      renderComandaCaixa();
     }
 
     function normalizarPagamentoCaixa(pagamento) {
