@@ -1,0 +1,14 @@
+/* Camada global do cardapio cliente (complementa utilitarios Tailwind). */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  image-rendering: auto;
+}
