@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-10T02:22:45.845Z",
+  "atualizadoEm": "2026-04-10T02:23:46.406Z",
   "pedidos": [
     {
       "id": "caixa_1775787314942_588",
@@ -75,6 +75,65 @@
         "subtotal": 59.8,
         "entrega": 0,
         "total": 59.8
+      },
+      "observacaoInterna": "",
+      "mensagemOriginal": ""
+    },
+    {
+      "id": "caixa_1775787810181_684",
+      "numeroPedido": "CX-10181",
+      "criadoEm": "2026-04-10T02:23:30.181Z",
+      "origem": "caixa",
+      "status": "novo",
+      "pago": false,
+      "cliente": {
+        "nome": "Balcao",
+        "endereco": "",
+        "referencia": "",
+        "tipoAtendimento": "retirada"
+      },
+      "pagamento": {
+        "formas": [],
+        "precisaTroco": "",
+        "trocoPara": 0,
+        "trocoValor": 0
+      },
+      "itens": [
+        {
+          "nome": "Pizza Portuguesa G",
+          "quantidade": 1,
+          "precoFinal": 54.9,
+          "resumo": ""
+        },
+        {
+          "nome": "Pizza Calabresa G",
+          "quantidade": 1,
+          "precoFinal": 52.9,
+          "resumo": ""
+        },
+        {
+          "nome": "Pastel de Calabresa",
+          "quantidade": 1,
+          "precoFinal": 13.5,
+          "resumo": ""
+        },
+        {
+          "nome": "Pizza Premium",
+          "quantidade": 1,
+          "precoFinal": 59.9,
+          "resumo": ""
+        },
+        {
+          "nome": "Pizza Frango Catupiry G",
+          "quantidade": 1,
+          "precoFinal": 55.9,
+          "resumo": ""
+        }
+      ],
+      "totais": {
+        "subtotal": 237.1,
+        "entrega": 0,
+        "total": 237.1
       },
       "observacaoInterna": "",
       "mensagemOriginal": ""
