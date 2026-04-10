@@ -1,4 +1,40 @@
 {
-  "atualizadoEm": "",
-  "pedidos": []
+  "atualizadoEm": "2026-04-10T02:15:16.800Z",
+  "pedidos": [
+    {
+      "id": "caixa_1775787314942_588",
+      "numeroPedido": "CX-14942",
+      "criadoEm": "2026-04-10T02:15:14.942Z",
+      "origem": "caixa",
+      "status": "novo",
+      "pago": false,
+      "cliente": {
+        "nome": "Balcao",
+        "endereco": "",
+        "referencia": "",
+        "tipoAtendimento": "retirada"
+      },
+      "pagamento": {
+        "formas": [],
+        "precisaTroco": "",
+        "trocoPara": 0,
+        "trocoValor": 0
+      },
+      "itens": [
+        {
+          "nome": "Burger Bacon Supreme",
+          "quantidade": 1,
+          "precoFinal": 31.9,
+          "resumo": ""
+        }
+      ],
+      "totais": {
+        "subtotal": 31.9,
+        "entrega": 0,
+        "total": 31.9
+      },
+      "observacaoInterna": "",
+      "mensagemOriginal": ""
+    }
+  ]
 }
