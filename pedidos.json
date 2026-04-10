@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-10T02:20:05.475Z",
+  "atualizadoEm": "2026-04-10T02:21:05.326Z",
   "pedidos": [
     {
       "id": "caixa_1775787314942_588",
@@ -42,7 +42,7 @@
       "criadoEm": "2026-04-10T02:18:50.485Z",
       "origem": "caixa",
       "status": "novo",
-      "pago": false,
+      "pago": true,
       "cliente": {
         "nome": "Balcao",
         "endereco": "",
@@ -50,7 +50,9 @@
         "tipoAtendimento": "retirada"
       },
       "pagamento": {
-        "formas": [],
+        "formas": [
+          "Pix"
+        ],
         "precisaTroco": "",
         "trocoPara": 0,
         "trocoValor": 0
