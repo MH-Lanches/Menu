@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-10T02:23:46.406Z",
+  "atualizadoEm": "2026-04-10T02:24:47.060Z",
   "pedidos": [
     {
       "id": "caixa_1775787314942_588",
@@ -85,7 +85,7 @@
       "criadoEm": "2026-04-10T02:23:30.181Z",
       "origem": "caixa",
       "status": "novo",
-      "pago": false,
+      "pago": true,
       "cliente": {
         "nome": "Balcao",
         "endereco": "",
@@ -93,8 +93,11 @@
         "tipoAtendimento": "retirada"
       },
       "pagamento": {
-        "formas": [],
-        "precisaTroco": "",
+        "formas": [
+          "Cartao",
+          "Dinheiro"
+        ],
+        "precisaTroco": "nao",
         "trocoPara": 0,
         "trocoValor": 0
       },
@@ -128,12 +131,18 @@
           "quantidade": 1,
           "precoFinal": 55.9,
           "resumo": ""
+        },
+        {
+          "nome": "Pizza Marguerita G",
+          "quantidade": 1,
+          "precoFinal": 51.9,
+          "resumo": ""
         }
       ],
       "totais": {
-        "subtotal": 237.1,
+        "subtotal": 289,
         "entrega": 0,
-        "total": 237.1
+        "total": 289
       },
       "observacaoInterna": "",
       "mensagemOriginal": ""
