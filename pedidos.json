@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-10T02:15:16.800Z",
+  "atualizadoEm": "2026-04-10T02:18:52.133Z",
   "pedidos": [
     {
       "id": "caixa_1775787314942_588",
@@ -32,6 +32,47 @@
         "subtotal": 31.9,
         "entrega": 0,
         "total": 31.9
+      },
+      "observacaoInterna": "",
+      "mensagemOriginal": ""
+    },
+    {
+      "id": "caixa_1775787530485_644",
+      "numeroPedido": "CX-30485",
+      "criadoEm": "2026-04-10T02:18:50.485Z",
+      "origem": "caixa",
+      "status": "novo",
+      "pago": false,
+      "cliente": {
+        "nome": "Balcao",
+        "endereco": "",
+        "referencia": "",
+        "tipoAtendimento": "retirada"
+      },
+      "pagamento": {
+        "formas": [],
+        "precisaTroco": "",
+        "trocoPara": 0,
+        "trocoValor": 0
+      },
+      "itens": [
+        {
+          "nome": "Burger Veggie",
+          "quantidade": 1,
+          "precoFinal": 25.9,
+          "resumo": ""
+        },
+        {
+          "nome": "Burger Costela",
+          "quantidade": 1,
+          "precoFinal": 33.9,
+          "resumo": ""
+        }
+      ],
+      "totais": {
+        "subtotal": 59.8,
+        "entrega": 0,
+        "total": 59.8
       },
       "observacaoInterna": "",
       "mensagemOriginal": ""
