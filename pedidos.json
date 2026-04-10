@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-04-10T02:24:47.060Z",
+  "atualizadoEm": "2026-04-10T02:26:30.075Z",
   "pedidos": [
     {
       "id": "caixa_1775787314942_588",
@@ -84,7 +84,7 @@
       "numeroPedido": "CX-10181",
       "criadoEm": "2026-04-10T02:23:30.181Z",
       "origem": "caixa",
-      "status": "novo",
+      "status": "preparando",
       "pago": true,
       "cliente": {
         "nome": "Balcao",
