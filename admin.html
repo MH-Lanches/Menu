@@ -783,7 +783,7 @@
 
                 <div class="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
                   <div class="flex flex-wrap items-center justify-between gap-2">
-                    <p class="text-sm font-semibold">Comanda ativa</p>
+                    <p class="text-sm font-semibold">Itens da comanda</p>
                     <p id="caixa-ativo" class="text-xs text-zinc-400">Nenhuma comanda selecionada.</p>
                   </div>
                   <div id="caixa-comanda" class="mt-3 overflow-y-auto pr-1 text-sm"></div>
@@ -1097,9 +1097,11 @@
     let timerSessao;
     let ghRuntimeToken = '';
     let timerGithubPedidosPublish;
+    let timerGithubCuponsPublish;
     let timerSyncPdvGithub;
     let timerSyncPdv;
     let timerBackupAuto;
+    let cuponsUltimaEdicaoMs = 0;
     let watcherPedidosRemotos;
     let listenersSyncPdvRegistrados = false;
 
@@ -1424,6 +1426,27 @@
           localStorage.setItem(CHAVE_PEDIDOS_PDV, JSON.stringify(pedidosUnificados));
           return `${JSON.stringify({ atualizadoEm: new Date().toISOString(), pedidos: pedidosUnificados }, null, 2)}\n`;
         }
+      });
+      return true;
+    }
+
+    async function publicarCuponsNoGithub(mensagem) {
+      const cfg = carregarGithubCfg();
+      if (!cfg.repo || !ghRuntimeToken) return false;
+      const { owner, repo } = parseGithubRepo(cfg.repo);
+      const headers = {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${ghRuntimeToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      };
+      await escreverArquivoGithub({
+        owner,
+        repo,
+        branch: cfg.branch,
+        path: cfg.cuponsPath,
+        headers,
+        mensagem: mensagem || 'Atualiza cupons.json pelo painel admin',
+        conteudo: `${JSON.stringify({ atualizadoEm: new Date().toISOString(), cupons: estado.cupons }, null, 2)}\n`
       });
       return true;
     }
@@ -2397,6 +2420,7 @@
     }
 
     async function carregarCuponsAdmin() {
+      const inicioCargaMs = Date.now();
       let lista = [];
       try {
         const resposta = await fetch('cupons.json', { cache: 'no-store' });
@@ -2416,6 +2440,12 @@
           }
         }
       } catch (_) {}
+
+      // Evita sobrescrever alteracoes recem feitas localmente durante uma carga atrasada.
+      if (inicioCargaMs < cuponsUltimaEdicaoMs) {
+        renderCuponsAdmin();
+        return;
+      }
 
       estado.cupons = normalizarListaCupons(lista);
       renderCuponsAdmin();
@@ -2497,6 +2527,76 @@
           </article>
         `;
       }).join('');
+    }
+
+    function salvarCuponsAdmin(mensagemSucesso) {
+      estado.cupons = normalizarListaCupons(estado.cupons);
+      cuponsUltimaEdicaoMs = Date.now();
+      salvarCuponsRascunho();
+      renderCuponsAdmin();
+      if (mensagemSucesso) setStatus(mensagemSucesso, false);
+      agendarPublicacaoCuponsGithub(mensagemSucesso || 'Atualiza cupons automaticamente');
+    }
+
+    function upsertCupomAdmin(dadosCupom) {
+      const codigo = String(dadosCupom.codigo || '').trim().toUpperCase();
+      if (!codigo) {
+        setStatus('Informe o codigo do cupom.', true);
+        return false;
+      }
+
+      const tipo = String(dadosCupom.tipo || '').toLowerCase();
+      const tiposValidos = ['porcentagem', 'valor_fixo', 'frete_gratis'];
+      if (!tiposValidos.includes(tipo)) {
+        setStatus('Tipo de desconto invalido.', true);
+        return false;
+      }
+
+      const valor = Math.max(0, Number(dadosCupom.valor || 0));
+      if (tipo !== 'frete_gratis' && valor <= 0) {
+        setStatus('Informe um valor de desconto maior que zero.', true);
+        return false;
+      }
+
+      const quantidadeTotal = Math.max(0, Number(dadosCupom.quantidadeTotal || 0));
+      const valorMinimo = Math.max(0, Number(dadosCupom.valorMinimo || 0));
+      const validade = String(dadosCupom.validade || '').trim();
+      if (validade && Number.isNaN(new Date(`${validade}T23:59:59`).getTime())) {
+        setStatus('Data de validade invalida.', true);
+        return false;
+      }
+
+      const idAtual = String(dadosCupom.id || '').trim();
+      const indexCodigoDuplicado = estado.cupons.findIndex((item) => item.codigo === codigo && item.id !== idAtual);
+      if (indexCodigoDuplicado >= 0) {
+        setStatus('Ja existe um cupom com este codigo.', true);
+        return false;
+      }
+
+      const existente = estado.cupons.find((item) => item.id === idAtual);
+      const cupomNormalizado = normalizarCupom({
+        id: idAtual || `cupom_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        codigo,
+        tipo,
+        valor: tipo === 'frete_gratis' ? 0 : valor,
+        quantidadeTotal,
+        usosRealizados: existente ? existente.usosRealizados : 0,
+        valorMinimo,
+        validade,
+        ativo: dadosCupom.ativo !== false,
+        atualizadoEm: new Date().toISOString()
+      });
+
+      const index = estado.cupons.findIndex((item) => item.id === cupomNormalizado.id);
+      if (index >= 0) {
+        estado.cupons[index] = cupomNormalizado;
+      } else {
+        estado.cupons.unshift(cupomNormalizado);
+      }
+
+      salvarCuponsAdmin(index >= 0 ? 'Cupom atualizado com sucesso.' : 'Cupom criado com sucesso.');
+      limparFormCupom();
+      return true;
     }
 
     function preencherFormProduto(item) {
@@ -2754,6 +2854,41 @@
       }, 1200);
     }
 
+    function agendarPublicacaoCuponsGithub(mensagem) {
+      clearTimeout(timerGithubCuponsPublish);
+      timerGithubCuponsPublish = setTimeout(async () => {
+        const cfg = carregarGithubCfg();
+        if (!cfg.autoPublicar || !cfg.repo) return;
+        if (!ghRuntimeToken) {
+          setGhStatus('Auto publicar cupons ativo, mas token nao foi informado nesta sessao.', true);
+          return;
+        }
+        try {
+          await publicarCuponsNoGithub(mensagem || 'Sincroniza cupons automaticamente');
+          setGhStatus('Cupons publicados automaticamente no GitHub.', false);
+        } catch (erro) {
+          setGhStatus('Falha ao publicar cupons no GitHub: ' + erro.message, true);
+        }
+      }, 900);
+    }
+
+    async function publicarCuponsAutomaticoAgora(mensagem) {
+      const cfg = carregarGithubCfg();
+      if (!cfg.autoPublicar || !cfg.repo) return false;
+      if (!ghRuntimeToken) {
+        setGhStatus('Auto publicar cupons ativo, mas token nao foi informado nesta sessao.', true);
+        return false;
+      }
+      try {
+        await publicarCuponsNoGithub(mensagem || 'Publica cupons automaticamente no salvar');
+        setGhStatus('Cupons publicados no GitHub.', false);
+        return true;
+      } catch (erro) {
+        setGhStatus('Falha ao publicar cupons no GitHub: ' + erro.message, true);
+        return false;
+      }
+    }
+
     function extrairListaPedidosRemotos(conteudo) {
       try {
         const parsed = JSON.parse(conteudo || '{}');
@@ -2907,7 +3042,7 @@
 
     function tituloComandaAtiva() {
       if (!estado.caixa.pedidoId) return 'Sem comanda aberta';
-      return `Comanda ativa: ${estado.caixa.identificacao || 'Sem identificacao'}`;
+      return `Comanda: ${estado.caixa.identificacao || 'Sem identificacao'}`;
     }
 
     function escaparHtml(texto) {
@@ -3055,6 +3190,42 @@
       `).join('');
     }
 
+    function abrirComandaAutomaticaBalcao() {
+      const novoPedido = normalizarPedidoPdv({
+        id: `caixa_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        numeroPedido: gerarNumeroComanda(),
+        criadoEm: new Date().toISOString(),
+        origem: 'caixa',
+        status: 'novo',
+        pago: false,
+        cliente: { nome: 'Balcao', endereco: '', referencia: '', tipoAtendimento: 'retirada' },
+        pagamento: { formas: [], precisaTroco: '', trocoPara: 0, trocoValor: 0 },
+        itens: [],
+        totais: { subtotal: 0, entrega: 0, total: 0 },
+        observacaoInterna: ''
+      });
+      estado.pdv.pedidos.unshift(novoPedido);
+      estado.caixa.pedidoId = novoPedido.id;
+      estado.caixa.identificacao = 'Balcao';
+      estado.caixa.status = 'novo';
+      estado.caixa.pago = false;
+      estado.caixa.editando = true;
+      estado.caixa.pagamento = { formas: [], precisaTroco: '', trocoPara: 0 };
+      estado.caixa.itens = [];
+      document.getElementById('caixa-identificacao').value = estado.caixa.identificacao;
+      document.getElementById('caixa-status').value = estado.caixa.status;
+      salvarPedidosPdv();
+      renderPedidosPdv();
+      renderComandaCaixa();
+      setStatus('Nova comanda "Balcao" aberta automaticamente para lancamento.', false);
+    }
+
+    function garantirComandaEditavel() {
+      if (estado.caixa.pedidoId && estado.caixa.editando) return true;
+      abrirComandaAutomaticaBalcao();
+      return true;
+    }
+
     function totalCaixa() {
       return estado.caixa.itens.reduce((acc, item) => acc + (item.valor * item.quantidade), 0);
     }
@@ -3155,9 +3326,13 @@
 
     function renderComandaCaixa() {
       caixaAtivo.textContent = estado.caixa.pedidoId
-        ? `Editando: ${estado.caixa.identificacao || 'Sem identificacao'}${estado.caixa.pago ? ' (Paga)' : ''}`
+        ? `${estado.caixa.editando ? 'Editando' : 'Somente leitura'}: ${estado.caixa.identificacao || 'Sem identificacao'}${estado.caixa.pago ? ' (Paga)' : ''}`
         : 'Nenhuma comanda selecionada.';
       caixaComandaId.textContent = tituloComandaAtiva();
+      caixaToggleEdicao.textContent = estado.caixa.editando ? 'Parar edicao' : 'Editar comanda';
+      caixaToggleEdicao.className = estado.caixa.editando
+        ? 'rounded-lg border border-emerald-700 px-3 py-2 text-sm font-semibold text-emerald-200 hover:border-emerald-500'
+        : 'rounded-lg border border-sky-700 px-3 py-2 text-sm font-semibold text-sky-200 hover:border-sky-500';
       caixaPago.checked = Boolean(estado.caixa.pago);
       atualizarUiPagamentoCaixa();
       const caixaResumoPagamento = document.getElementById('caixa-resumo-pagamento');
@@ -3202,6 +3377,7 @@
       const nomeLimpo = String(nome || '').trim();
       const valorNumero = Number(valor || 0);
       if (!nomeLimpo || valorNumero <= 0) return;
+      garantirComandaEditavel();
       const existe = estado.caixa.itens.find((item) => item.nome === nomeLimpo && item.valor === valorNumero);
       if (existe) existe.quantidade += 1;
       else estado.caixa.itens.push({ nome: nomeLimpo, valor: valorNumero, quantidade: 1 });
@@ -3221,6 +3397,7 @@
       estado.caixa.identificacao = pedido.cliente.nome || '';
       estado.caixa.status = pedido.status || 'novo';
       estado.caixa.pago = Boolean(pedido.pago);
+      estado.caixa.editando = false;
       estado.caixa.pagamento = normalizarPagamentoCaixa({
         formas: pedido.pagamento.formas,
         precisaTroco: pedido.pagamento.precisaTroco,
@@ -3330,6 +3507,7 @@
       estado.caixa.itens = [];
       estado.caixa.status = 'novo';
       estado.caixa.pago = false;
+      estado.caixa.editando = false;
       estado.caixa.pagamento = { formas: [], precisaTroco: '', trocoPara: 0 };
       if (limparIdentificacao) estado.caixa.identificacao = '';
       document.getElementById('caixa-status').value = estado.caixa.status;
@@ -3440,6 +3618,7 @@
       renderPedidosPdv();
       renderRelatorios();
       iniciarSincronizacaoPdvContinua();
+      carregarCuponsAdmin();
       carregarArquivo();
       atualizarInfoBackups();
       iniciarTimerSessao();
@@ -4119,6 +4298,60 @@
 
     document.getElementById('limpar-anuncio').addEventListener('click', limparFormAnuncio);
 
+    document.getElementById('form-cupom').addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      const salvo = upsertCupomAdmin({
+        id: document.getElementById('cupom-id').value,
+        codigo: document.getElementById('cupom-codigo-admin').value,
+        tipo: document.getElementById('cupom-tipo-admin').value,
+        valor: document.getElementById('cupom-valor-admin').value,
+        quantidadeTotal: document.getElementById('cupom-quantidade-admin').value,
+        valorMinimo: document.getElementById('cupom-minimo-admin').value,
+        validade: document.getElementById('cupom-validade-admin').value,
+        ativo: document.getElementById('cupom-ativo-admin').checked
+      });
+      if (salvo) {
+        await publicarCuponsAutomaticoAgora('Publica cupons automaticamente no salvar');
+      }
+    });
+
+    document.getElementById('cupom-limpar-admin').addEventListener('click', () => {
+      limparFormCupom();
+      setStatus('Formulario de cupom limpo.', false);
+    });
+
+    document.getElementById('lista-cupons-admin').addEventListener('click', (evento) => {
+      const botaoEditar = evento.target.closest('[data-cupom-editar]');
+      if (botaoEditar) {
+        preencherFormCupom(botaoEditar.dataset.cupomEditar);
+        estado.tab = 'cupons';
+        renderTabs();
+        setStatus('Cupom carregado para edicao.', false);
+        return;
+      }
+
+      const botaoToggle = evento.target.closest('[data-cupom-toggle]');
+      if (botaoToggle) {
+        const cupom = estado.cupons.find((item) => item.id === botaoToggle.dataset.cupomToggle);
+        if (!cupom) return;
+        cupom.ativo = !cupom.ativo;
+        cupom.atualizadoEm = new Date().toISOString();
+        salvarCuponsAdmin(cupom.ativo ? 'Cupom ativado.' : 'Cupom desativado.');
+        return;
+      }
+
+      const botaoExcluir = evento.target.closest('[data-cupom-excluir]');
+      if (botaoExcluir) {
+        const totalAntes = estado.cupons.length;
+        estado.cupons = estado.cupons.filter((item) => item.id !== botaoExcluir.dataset.cupomExcluir);
+        if (estado.cupons.length === totalAntes) return;
+        salvarCuponsAdmin('Cupom excluido com sucesso.');
+        if (document.getElementById('cupom-id').value === botaoExcluir.dataset.cupomExcluir) {
+          limparFormCupom();
+        }
+      }
+    });
+
     pdvListaPedidos.addEventListener('input', (evento) => {
       const campoObs = evento.target.closest('[data-pdv-obs]');
       if (!campoObs) return;
@@ -4186,10 +4419,23 @@
       salvarComandaCaixa();
     });
 
-    document.getElementById('caixa-nova').addEventListener('click', () => {
-      limparCaixa(true);
-      setStatus('Nova comanda pronta para lancamento.', false);
+    caixaToggleEdicao.addEventListener('click', () => {
+      if (!estado.caixa.pedidoId) {
+        setStatus('Selecione uma comanda aberta para editar.', true);
+        return;
+      }
+      estado.caixa.editando = !estado.caixa.editando;
+      renderComandaCaixa();
+      setStatus(estado.caixa.editando ? 'Comanda liberada para lancamento de itens.' : 'Edicao pausada para evitar lancamentos acidentais.', false);
     });
+
+    const botaoCaixaNova = document.getElementById('caixa-nova');
+    if (botaoCaixaNova) {
+      botaoCaixaNova.addEventListener('click', () => {
+        limparCaixa(true);
+        setStatus('Nova comanda pronta para lancamento.', false);
+      });
+    }
 
     document.getElementById('caixa-add-outro').addEventListener('click', () => {
       const nome = document.getElementById('caixa-outro-nome').value.trim();
@@ -4301,7 +4547,7 @@
         setGhStatus('Erro de publicacao: ' + erro.message, true);
       }
     });
-    ['gh-repo', 'gh-branch', 'gh-produtos-path', 'gh-config-path', 'gh-pedidos-path', 'gh-pdv-intervalo', 'gh-auto-publicar'].forEach((id) => {
+    ['gh-repo', 'gh-branch', 'gh-produtos-path', 'gh-config-path', 'gh-pedidos-path', 'gh-cupons-path', 'gh-pdv-intervalo', 'gh-auto-publicar'].forEach((id) => {
       document.getElementById(id).addEventListener('change', () => {
         lerGithubCfgFormulario();
         setGhStatus('Configuracao salva neste navegador.', false);
