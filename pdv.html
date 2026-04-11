@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDV ERP - MH Lanches</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/kgnfg3g3/MH-Logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root {
+      --accent: #f97316;
+      --accent-soft: rgba(249, 115, 22, 0.14);
+      --panel: rgba(10, 10, 15, 0.92);
+      --panel-soft: rgba(22, 22, 28, 0.9);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f5f5f5;
+      --muted: #a1a1aa;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; overflow-x: hidden; }
+    body {
+      background:
+        radial-gradient(1200px 520px at 10% -20%, rgba(249, 115, 22, 0.20), transparent 60%),
+        radial-gradient(1000px 420px at 100% 0%, rgba(59, 130, 246, 0.12), transparent 52%),
+        #05060a;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .erp-card {
+      background: linear-gradient(180deg, rgba(17, 17, 24, 0.96), rgba(8, 8, 12, 0.98));
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+    }
+
+    .accent-border { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+    .accent-bg { background: var(--accent); }
+    .accent-text { color: var(--accent); }
+    .accent-soft-bg { background: var(--accent-soft); }
+    .scroll-ui { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.16) transparent; }
+    .scroll-ui::-webkit-scrollbar { width: 10px; height: 10px; }
+    .scroll-ui::-webkit-scrollbar-track { background: transparent; }
+    .scroll-ui::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 999px; }
+    .glass-chip {
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.04);
+      transition: .18s ease;
+    }
+    .glass-chip:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.18); }
+    .tab-card[data-active="true"] {
+      border-color: color-mix(in srgb, var(--accent) 70%, white 8%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, #1a1a22 84%), #121218);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+    .status-pill[data-status="novo"] { background: rgba(234, 179, 8, 0.16); color: #fde68a; border-color: rgba(234, 179, 8, 0.3); }
+    .status-pill[data-status="preparando"] { background: rgba(249, 115, 22, 0.16); color: #fdba74; border-color: rgba(249, 115, 22, 0.34); }
+    .status-pill[data-status="pronto"] { background: rgba(34, 197, 94, 0.16); color: #86efac; border-color: rgba(34, 197, 94, 0.34); }
+    .status-pill[data-status="fechada"] { background: rgba(59, 130, 246, 0.14); color: #93c5fd; border-color: rgba(59, 130, 246, 0.34); }
+    .mode-badge[data-mode="online"] { background: rgba(59,130,246,0.12); color: #93c5fd; }
+    .mode-badge[data-mode="mesa"] { background: rgba(168,85,247,0.14); color: #d8b4fe; }
+    .mode-badge[data-mode="balcao"] { background: rgba(16,185,129,0.14); color: #6ee7b7; }
+    .product-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.18); }
+    .product-card[disabled] { opacity: .48; cursor: not-allowed; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: .78rem .7rem; text-align: left; }
+    .data-table th { color: #d4d4d8; font-size: .74rem; text-transform: uppercase; letter-spacing: .16em; }
+    .report-pill[data-active="true"] { background: var(--accent); color: #0c0a09; border-color: var(--accent); }
+
+    @media (max-width: 1279px) {
+      #layout-main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="mx-auto w-full max-w-[1720px] px-3 py-4 sm:px-5 lg:px-6">
+    <header class="erp-card rounded-[28px] p-4 sm:p-5 lg:p-6">
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div class="flex items-center gap-4">
+          <img id="brand-logo" src="https://i.ibb.co/kgnfg3g3/MH-Logo.png" alt="MH Lanches" class="h-16 w-16 rounded-2xl object-cover ring-1 ring-white/10 sm:h-20 sm:w-20" />
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-orange-300">ERP PDV MH</p>
+            <h1 class="mt-1 text-2xl font-black sm:text-3xl" id="brand-name">MH Lanches</h1>
+            <p class="mt-1 text-sm text-zinc-400" id="brand-slogan">Mais que uma lanchonete.</p>
+          </div>
+        </div>
+        <div class="grid w-full gap-3 sm:grid-cols-2 xl:w-auto xl:min-w-[760px] xl:grid-cols-4">
+          <div class="rounded-2xl border border-white/8 bg-black/25 p-4">
+            <p class="text-[11px] uppercase tracking-[0.22em] text-zinc-400">Pedidos abertos</p>
+            <p id="kpi-open" class="mt-2 text-2xl font-black">0</p>
+          </div>
+          <div class="rounded-2xl border border-white/8 bg-black/25 p-4">
+            <p class="text-[11px] uppercase tracking-[0.22em] text-zinc-400">Online pendentes</p>
+            <p id="kpi-online" class="mt-2 text-2xl font-black">0</p>
+          </div>
+          <div class="rounded-2xl border border-white/8 bg-black/25 p-4">
+            <p class="text-[11px] uppercase tracking-[0.22em] text-zinc-400">Mesas ocupadas</p>
+            <p id="kpi-tables" class="mt-2 text-2xl font-black">0</p>
+          </div>
+          <div class="rounded-2xl border border-white/8 bg-black/25 p-4">
+            <p class="text-[11px] uppercase tracking-[0.22em] text-zinc-400">Faturamento hoje</p>
+            <p id="kpi-sales" class="mt-2 text-2xl font-black">R$ 0,00</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="online">
+          <span class="block text-base font-black">📱 Pedidos Online</span>
+          <span class="mt-1 block text-xs text-zinc-400">Recebe pedidos do site automaticamente</span>
+        </button>
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="mesas">
+          <span class="block text-base font-black">🪑 Mesas / Comandas</span>
+          <span class="mt-1 block text-xs text-zinc-400">Atendimento por mesa e comanda</span>
+        </button>
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="balcao">
+          <span class="block text-base font-black">💳 Caixa / Balcão</span>
+          <span class="mt-1 block text-xs text-zinc-400">Venda rápida para balcão e caixa</span>
+        </button>
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="estoque">
+          <span class="block text-base font-black">📦 Estoque</span>
+          <span class="mt-1 block text-xs text-zinc-400">Entrada e saída dos produtos</span>
+        </button>
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="relatorios">
+          <span class="block text-base font-black">📊 Relatórios</span>
+          <span class="mt-1 block text-xs text-zinc-400">Vendas por período e histórico</span>
+        </button>
+        <button class="tab-card glass-chip rounded-2xl p-4 text-left" data-tab="configuracoes">
+          <span class="block text-base font-black">⚙️ Configurações</span>
+          <span class="mt-1 block text-xs text-zinc-400">Ajustes locais do PDV</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="system-alert" class="mt-4 hidden rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-100"></div>
+
+    <section id="layout-main" class="mt-4 grid gap-4 xl:grid-cols-[390px_minmax(0,1fr)]">
+      <aside id="left-pane" class="erp-card min-h-[72vh] rounded-[28px] p-4 sm:p-5"></aside>
+      <section id="right-pane" class="erp-card min-h-[72vh] rounded-[28px] p-4 sm:p-5"></section>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="pdv.js"></script>
+</body>
+</html>
