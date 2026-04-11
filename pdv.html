@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV - Sistema de Caixa Profissional</title>
+    <link rel="icon" href="https://i.ibb.co/kgnfg3g3/MH-Logo.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(90deg, var(--dark), #0f172a);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .header-center {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .header-btn:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .header-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .time-display {
+            text-align: right;
+        }
+
+        .time-display .time {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .time-display .date {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        /* MAIN CONTAINER */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            height: calc(100vh - 68px);
+        }
+
+        /* SIDEBAR - COMANDAS */
+        .sidebar {
+            background: rgba(15, 23, 42, 0.95);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            gap: 4px;
+            margin-top: 12px;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            color: var(--gray);
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .comanda-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .comanda-card:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .comanda-card.active {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.2);
+        }
+
+        .comanda-card.online {
+            border-left: 4px solid var(--success);
+        }
+
+        .comanda-card.mesa {
+            border-left: 4px solid var(--warning);
+        }
+
+        .comanda-card.balcao {
+            border-left: 4px solid var(--primary);
+        }
+
+        .comanda-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .comanda-name {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .comanda-status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-novo { background: var(--warning); color: #000; }
+        .status-preparando { background: var(--primary); color: #fff; }
+        .status-pronto { background: var(--success); color: #fff; }
+
+        .comanda-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .comanda-total {
+            font-weight: 700;
+            color: var(--success);
+            font-size: 16px;
+        }
+
+        .comanda-items {
+            font-size: 11px;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        /* CATALOGO */
+        .catalog-container {
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .catalog-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .catalog-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .catalog-title h2 {
+            font-size: 18px;
+        }
+
+        .active-comanda-badge {
+            padding: 6px 12px;
+            background: var(--primary);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .catalog-search {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 14px;
+            width: 250px;
+        }
+
+        .search-input::placeholder {
+            color: var(--gray);
+        }
+
+        .categories-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 20px;
+            overflow-x: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .category-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .products-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            align-content: start;
+        }
+
+        .product-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+
+        .product-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .product-card.pausado {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .product-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 0 auto 8px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .product-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* PAINEL DIREITO */
+        .right-panel {
+            background: rgba(15, 23, 42, 0.95);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .panel-btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .panel-btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* ITENS DA COMANDA */
+        .items-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .item-qty {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .qty-btn-minus {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .qty-btn-plus {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .item-qty-num {
+            font-size: 16px;
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .item-price {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .item-total {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .item-remove {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* PAGAMENTO */
+        .payment-section {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 16px;
+        }
+
+        .totals {
+            margin-bottom: 16px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .total-row.grand {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--success);
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .payment-btn {
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .payment-btn.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .payment-btn span {
+            font-size: 20px;
+        }
+
+        .troco-section {
+            display: none;
+            margin-bottom: 12px;
+        }
+
+        .troco-section.show {
+            display: block;
+        }
+
+        .troco-label {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .troco-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .troco-calc {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn-primary {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .action-btn-secondary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .action-btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* MODAIS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .form-input {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-input::placeholder {
+            color: var(--gray);
+        }
+
+        .mesas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .mesa-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .mesa-btn.livre {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .mesa-btn.ocupada {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .mesa-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* NOTIFICACAO */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 16px 24px;
+            background: var(--success);
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* RESUMO DIARIO */
+        .daily-summary {
+            padding: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            margin: 12px;
+        }
+
+        .summary-title {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state span {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* BADGE CONTADOR */
+        .badge-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* DIVERSOS MODAL */
+        .diversos-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .diversos-input input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar, .right-panel {
+                display: none;
+            }
+        }
+
+        /* STATUS PAGO */
+        .status-pago {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .status-pendente {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* BUTTON NOVA COMANDA */
+        .new-comanda-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <img id="logo-img" src="https://i.ibb.co/kgnfg3g3/MH-Logo.png" alt="Logo">
+                <div class="logo-text">
+                    <h1>PDV PROFISSIONAL</h1>
+                    <span>Sistema de Gestão Completa</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <button class="header-btn active" data-module="pdv" onclick="switchModule('pdv')">
+                <span>🖥️</span> PDV
+            </button>
+            <button class="header-btn" data-module="pedidos" onclick="switchModule('pedidos')">
+                <span>📱</span> Pedidos Online
+                <span id="pedidos-badge" class="badge-count" style="display:none">0</span>
+            </button>
+            <button class="header-btn" data-module="mesas" onclick="switchModule('mesas')">
+                <span>🪑</span> Mesas
+            </button>
+            <button class="header-btn" data-module="estoque" onclick="switchModule('estoque')">
+                <span>📦</span> Estoque
+            </button>
+            <button class="header-btn" data-module="relatorios" onclick="switchModule('relatorios')">
+                <span>📊</span> Relatórios
+            </button>
+        </div>
+
+        <div class="header-right">
+            <div class="time-display">
+                <div class="time" id="current-time">00:00:00</div>
+                <div class="date" id="current-date">01/01/2024</div>
+            </div>
+            <div class="user-info">
+                <span>👤</span>
+                <span id="user-name">Administrador</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER - MODULO PDV -->
+    <main class="main-container" id="module-pdv">
+        <!-- SIDEBAR - COMANDAS ABERTAS -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Comandas Abertas</h2>
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-filter="todas">Todas</button>
+                    <button class="sidebar-tab" data-filter="online">Online</button>
+                    <button class="sidebar-tab" data-filter="mesa">Mesas</button>
+                    <button class="sidebar-tab" data-filter="balcao">Balcão</button>
+                </div>
+            </div>
+
+            <div class="daily-summary">
+                <div class="summary-title">Faturado Hoje</div>
+                <div class="summary-value" id="daily-total">R$ 0,00</div>
+            </div>
+
+            <button class="new-comanda-btn" onclick="openNewComandaModal()">
+                <span>➕</span> Nova Comanda
+            </button>
+
+            <div class="sidebar-content" id="comandas-list">
+                <!-- Comandas serão listadas aqui -->
+            </div>
+        </aside>
+
+        <!-- CATALOGO DE PRODUTOS -->
+        <section class="catalog-container">
+            <div class="catalog-header">
+                <div class="catalog-title">
+                    <h2>📦 Catálogo</h2>
+                    <span class="active-comanda-badge" id="active-comanda-name">Nenhuma comanda ativa</span>
+                </div>
+                <div class="catalog-search">
+                    <input type="text" class="search-input" placeholder="🔍 Buscar produto..." id="search-input" oninput="filterProducts()">
+                </div>
+            </div>
+
+            <div class="categories-bar" id="categories-bar">
+                <!-- Categorias serão carregadas aqui -->
+            </div>
+
+            <div class="products-grid" id="products-grid">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+        </section>
+
+        <!-- PAINEL DIREITO - COMANDA ATIVA -->
+        <aside class="right-panel">
+            <div class="panel-header">
+                <h3 class="panel-title">🛒 Itens da Comanda</h3>
+                <div class="panel-actions">
+                    <button class="panel-btn panel-btn-warning" onclick="renomearComanda()">✏️ Renomear</button>
+                    <button class="panel-btn panel-btn-danger" onclick="cancelarComanda()">🗑️ Cancelar</button>
+                </div>
+            </div>
+
+            <div class="items-list" id="items-list">
+                <div class="empty-state">
+                    <span>📋</span>
+                    <p>Selecione uma comanda ou adicione produtos</p>
+                </div>
+            </div>
+
+            <div class="payment-section">
+                <div class="totals">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="total-row grand">
+                        <span>TOTAL</span>
+                        <span id="total-geral">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <button class="payment-btn" data-method="dinheiro" onclick="togglePayment('dinheiro')">
+                        <span>💵</span>
+                        Dinheiro
+                    </button>
+                    <button class="payment-btn" data-method="cartao-credito" onclick="togglePayment('cartao-credito')">
+                        <span>💳</span>
+                        Crédito
+                    </button>
+                    <button class="payment-btn" data-method="cartao-debito" onclick="togglePayment('cartao-debito')">
+                        <span>💳</span>
+                        Débito
+                    </button>
+                    <button class="payment-btn" data-method="pix" onclick="togglePayment('pix')">
+                        <span>📱</span>
+                        Pix
+                    </button>
+                </div>
+
+                <div class="troco-section" id="troco-section">
+                    <div class="troco-label">Troco para quanto?</div>
+                    <input type="number" class="troco-input" id="troco-para" placeholder="R$ 0,00" oninput="calcularTroco()">
+                    <div class="troco-calc" id="troco-calc"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn action-btn-secondary" onclick="imprimirComanda()">
+                        🖨️ Imprimir
+                    </button>
+                    <button class="action-btn action-btn-primary" onclick="finalizarComanda()">
+                        ✅ Finalizar
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- MODULO PEDIDOS ONLINE -->
+    <div id="module-pedidos" style="display:none; padding: 20px;">
+        <h2 style="margin-bottom: 20px;">📱 Pedidos Online</h2>
+        <div id="pedidos-online-list" style="display: grid; gap: 16px;">
+            <!-- Pedidos online serão listados aqui -->
+        </div>
+    </div>
+
+    <!-- MODULO MESAS -->
+    <div id="module-mesas" style="display:none; padding: 20px;">
+        <h2 style="margin-bottom: 20px;">🪑 Gerenciamento de Mesas</h2>
+        <div class="mesas-grid" id="mesas-grid">
+            <!-- Mesas serão geradas aqui -->
+        </div>
+    </div>
+
+    <!-- MODULO ESTOQUE -->
+    <div id="module-estoque" style="display:none; padding: 20px;">
+        <h2 style="margin-bottom: 20px;">📦 Controle de Estoque</h2>
+        <div id="estoque-list" style="background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden;">
+            <!-- Estoque será listado aqui -->
+        </div>
+    </div>
+
+    <!-- MODULO RELATORIOS -->
+    <div id="module-relatorios" style="display:none; padding: 20px;">
+        <h2 style="margin-bottom: 20px;">📊 Relatórios de Vendas</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 20px; border-radius: 12px;">
+                <div style="font-size: 14px; opacity: 0.9;">Vendas Hoje</div>
+                <div style="font-size: 28px; font-weight: 700;" id="rel-vendas-hoje">R$ 0,00</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 20px; border-radius: 12px;">
+                <div style="font-size: 14px; opacity: 0.9;">Vendas Semana</div>
+                <div style="font-size: 28px; font-weight: 700;" id="rel-vendas-semana">R$ 0,00</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 20px; border-radius: 12px;">
+                <div style="font-size: 14px; opacity: 0.9;">Vendas Mês</div>
+                <div style="font-size: 28px; font-weight: 700;" id="rel-vendas-mes">R$ 0,00</div>
+            </div>
+        </div>
+        <div id="vendas-historico" style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+            <!-- Histórico de vendas -->
+        </div>
+    </div>
+
+    <!-- MODAL NOVA COMANDA -->
+    <div class="modal" id="modal-nova-comanda">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Nova Comanda</h3>
+                <button class="modal-close" onclick="closeModal('modal-nova-comanda')">×</button>
+            </div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Atendimento</label>
+                    <select class="form-input" id="novo-tipo">
+                        <option value="balcao">Balcão</option>
+                        <option value="mesa">Mesa</option>
+                        <option value="comanda">Comanda</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grupo-numero" style="display:none;">
+                    <label class="form-label">Número/Identificação</label>
+                    <input type="text" class="form-input" id="novo-numero" placeholder="Ex: 1, 2, 3...">
+                </div>
+                <button class="action-btn action-btn-primary" style="width:100%; margin-top:12px;" onclick="criarNovaComanda()">
+                    ✅ Criar Comanda
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DIVERSOS -->
+    <div class="modal" id="modal-diversos">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 Item Diversos</h3>
+                <button class="modal-close" onclick="closeModal('modal-diversos')">×</button>
+            </div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Nome do Item</label>
+                    <input type="text" class="form-input" id="diversos-nome" placeholder="Ex: Refrigerante extra">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Valor (R$)</label>
+                    <input type="number" class="form-input" id="diversos-valor" placeholder="0.00" step="0.01">
+                </div>
+                <button class="action-btn action-btn-primary" style="width:100%; margin-top:12px;" onclick="adicionarDiversos()">
+                    ➕ Adicionar Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICACAO -->
+    <div class="notification" id="notification">
+        📱 Novo pedido recebido!
+    </div>
+
+    <!-- PRINT AREA -->
+    <div class="print-area" id="print-area" style="display:none;"></div>
+
+    <script>
+        // ========================================
+        // SISTEMA PDV PROFISSIONAL - V2.0
+        // ========================================
+
+        // ESTADO GLOBAL
+        const STATE = {
+            comandas: [],
+            activeComanda: null,
+            produtos: [],
+            categorias: [],
+            config: {},
+            vendas: [],
+            selectedPayments: [],
+            mesas: Array.from({length: 20}, (_, i) => ({numero: i + 1, ocupada: false}))
+        };
+
+        const STORAGE_KEYS = {
+            comandas: 'mh_pdv_comandas_v2',
+            vendas: 'mh_vendas_historico_v1',
+            config: 'mh_config_local_v1'
+        };
+
+        // ========================================
+        // INICIALIZACAO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadLocalData();
+            await loadProdutos();
+            updateTime();
+            setInterval(updateTime, 1000);
+            renderAll();
+            startPedidosSync();
+            
+            // Event listener para tipo de comanda
+            document.getElementById('novo-tipo').addEventListener('change', (e) => {
+                document.getElementById('grupo-numero').style.display = 
+                    (e.target.value === 'mesa' || e.target.value === 'comanda') ? 'block' : 'none';
+            });
+        });
+
+        function loadLocalData() {
+            try {
+                const comandas = localStorage.getItem(STORAGE_KEYS.comandas);
+                const vendas = localStorage.getItem(STORAGE_KEYS.vendas);
+                
+                if (comandas) STATE.comandas = JSON.parse(comandas);
+                if (vendas) STATE.vendas = JSON.parse(vendas);
+            } catch(e) {
+                console.error('Erro ao carregar dados locais:', e);
+            }
+        }
+
+        function saveLocalData() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.comandas, JSON.stringify(STATE.comandas));
+                localStorage.setItem(STORAGE_KEYS.vendas, JSON.stringify(STATE.vendas));
+            } catch(e) {
+                console.error('Erro ao salvar dados locais:', e);
+            }
+        }
+
+        async function loadProdutos() {
+            try {
+                const res = await fetch('produtos.json');
+                const data = await res.json();
+                STATE.produtos = data.produtos || [];
+                STATE.config = data.config || {};
+                
+                // Extrair categorias únicas
+                const cats = new Set();
+                STATE.produtos.forEach(p => {
+                    if (p.categoria) cats.add(p.categoria);
+                });
+                STATE.categorias = ['Todos', ...cats];
+                
+                renderCategories();
+                renderProducts();
+            } catch(e) {
+                console.error('Erro ao carregar produtos:', e);
+            }
+        }
+
+        // ========================================
+        // SINCRONIZACAO PEDIDOS ONLINE
+        // ========================================
+        function startPedidosSync() {
+            // Verificar pedidos online a cada 10 segundos
+            setInterval(syncPedidosOnline, 10000);
+            syncPedidosOnline();
+            
+            // Escutar mudanças no localStorage
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'brasa_pdv_pedidos_v1') {
+                    syncPedidosOnline();
+                }
+            });
+        }
+
+        function syncPedidosOnline() {
+            try {
+                const pedidosOnline = localStorage.getItem('brasa_pdv_pedidos_v1');
+                if (!pedidosOnline) return;
+                
+                const pedidos = JSON.parse(pedidosOnline);
+                let novosPedidos = 0;
+                
+                pedidos.forEach(pedido => {
+                    // Verificar se já existe esta comanda
+                    const existe = STATE.comandas.find(c => c.id === pedido.id);
+                    if (!existe && pedido.status !== 'finalizado') {
+                        // Adicionar como nova comanda online
+                        STATE.comandas.push({
+                            id: pedido.id,
+                            nome: pedido.nome || 'Cliente Online',
+                            tipo: 'online',
+                            itens: pedido.itens || [],
+                            total: pedido.total || 0,
+                            status: 'novo',
+                            pago: false,
+                            cliente: {
+                                nome: pedido.nome,
+                                endereco: pedido.endereco,
+                                telefone: pedido.telefone
+                            },
+                            createdAt: pedido.createdAt || new Date().toISOString()
+                        });
+                        novosPedidos++;
+                    }
+                });
+                
+                if (novosPedidos > 0) {
+                    saveLocalData();
+                    renderComandas();
+                    showNotification(`📱 ${novosPedidos} novo(s) pedido(s) recebido(s)!`);
+                    playBeep();
+                    updatePedidosBadge();
+                }
+            } catch(e) {
+                console.error('Erro ao sincronizar pedidos:', e);
+            }
+        }
+
+        function updatePedidosBadge() {
+            const count = STATE.comandas.filter(c => c.tipo === 'online' && c.status === 'novo').length;
+            const badge = document.getElementById('pedidos-badge');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.15);
+            } catch(e) {
+                console.log('Audio não suportado');
+            }
+        }
+
+        function showNotification(msg) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 4000);
+        }
+
+        // ========================================
+        // RENDERIZACAO
+        // ========================================
+        function renderAll() {
+            renderComandas();
+            renderItems();
+            updateTotals();
+            updateDailyTotal();
+            updatePedidosBadge();
+        }
+
+        function renderCategories() {
+            const bar = document.getElementById('categories-bar');
+            bar.innerHTML = STATE.categorias.map((cat, i) => `
+                <button class="category-btn ${i === 0 ? 'active' : ''}" onclick="selectCategory(this, '${cat}')">
+                    ${cat}
+                </button>
+            `).join('') + `
+                <button class="category-btn" onclick="openModal('modal-diversos')" style="background: rgba(245, 158, 11, 0.3); border: 1px dashed var(--warning);">
+                    📝 Diversos
+                </button>
+            `;
+        }
+
+        function selectCategory(btn, cat) {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderProducts(cat);
+        }
+
+        function renderProducts(categoria = 'Todos') {
+            const grid = document.getElementById('products-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            
+            let filtered = STATE.produtos;
+            
+            if (categoria !== 'Todos') {
+                filtered = filtered.filter(p => p.categoria === categoria);
+            }
+            
+            if (search) {
+                filtered = filtered.filter(p => 
+                    p.nome.toLowerCase().includes(search)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <span>📦</span>
+                        <p>Nenhum produto encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card ${p.pausado ? 'pausado' : ''}" onclick="addProdutoToComanda(${p.id})">
+                    <img class="product-img" src="${p.imagem || 'https://i.ibb.co/kgnfg3g3/MH-Logo.png'}" alt="${p.nome}">
+                    <div class="product-name">${p.nome}</div>
+                    <div class="product-price">R$ ${(p.preco || 0).toFixed(2)}</div>
+                    ${p.pausado ? '<div style="font-size:10px;color:var(--danger);">Em falta</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const activeCat = document.querySelector('.category-btn.active');
+            const cat = activeCat ? activeCat.textContent.trim() : 'Todos';
+            renderProducts(cat);
+        }
+
+        function renderComandas() {
+            const list = document.getElementById('comandas-list');
+            const filter = document.querySelector('.sidebar-tab.active')?.dataset.filter || 'todas';
+            
+            let filtered = STATE.comandas.filter(c => c.status !== 'finalizado');
+            
+            if (filter !== 'todas') {
+                filtered = filtered.filter(c => c.tipo === filter);
+            }
+            
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <span>📋</span>
+                        <p>Nenhuma comanda aberta</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = filtered.map(c => `
+                <div class="comanda-card ${c.tipo} ${STATE.activeComanda?.id === c.id ? 'active' : ''}" onclick="selectComanda('${c.id}')">
+                    <div class="comanda-header">
+                        <span class="comanda-name">${c.nome}</span>
+                        <span class="comanda-status status-${c.status}">${c.status}</span>
+                    </div>
+                    <div class="comanda-info">
+                        <span>${c.itens?.length || 0} itens</span>
+                        <span class="comanda-total">R$ ${(c.total || 0).toFixed(2)}</span>
+                    </div>
+                    ${c.tipo === 'online' && c.cliente?.nome ? `
+                        <div class="comanda-items">👤 ${c.cliente.nome}</div>
+                    ` : ''}
+                    <div style="display:flex;gap:4px;margin-top:8px;">
+                        ${c.status === 'novo' ? `
+                            <button onclick="event.stopPropagation();changeStatus('${c.id}','preparando')" style="flex:1;padding:6px;background:var(--primary);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">
+                                Preparar
+                            </button>
+                        ` : ''}
+                        ${c.status === 'preparando' ? `
+                            <button onclick="event.stopPropagation();changeStatus('${c.id}','pronto')" style="flex:1;padding:6px;background:var(--success);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">
+                                Pronto
+                            </button>
+                        ` : ''}
+                        <button onclick="event.stopPropagation();togglePago('${c.id}')" style="padding:6px 10px;background:${c.pago ? 'var(--success)' : 'var(--warning)'};border:none;border-radius:4px;color:${c.pago ? '#fff' : '#000'};font-size:11px;cursor:pointer;">
+                            ${c.pago ? '✓ Pago' : '$ Pend'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectComanda(id) {
+            STATE.activeComanda = STATE.comandas.find(c => c.id === id);
+            renderComandas();
+            renderItems();
+            updateTotals();
+            document.getElementById('active-comanda-name').textContent = 
+                STATE.activeComanda ? STATE.activeComanda.nome : 'Nenhuma comanda ativa';
+        }
+
+        function renderItems() {
+            const list = document.getElementById('items-list');
+            
+            if (!STATE.activeComanda || !STATE.activeComanda.itens?.length) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <span>📋</span>
+                        <p>Selecione uma comanda ou adicione produtos</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = STATE.activeComanda.itens.map((item, index) => `
+                <div class="item-row">
+                    <div class="item-qty">
+                        <button class="qty-btn qty-btn-minus" onclick="changeQty(${index}, -1)">-</button>
+                        <span class="item-qty-num">${item.qtd}</span>
+                        <button class="qty-btn qty-btn-plus" onclick="changeQty(${index}, 1)">+</button>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">${item.nome}</div>
+                        <div class="item-price">R$ ${(item.preco || 0).toFixed(2)} cada</div>
+                    </div>
+                    <div class="item-total">R$ ${((item.preco || 0) * item.qtd).toFixed(2)}</div>
+                    <button class="item-remove" onclick="removeItem(${index})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function updateTotals() {
+            if (!STATE.activeComanda) {
+                document.getElementById('subtotal').textContent = 'R$ 0,00';
+                document.getElementById('total-geral').textContent = 'R$ 0,00';
+                return;
+            }
+            
+            const total = STATE.activeComanda.itens?.reduce((sum, item) => 
+                sum + (item.preco * item.qtd), 0) || 0;
+            
+            STATE.activeComanda.total = total;
+            
+            document.getElementById('subtotal').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('total-geral').textContent = `R$ ${total.toFixed(2)}`;
+        }
+
+        function updateDailyTotal() {
+            const today = new Date().toDateString();
+            const vendasHoje = STATE.vendas.filter(v => 
+                new Date(v.data).toDateString() === today
+            );
+            
+            const total = vendasHoje.reduce((sum, v) => sum + (v.total || 0), 0);
+            document.getElementById('daily-total').textContent = `R$ ${total.toFixed(2)}`;
+            
+            // Atualizar relatórios também
+            document.getElementById('rel-vendas-hoje').textContent = `R$ ${total.toFixed(2)}`;
+            
+            // Semana
+            const semanaAtras = new Date();
+            semanaAtras.setDate(semanaAtras.getDate() - 7);
+            const vendasSemana = STATE.vendas.filter(v => new Date(v.data) >= semanaAtras);
+            const totalSemana = vendasSemana.reduce((sum, v) => sum + (v.total || 0), 0);
+            document.getElementById('rel-vendas-semana').textContent = `R$ ${totalSemana.toFixed(2)}`;
+            
+            // Mês
+            const mesAtras = new Date();
+            mesAtras.setMonth(mesAtras.getMonth() - 1);
+            const vendasMes = STATE.vendas.filter(v => new Date(v.data) >= mesAtras);
+            const totalMes = vendasMes.reduce((sum, v) => sum + (v.total || 0), 0);
+            document.getElementById('rel-vendas-mes').textContent = `R$ ${totalMes.toFixed(2)}`;
+            
+            // Histórico
+            renderVendasHistorico();
+        }
+
+        function renderVendasHistorico() {
+            const container = document.getElementById('vendas-historico');
+            const vendasOrdenadas = [...STATE.vendas].reverse().slice(0, 50);
+            
+            if (vendasOrdenadas.length === 0) {
+                container.innerHTML = '<p style="color:var(--gray);text-align:center;">Nenhuma venda registrada</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="text-align:left;padding:8px;">Data</th>
+                            <th style="text-align:left;padding:8px;">Comanda</th>
+                            <th style="text-align:left;padding:8px;">Tipo</th>
+                            <th style="text-align:right;padding:8px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${vendasOrdenadas.map(v => `
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:8px;">${new Date(v.data).toLocaleString('pt-BR')}</td>
+                                <td style="padding:8px;">${v.nome}</td>
+                                <td style="padding:8px;">${v.tipo}</td>
+                                <td style="padding:8px;text-align:right;color:var(--success);font-weight:600;">R$ ${(v.total || 0).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // ========================================
+        // ACOES
+        // ========================================
+        function addProdutoToComanda(produtoId) {
+            const produto = STATE.produtos.find(p => p.id === produtoId);
+            if (!produto) return;
+            
+            if (produto.pausado) {
+                showNotification('⚠️ Produto indisponível');
+                return;
+            }
+            
+            // Se não há comanda ativa, criar nova
+            if (!STATE.activeComanda) {
+                const novaComanda = {
+                    id: 'BALCAO_' + Date.now(),
+                    nome: 'Balcão',
+                    tipo: 'balcao',
+                    itens: [],
+                    total: 0,
+                    status: 'novo',
+                    pago: false,
+                    createdAt: new Date().toISOString()
+                };
+                STATE.comandas.push(novaComanda);
+                STATE.activeComanda = novaComanda;
+                document.getElementById('active-comanda-name').textContent = novaComanda.nome;
+            }
+            
+            // Adicionar item
+            const itemExistente = STATE.activeComanda.itens.find(i => i.produtoId === produtoId);
+            
+            if (itemExistente) {
+                itemExistente.qtd++;
+            } else {
+                STATE.activeComanda.itens.push({
+                    produtoId: produtoId,
+                    nome: produto.nome,
+                    preco: produto.preco,
+                    qtd: 1
+                });
+            }
+            
+            saveLocalData();
+            renderComandas();
+            renderItems();
+            updateTotals();
+            showNotification(`✅ ${produto.nome} adicionado`);
+        }
+
+        function changeQty(index, delta) {
+            if (!STATE.activeComanda) return;
+            
+            const item = STATE.activeComanda.itens[index];
+            if (!item) return;
+            
+            item.qtd += delta;
+            
+            if (item.qtd <= 0) {
+                STATE.activeComanda.itens.splice(index, 1);
+            }
+            
+            saveLocalData();
+            renderItems();
+            updateTotals();
+        }
+
+        function removeItem(index) {
+            if (!STATE.activeComanda) return;
+            STATE.activeComanda.itens.splice(index, 1);
+            saveLocalData();
+            renderItems();
+            updateTotals();
+        }
+
+        function changeStatus(id, newStatus) {
+            const comanda = STATE.comandas.find(c => c.id === id);
+            if (comanda) {
+                comanda.status = newStatus;
+                saveLocalData();
+                renderComandas();
+            }
+        }
+
+        function togglePago(id) {
+            const comanda = STATE.comandas.find(c => c.id === id);
+            if (comanda) {
+                comanda.pago = !comanda.pago;
+                saveLocalData();
+                renderComandas();
+            }
+        }
+
+        // ========================================
+        // PAGAMENTO
+        // ========================================
+        function togglePayment(method) {
+            const btn = document.querySelector(`[data-method="${method}"]`);
+            
+            if (STATE.selectedPayments.includes(method)) {
+                STATE.selectedPayments = STATE.selectedPayments.filter(m => m !== method);
+                btn.classList.remove('selected');
+            } else if (STATE.selectedPayments.length < 2) {
+                STATE.selectedPayments.push(method);
+                btn.classList.add('selected');
+            }
+            
+            // Mostrar/esconder seção de troco
+            const trocoSection = document.getElementById('troco-section');
+            if (STATE.selectedPayments.includes('dinheiro')) {
+                trocoSection.classList.add('show');
+            } else {
+                trocoSection.classList.remove('show');
+            }
+        }
+
+        function calcularTroco() {
+            const trocoPara = parseFloat(document.getElementById('troco-para').value) || 0;
+            const total = STATE.activeComanda?.total || 0;
+            const calc = document.getElementById('troco-calc');
+            
+            if (trocoPara > total) {
+                const troco = trocoPara - total;
+                calc.textContent = `Troco: R$ ${troco.toFixed(2)}`;
+            } else {
+                calc.textContent = '';
+            }
+        }
+
+        // ========================================
+        // FINALIZACAO
+        // ========================================
+        function finalizarComanda() {
+            if (!STATE.activeComanda || !STATE.activeComanda.itens?.length) {
+                showNotification('⚠️ Comanda vazia');
+                return;
+            }
+            
+            if (STATE.selectedPayments.length === 0) {
+                showNotification('⚠️ Selecione uma forma de pagamento');
+                return;
+            }
+            
+            // Registrar venda
+            const venda = {
+                id: Date.now(),
+                nome: STATE.activeComanda.nome,
+                tipo: STATE.activeComanda.tipo,
+                itens: [...STATE.activeComanda.itens],
+                total: STATE.activeComanda.total,
+                pagamento: STATE.selectedPayments,
+                trocoPara: parseFloat(document.getElementById('troco-para').value) || 0,
+                data: new Date().toISOString()
+            };
+            
+            STATE.vendas.push(venda);
+            
+            // Marcar comanda como finalizada
+            const comandaIndex = STATE.comandas.findIndex(c => c.id === STATE.activeComanda.id);
+            if (comandaIndex !== -1) {
+                STATE.comandas[comandaIndex].status = 'finalizado';
+            }
+            
+            // Reset
+            STATE.activeComanda = null;
+            STATE.selectedPayments = [];
+            document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('troco-section').classList.remove('show');
+            document.getElementById('troco-para').value = '';
+            document.getElementById('active-comanda-name').textContent = 'Nenhuma comanda ativa';
+            
+            saveLocalData();
+            renderAll();
+            showNotification('✅ Venda finalizada com sucesso!');
+        }
+
+        function imprimirComanda() {
+            if (!STATE.activeComanda) return;
+            
+            const printContent = `
+                <div style="width:58mm;font-family:monospace;font-size:10px;padding:8px;">
+                    <div style="text-align:center;margin-bottom:8px;">
+                        <img src="${STATE.config.notaLogoUrl || 'https://i.ibb.co/kgnfg3g3/MH-Logo.png'}" style="width:60px;height:auto;margin:0 auto;">
+                    </div>
+                    <div style="text-align:center;font-size:14px;font-weight:bold;">${STATE.config.notaTitulo || 'MH LANCHES'}</div>
+                    <div style="text-align:center;font-size:10px;">${STATE.config.notaSubtitulo || 'Mais que uma lanchonete'}</div>
+                    <div style="text-align:center;font-size:9px;margin-bottom:8px;">${STATE.config.notaTipo || 'Comanda / Balcão'}</div>
+                    <div style="border-top:1px dashed #000;margin:8px 0;"></div>
+                    <div style="font-weight:bold;">${STATE.activeComanda.nome}</div>
+                    <div style="font-size:9px;color:#666;">${new Date().toLocaleString('pt-BR')}</div>
+                    <div style="border-top:1px dashed #000;margin:8px 0;"></div>
+                    ${STATE.activeComanda.itens.map(item => `
+                        <div style="display:flex;justify-content:space-between;margin:4px 0;">
+                            <span>${item.qtd}x ${item.nome}</span>
+                            <span>R$ ${(item.preco * item.qtd).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                    <div style="border-top:1px dashed #000;margin:8px 0;"></div>
+                    <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:12px;">
+                        <span>TOTAL</span>
+                        <span>R$ ${STATE.activeComanda.total.toFixed(2)}</span>
+                    </div>
+                    ${STATE.selectedPayments.length > 0 ? `
+                        <div style="margin-top:8px;font-size:9px;">
+                            Pagamento: ${STATE.selectedPayments.join(', ')}
+                        </div>
+                    ` : ''}
+                    <div style="border-top:1px dashed #000;margin:8px 0;"></div>
+                    <div style="text-align:center;font-size:9px;">${STATE.config.notaRodape || 'Relatório Gerencial não fiscal!'}</div>
+                </div>
+            `;
+            
+            const printWindow = window.open('', '_blank', 'width=300,height=600');
+            printWindow.document.write(`
+                <html><head><title>Comanda</title></head>
+                <body>${printContent}</body></html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // ========================================
+        // MODAIS
+        // ========================================
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function openNewComandaModal() {
+            document.getElementById('novo-tipo').value = 'balcao';
+            document.getElementById('grupo-numero').style.display = 'none';
+            document.getElementById('novo-numero').value = '';
+            openModal('modal-nova-comanda');
+        }
+
+        function criarNovaComanda() {
+            const tipo = document.getElementById('novo-tipo').value;
+            const numero = document.getElementById('novo-numero').value;
+            
+            let nome = tipo === 'balcao' ? 'Balcão' : 
+                       tipo === 'mesa' ? `Mesa ${numero || STATE.comandas.length + 1}` :
+                       `Comanda ${numero || STATE.comandas.length + 1}`;
+            
+            const novaComanda = {
+                id: tipo.toUpperCase() + '_' + Date.now(),
+                nome: nome,
+                tipo: tipo,
+                itens: [],
+                total: 0,
+                status: 'novo',
+                pago: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            STATE.comandas.push(novaComanda);
+            STATE.activeComanda = novaComanda;
+            
+            saveLocalData();
+            closeModal('modal-nova-comanda');
+            renderAll();
+            document.getElementById('active-comanda-name').textContent = nome;
+        }
+
+        function adicionarDiversos() {
+            const nome = document.getElementById('diversos-nome').value.trim();
+            const valor = parseFloat(document.getElementById('diversos-valor').value) || 0;
+            
+            if (!nome || valor <= 0) {
+                showNotification('⚠️ Preencha nome e valor');
+                return;
+            }
+            
+            // Se não há comanda ativa, criar nova
+            if (!STATE.activeComanda) {
+                const novaComanda = {
+                    id: 'BALCAO_' + Date.now(),
+                    nome: 'Balcão',
+                    tipo: 'balcao',
+                    itens: [],
+                    total: 0,
+                    status: 'novo',
+                    pago: false,
+                    createdAt: new Date().toISOString()
+                };
+                STATE.comandas.push(novaComanda);
+                STATE.activeComanda = novaComanda;
+            }
+            
+            STATE.activeComanda.itens.push({
+                produtoId: 'diversos_' + Date.now(),
+                nome: nome,
+                preco: valor,
+                qtd: 1
+            });
+            
+            saveLocalData();
+            closeModal('modal-diversos');
+            document.getElementById('diversos-nome').value = '';
+            document.getElementById('diversos-valor').value = '';
+            renderAll();
+            document.getElementById('active-comanda-name').textContent = STATE.activeComanda.nome;
+            showNotification(`✅ ${nome} adicionado`);
+        }
+
+        function renomearComanda() {
+            if (!STATE.activeComanda) return;
+            
+            const novoNome = prompt('Novo nome:', STATE.activeComanda.nome);
+            if (novoNome && novoNome.trim()) {
+                STATE.activeComanda.nome = novoNome.trim();
+                saveLocalData();
+                renderComandas();
+                document.getElementById('active-comanda-name').textContent = novoNome.trim();
+            }
+        }
+
+        function cancelarComanda() {
+            if (!STATE.activeComanda) return;
+            
+            if (confirm('Tem certeza que deseja cancelar esta comanda?')) {
+                const index = STATE.comandas.findIndex(c => c.id === STATE.activeComanda.id);
+                if (index !== -1) {
+                    STATE.comandas.splice(index, 1);
+                }
+                
+                STATE.activeComanda = null;
+                STATE.selectedPayments = [];
+                document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('selected'));
+                document.getElementById('troco-section').classList.remove('show');
+                document.getElementById('active-comanda-name').textContent = 'Nenhuma comanda ativa';
+                
+                saveLocalData();
+                renderAll();
+            }
+        }
+
+        // ========================================
+        // NAVEGACAO
+        // ========================================
+        function switchModule(module) {
+            // Atualizar botoes
+            document.querySelectorAll('.header-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.module === module) btn.classList.add('active');
+            });
+            
+            // Esconder todos os modulos
+            document.querySelectorAll('[id^="module-"]').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Mostrar modulo selecionado
+            const moduleEl = document.getElementById(`module-${module}`);
+            if (moduleEl) {
+                moduleEl.style.display = module === 'pdv' ? 'grid' : 'block';
+            }
+            
+            // Renderizar conteudo especifico
+            if (module === 'mesas') renderMesas();
+            if (module === 'estoque') renderEstoque();
+        }
+
+        function renderMesas() {
+            const grid = document.getElementById('mesas-grid');
+            grid.innerHTML = STATE.mesas.map(mesa => {
+                const comanda = STATE.comandas.find(c => 
+                    c.tipo === 'mesa' && c.nome === `Mesa ${mesa.numero}` && c.status !== 'finalizado'
+                );
+                const ocupada = !!comanda;
+                
+                return `
+                    <button class="mesa-btn ${ocupada ? 'ocupada' : 'livre'}" onclick="abrirMesa(${mesa.numero})">
+                        <span style="font-size:24px;">🪑</span>
+                        <span>Mesa ${mesa.numero}</span>
+                        <span style="font-size:11px;opacity:0.7;">${ocupada ? 'Ocupada' : 'Livre'}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function abrirMesa(numero) {
+            const nomeMesa = `Mesa ${numero}`;
+            let comanda = STATE.comandas.find(c => 
+                c.tipo === 'mesa' && c.nome === nomeMesa && c.status !== 'finalizado'
+            );
+            
+            if (!comanda) {
+                comanda = {
+                    id: 'MESA_' + numero + '_' + Date.now(),
+                    nome: nomeMesa,
+                    tipo: 'mesa',
+                    itens: [],
+                    total: 0,
+                    status: 'novo',
+                    pago: false,
+                    createdAt: new Date().toISOString()
+                };
+                STATE.comandas.push(comanda);
+                saveLocalData();
+            }
+            
+            STATE.activeComanda = comanda;
+            switchModule('pdv');
+            renderAll();
+            document.getElementById('active-comanda-name').textContent = nomeMesa;
+        }
+
+        function renderEstoque() {
+            const list = document.getElementById('estoque-list');
+            
+            list.innerHTML = `
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.05);">
+                            <th style="text-align:left;padding:12px;">Produto</th>
+                            <th style="text-align:center;padding:12px;">Status</th>
+                            <th style="text-align:right;padding:12px;">Preço</th>
+                            <th style="text-align:center;padding:12px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${STATE.produtos.map(p => `
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:12px;">
+                                    <div style="display:flex;align-items:center;gap:12px;">
+                                        <img src="${p.imagem || 'https://i.ibb.co/kgnfg3g3/MH-Logo.png'}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;">
+                                        <div>
+                                            <div style="font-weight:600;">${p.nome}</div>
+                                            <div style="font-size:11px;color:var(--gray);">${p.categoria || 'Sem categoria'}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding:12px;text-align:center;">
+                                    <span style="padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;background:${p.pausado ? 'var(--danger)' : 'var(--success)'};color:#fff;">
+                                        ${p.pausado ? 'Em falta' : 'Disponível'}
+                                    </span>
+                                </td>
+                                <td style="padding:12px;text-align:right;font-weight:600;">R$ ${(p.preco || 0).toFixed(2)}</td>
+                                <td style="padding:12px;text-align:center;">
+                                    <button onclick="toggleProdutoPausado(${p.id})" style="padding:6px 12px;border:none;border-radius:4px;background:${p.pausado ? 'var(--success)' : 'var(--warning)'};color:${p.pausado ? '#fff' : '#000'};font-size:11px;cursor:pointer;">
+                                        ${p.pausado ? 'Ativar' : 'Pausar'}
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function toggleProdutoPausado(id) {
+            const produto = STATE.produtos.find(p => p.id === id);
+            if (produto) {
+                produto.pausado = !produto.pausado;
+                renderEstoque();
+                renderProducts();
+                showNotification(`✅ Produto ${produto.pausado ? 'pausado' : 'ativado'}`);
+            }
+        }
+
+        // ========================================
+        // UTILIDADES
+        // ========================================
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('pt-BR');
+            document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Filtro de comandas
+        document.querySelectorAll('.sidebar-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                renderComandas();
+            });
+        });
+
+    </script>
+
+    <!-- Configuração externa da chave do Firebase -->
+    <script src="config.js"></script>
+
+    <!-- SDK Oficial do Firebase (v12) em tempo real -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        const firebaseConfig = window.firebaseConfig;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            const pedidosRef = ref(database, 'pedidos');
+            onValue(pedidosRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        const order = data[key];
+                        const exists = STATE.comandas.some(c => c.id === order.id || c.numeroPedido === order.numeroPedido);
+                        if (!exists) {
+                            STATE.comandas.unshift(order);
+                            showNotification('🔔 NOVO PEDIDO RECEBIDO NA NUVEM!');
+                            playJingle();
+                            renderComandas();
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            console.error("Erro Firebase v12:", err);
+        }
+    </script>
+</body>
+</html>
