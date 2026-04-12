@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+* {
+  font-family: 'Nunito', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #fb923c, #f87171);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(-3deg); }
+  50% { transform: translateY(-18px) rotate(3deg); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes badge-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delay {
+  animation: float 4s ease-in-out infinite 1s;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+.animate-slide-left {
+  animation: slide-in-left 0.7s ease-out forwards;
+}
+
+.animate-slide-right {
+  animation: slide-in-right 0.7s ease-out forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out forwards;
+}
+
+.animate-badge {
+  animation: badge-bounce 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #E63946 0%, #FF6B6B 50%, #FFD93D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px rgba(230, 57, 70, 0.2);
+}
+
+/* Shine button effect */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: rgba(255,255,255,0.25);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.btn-shine:hover::after {
+  left: 125%;
+}
+
+/* Category pill active */
+.category-pill.active {
+  background: linear-gradient(135deg, #E63946, #c1121f);
+  color: white;
+  box-shadow: 0 4px 15px rgba(230, 57, 70, 0.4);
+}
+
+/* Dotted background pattern */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(230, 57, 70, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Status badge */
+.status-open {
+  background: linear-gradient(135deg, #2EC4B6, #1a9e97);
+}
+
+/* Notification dot */
+.notif-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #E63946;
+  border-radius: 50%;
+  border: 2px solid white;
+  animation: badge-bounce 2s ease-in-out infinite;
+}
+
+/* Bottom nav active */
+.nav-active svg {
+  color: #E63946;
+}
+.nav-active span {
+  color: #E63946;
+  font-weight: 700;
+}
+
+/* Hide scrollbar for category bar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smooth touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+}
+
+/* Category bar enhanced scroll */
+.touch-scroll::-webkit-scrollbar {
+  height: 0px;
+  display: none;
+}
+
+.touch-scroll > button {
+  scroll-snap-align: start;
+  min-width: fit-content;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Fade edges for category bar */
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Category bar sticky background */
+.category-bar-sticky {
+  background: linear-gradient(180deg, #0a0a0f 0%, #0a0a0f 80%, transparent 100%);
+}
