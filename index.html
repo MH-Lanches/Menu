@@ -1671,6 +1671,16 @@
       // Evento auxiliar para forcar sincronizacao entre abas/dispositivos no mesmo navegador.
       localStorage.setItem(CHAVE_PEDIDOS_PDV_EVENTO, JSON.stringify({ pedidoId: pedido.id, em: Date.now() }));
       if (canalPdv) canalPdv.postMessage({ tipo: 'novo-pedido', pedidoId: pedido.id });
+
+      // BANCO DE DADOS NA NUVEM: Envia o pedido para um endpoint Cloud/REST para sincronizar em tempo real em qualquer dispositivo
+      try {
+        const cloudEndpoint = localStorage.getItem('mh_cloud_db_url') || 'https://65cc0ab0dd51392f.mockapi.io/api/v1/pedidos';
+        fetch(cloudEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...pedido, origem: 'online', timestamp: Date.now() })
+        }).catch(() => {});
+      } catch (_) {}
     }
 
     function pagamentosSelecionados() {
@@ -2103,6 +2113,32 @@
     carregarCupons().finally(() => {
       carregarProdutos();
     });
+
+  </script>
+
+  <!-- Configuração externa da chave do Firebase -->
+  <script src="config.js"></script>
+
+  <!-- SDK Oficial do Firebase (v12) em tempo real -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+    const firebaseConfig = window.firebaseConfig;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+
+      // Função global para gravar os novos pedidos na nuvem usando RTDB
+      window.enviarPedidoFirebase = function(pedido) {
+        const pedidoId = pedido.id || Date.now().toString();
+        const pedidoRef = ref(database, 'pedidos/' + pedidoId);
+        set(pedidoRef, pedido).catch(err => console.error("Erro Firebase:", err));
+      };
+    } catch (e) {
+      console.error("Erro ao inicializar Firebase v12:", e);
+    }
   </script>
 </body>
 </html>
