@@ -15,7 +15,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="loading-fallback" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0f;color:white;font-family:sans-serif;flex-direction:column;gap:20px;">
+        <div style="font-size:48px;">🍔</div>
+        <div style="font-size:24px;font-weight:bold;">MH Lanches</div>
+        <div style="font-size:14px;opacity:0.7;">Carregando...</div>
+        <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:#f97316;border-radius:50%;animation:spin 1s linear infinite;"></div>
+      </div>
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Diagnóstico: se o React não montar em 5 segundos, mostra erro
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        var fallback = document.getElementById('loading-fallback');
+        if (fallback && root.children.length <= 2) {
+          fallback.innerHTML = '<div style="text-align:center;padding:20px;">' +
+            '<div style="font-size:48px;margin-bottom:20px;">⚠️</div>' +
+            '<div style="font-size:20px;font-weight:bold;margin-bottom:10px;">Erro ao carregar</div>' +
+            '<div style="font-size:14px;opacity:0.7;margin-bottom:20px;">Verifique o console do navegador (F12)</div>' +
+            '<div style="font-size:12px;background:rgba(255,255,255,0.1);padding:10px;border-radius:8px;max-width:400px;text-align:left;">' +
+            '<strong>Diagnóstico:</strong><br>' +
+            '1. Abra o console (F12)<br>' +
+            '2. Verifique erros em vermelho<br>' +
+            '3. Verifique a aba Network para arquivos 404<br>' +
+            '</div></div>';
+        }
+      }, 5000);
+    </script>
   </body>
 </html>
