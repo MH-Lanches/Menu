@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MH Lanches - PDV / Caixa</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --primary: #E63946;
+  --primary-dark: #C1121F;
+  --secondary: #F4A261;
+  --accent: #E76F51;
+  --dark: #1A1A2E;
+  --dark2: #16213E;
+  --light: #FFFFFF;
+  --gray: #6B7280;
+  --gray-light: #F3F4F6;
+  --success: #059669;
+  --blue: #3B82F6;
+  --purple: #8B5CF6;
+  --shadow: 0 4px 20px rgba(0,0,0,0.08);
+  --radius: 14px;
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Poppins',sans-serif; background:#F5F7FB; color:#1A1A2E; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; border:none; font-family:inherit; }
+ul { list-style:none; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-thumb { background:var(--primary); border-radius:10px; }
+
+/* TOPBAR */
+.topbar {
+  background:#fff; padding:12px 24px; display:flex;
+  align-items:center; justify-content:space-between;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04); position:sticky; top:0; z-index:50;
+}
+.topbar-left { display:flex; align-items:center; gap:16px; }
+.topbar-logo { display:flex; align-items:center; gap:8px; font-size:1.2rem; font-weight:800; color:var(--primary); }
+.topbar-logo span { color:var(--secondary); }
+.topbar-badge { background:var(--dark); color:#fff; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:600; }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.topbar-clock { font-size:1.1rem; font-weight:600; color:var(--dark); }
+.topbar-btn {
+  width:38px; height:38px; border-radius:10px; background:var(--gray-light);
+  display:flex; align-items:center; justify-content:center; color:var(--gray);
+  transition:var(--transition);
+}
+.topbar-btn:hover { background:var(--primary); color:#fff; }
+
+/* LAYOUT */
+.pdv-layout {
+  display:grid; grid-template-columns:1fr 380px;
+  height:calc(100vh - 62px);
+}
+
+/* LEFT SIDE */
+.pdv-main { overflow-y:auto; padding:20px; }
+
+/* TABS */
+.tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+.tab {
+  padding:10px 20px; border-radius:10px; background:#fff;
+  font-size:0.8rem; font-weight:600; color:var(--gray);
+  transition:var(--transition); display:flex; align-items:center; gap:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.tab:hover { color:var(--primary); }
+.tab.active { background:var(--primary); color:#fff; }
+.tab .count {
+  background:rgba(255,255,255,0.2); padding:2px 8px;
+  border-radius:10px; font-size:0.7rem;
+}
+.tab.active .count { background:rgba(255,255,255,0.3); }
+
+/* CATEGORY FILTER */
+.cat-filter {
+  display:flex; gap:8px; margin-bottom:20px; overflow-x:auto;
+  padding-bottom:4px;
+}
+.cat-filter::-webkit-scrollbar { height:0; }
+.cat-btn {
+  flex-shrink:0; padding:8px 16px; border-radius:20px;
+  background:#fff; font-size:0.75rem; font-weight:600;
+  color:var(--gray); transition:var(--transition);
+  border:2px solid transparent;
+}
+.cat-btn:hover { border-color:var(--primary); color:var(--primary); }
+.cat-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* PRODUCTS GRID */
+.pdv-products {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:12px;
+}
+.pdv-product {
+  background:#fff; border-radius:var(--radius); overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04); cursor:pointer;
+  transition:var(--transition); border:2px solid transparent;
+}
+.pdv-product:hover { border-color:var(--primary); transform:translateY(-3px); box-shadow:0 8px 25px rgba(0,0,0,0.1); }
+.pdv-product:active { transform:scale(0.97); }
+.pdv-product-img {
+  height:100px; overflow:hidden; position:relative;
+}
+.pdv-product-img img { width:100%; height:100%; object-fit:cover; transition:var(--transition); }
+.pdv-product:hover .pdv-product-img img { transform:scale(1.08); }
+.pdv-product-tag {
+  position:absolute; top:6px; left:6px; padding:2px 8px;
+  border-radius:6px; font-size:0.6rem; font-weight:700;
+}
+.pdv-product-tag.hot { background:var(--primary); color:#fff; }
+.pdv-product-tag.new { background:var(--secondary); color:#fff; }
+.pdv-product-info { padding:10px; }
+.pdv-product-name { font-size:0.8rem; font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pdv-product-price { font-size:0.95rem; font-weight:700; color:var(--primary); }
+
+/* RIGHT SIDE - ORDER PANEL */
+.order-panel {
+  background:#fff; border-left:1px solid #eee;
+  display:flex; flex-direction:column; height:calc(100vh - 62px);
+}
+.order-header {
+  padding:16px 20px; border-bottom:1px solid #eee;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.order-header h3 { font-size:1rem; font-weight:700; display:flex; align-items:center; gap:8px; }
+.order-type-tabs { display:flex; gap:4px; }
+.order-type-tab {
+  padding:6px 12px; border-radius:8px; font-size:0.7rem;
+  font-weight:600; background:var(--gray-light); color:var(--gray);
+  transition:var(--transition);
+}
+.order-type-tab.active { background:var(--primary); color:#fff; }
+
+/* ORDER ITEMS */
+.order-items { flex:1; overflow-y:auto; padding:12px 20px; }
+.order-empty {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; height:100%; text-align:center; color:var(--gray);
+}
+.order-empty i { font-size:2.5rem; margin-bottom:8px; opacity:0.3; }
+.order-empty p { font-size:0.8rem; }
+
+.order-item {
+  display:flex; gap:10px; padding:12px 0;
+  border-bottom:1px solid #f5f5f5; align-items:center;
+}
+.order-item-num {
+  width:24px; height:24px; border-radius:6px;
+  background:var(--primary); color:#fff; font-size:0.7rem;
+  font-weight:700; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.order-item-info { flex:1; }
+.order-item-name { font-size:0.8rem; font-weight:600; }
+.order-item-price { font-size:0.75rem; color:var(--gray); }
+.order-item-qty {
+  display:flex; align-items:center; gap:6px;
+}
+.order-item-qty button {
+  width:24px; height:24px; border-radius:6px;
+  background:var(--gray-light); display:flex;
+  align-items:center; justify-content:center;
+  font-size:0.7rem; color:var(--gray); transition:var(--transition);
+}
+.order-item-qty button:hover { background:var(--primary); color:#fff; }
+.order-item-qty span { font-size:0.8rem; font-weight:700; min-width:16px; text-align:center; }
+.order-item-total { font-size:0.85rem; font-weight:700; color:var(--primary); min-width:60px; text-align:right; }
+.order-item-remove {
+  background:none; color:#ccc; font-size:0.75rem;
+  transition:var(--transition); padding:4px;
+}
+.order-item-remove:hover { color:var(--primary); }
+
+/* ORDER FOOTER */
+.order-footer { padding:16px 20px; border-top:1px solid #eee; }
+.order-summary { margin-bottom:12px; }
+.order-summary-row {
+  display:flex; justify-content:space-between;
+  font-size:0.8rem; color:var(--gray); margin-bottom:4px;
+}
+.order-summary-total {
+  display:flex; justify-content:space-between;
+  font-size:1.2rem; font-weight:800; padding-top:8px;
+  border-top:2px solid #eee;
+}
+.order-summary-total .amount { color:var(--primary); }
+
+.order-actions { display:flex; flex-direction:column; gap:8px; }
+.btn-order {
+  width:100%; padding:14px; border-radius:10px;
+  font-size:0.85rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:var(--transition);
+}
+.btn-send { background:var(--success); color:#fff; }
+.btn-send:hover { background:#047857; }
+.btn-hold { background:var(--blue); color:#fff; }
+.btn-hold:hover { background:#2563EB; }
+.btn-cancel { background:var(--gray-light); color:var(--gray); }
+.btn-cancel:hover { background:#fee; color:var(--primary); }
+
+/* HELD ORDERS MODAL */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:2000; display:none; align-items:center; justify-content:center; padding:24px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:#fff; border-radius:20px; width:100%;
+  max-width:600px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header { padding:20px 24px; border-bottom:1px solid #eee; display:flex; align-items:center; justify-content:space-between; }
+.modal-header h3 { font-size:1.1rem; font-weight:700; }
+.modal-body { padding:24px; }
+
+/* HELD ORDER CARD */
+.held-order {
+  padding:14px; background:var(--gray-light); border-radius:12px;
+  margin-bottom:8px; cursor:pointer; transition:var(--transition);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.held-order:hover { background:#FFF0F0; }
+.held-order-info h4 { font-size:0.85rem; font-weight:600; }
+.held-order-info p { font-size:0.7rem; color:var(--gray); }
+.held-order-total { font-size:1rem; font-weight:700; color:var(--primary); }
+
+/* DAILY SUMMARY */
+.summary-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.summary-card {
+  background:#fff; border-radius:12px; padding:16px; text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.summary-card h4 { font-size:0.7rem; color:var(--gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.summary-card .value { font-size:1.4rem; font-weight:800; }
+.summary-card .value.red { color:var(--primary); }
+.summary-card .value.green { color:var(--success); }
+.summary-card .value.blue { color:var(--blue); }
+
+/* TOAST */
+.toast-container { position:fixed; top:80px; right:20px; z-index:5000; display:flex; flex-direction:column; gap:8px; }
+.toast {
+  padding:12px 18px; border-radius:10px; background:#fff;
+  box-shadow:0 8px 30px rgba(0,0,0,0.12); display:flex;
+  align-items:center; gap:10px; font-size:0.8rem; font-weight:500;
+  animation:slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+}
+.toast.success i { color:var(--success); }
+.toast.error i { color:var(--primary); }
+.toast.info i { color:var(--blue); }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes fadeOut { to { transform:translateX(100%); opacity:0; } }
+
+/* NEW ORDER MODAL */
+.new-order-form { margin-bottom:16px; }
+.form-group { margin-bottom:12px; }
+.form-group label { display:block; font-size:0.75rem; font-weight:600; margin-bottom:4px; }
+.form-group input, .form-group select {
+  width:100%; padding:10px 14px; border-radius:8px;
+  border:2px solid #e5e7eb; font-size:0.85rem;
+  font-family:inherit; outline:none; transition:var(--transition);
+}
+.form-group input:focus, .form-group select:focus { border-color:var(--primary); }
+
+/* RESPONSIVE */
+@media(max-width:1024px) {
+  .pdv-layout { grid-template-columns:1fr; }
+  .order-panel {
+    position:fixed; bottom:0; left:0; right:0;
+    height:60vh; border-radius:20px 20px 0 0;
+    box-shadow:0 -10px 40px rgba(0,0,0,0.15);
+    transform:translateY(100%); transition:0.4s cubic-bezier(0.4,0,0.2,1);
+    z-index:100;
+  }
+  .order-panel.open { transform:translateY(0); }
+  .pdv-main { height:auto; padding-bottom:80px; }
+  .order-toggle {
+    display:flex !important; position:fixed; bottom:20px;
+    right:20px; z-index:101;
+  }
+  .summary-cards { grid-template-columns:1fr 1fr 1fr; }
+}
+@media(max-width:768px) {
+  .pdv-products { grid-template-columns:repeat(2,1fr); }
+  .tabs { gap:4px; }
+  .tab { padding:8px 14px; font-size:0.75rem; }
+}
+@media(max-width:480px) {
+  .pdv-products { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .pdv-product-img { height:80px; }
+}
+
+.order-toggle { display:none; }
+.fab-order-toggle {
+  width:56px; height:56px; border-radius:50%;
+  background:var(--primary); color:#fff; font-size:1.2rem;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 20px rgba(230,57,70,0.4);
+  transition:var(--transition); position:relative;
+}
+.fab-order-toggle .fab-count {
+  position:absolute; top:-4px; right:-4px;
+  background:var(--secondary); width:20px; height:20px;
+  border-radius:50%; font-size:0.65rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid #fff;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><i class="fas fa-cash-register"></i> MH<span>Lanches</span></div>
+    <span class="topbar-badge">PDV v2.0</span>
+    <span class="topbar-badge" style="background:var(--success);">● Online</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-clock" id="clock">00:00:00</span>
+    <button class="topbar-btn" onclick="refreshOrders()" title="Atualizar"><i class="fas fa-sync-alt"></i></button>
+    <button class="topbar-btn" onclick="openDailySummary()" title="Resumo do Dia"><i class="fas fa-chart-bar"></i></button>
+    <button class="topbar-btn" onclick="openHeldOrders()" title="Comandas"><i class="fas fa-clipboard-list"></i></button>
+    <button class="topbar-btn" onclick="window.open('admin.html')" title="Admin"><i class="fas fa-cog"></i></button>
+    <button class="topbar-btn" onclick="window.open('index.html')" title="Site"><i class="fas fa-external-link-alt"></i></button>
+  </div>
+</header>
+
+<!-- PDV LAYOUT -->
+<div class="pdv-layout">
+  <!-- LEFT - PRODUCTS -->
+  <div class="pdv-main">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('delivery',this)"><i class="fas fa-motorcycle"></i> Delivery <span class="count" id="deliveryCount">0</span></button>
+      <button class="tab" onclick="switchTab('comanda',this)"><i class="fas fa-clipboard"></i> Comanda <span class="count" id="comandaCount">0</span></button>
+      <button class="tab" onclick="switchTab('mesa',this)"><i class="fas fa-chair"></i> Mesa <span class="count" id="mesaCount">0</span></button>
+    </div>
+
+    <div class="cat-filter" id="catFilter">
+      <button class="cat-btn active" onclick="filterCat('all',this)">Todos</button>
+      <button class="cat-btn" onclick="filterCat('hamburguer',this)">🍔 Hambúrgueres</button>
+      <button class="cat-btn" onclick="filterCat('pizza',this)">🍕 Pizzas</button>
+      <button class="cat-btn" onclick="filterCat('pastel',this)">🥟 Pastéis</button>
+      <button class="cat-btn" onclick="filterCat('porcao',this)">🍗 Porções</button>
+      <button class="cat-btn" onclick="filterCat('bebida',this)">🥤 Bebidas</button>
+      <button class="cat-btn" onclick="filterCat('sobremesa',this)">🍦 Sobremesas</button>
+    </div>
+
+    <div class="pdv-products" id="pdvProducts"></div>
+  </div>
+
+  <!-- RIGHT - ORDER -->
+  <div class="order-panel" id="orderPanel">
+    <div class="order-header">
+      <h3><i class="fas fa-receipt"></i> Pedido</h3>
+      <div class="order-type-tabs">
+        <button class="order-type-tab active" id="otype-delivery" onclick="setOrderType('delivery')">Delivery</button>
+        <button class="order-type-tab" id="otype-comanda" onclick="setOrderType('comanda')">Comanda</button>
+        <button class="order-type-tab" id="otype-mesa" onclick="setOrderType('mesa')">Mesa</button>
+      </div>
+    </div>
+    <div class="order-items" id="orderItems">
+      <div class="order-empty">
+        <i class="fas fa-receipt"></i>
+        <p>Selecione produtos para<br>iniciar o pedido</p>
+      </div>
+    </div>
+    <div class="order-footer">
+      <div class="order-summary">
+        <div class="order-summary-row"><span>Subtotal</span><span id="orderSubtotal">R$ 0,00</span></div>
+        <div class="order-summary-total"><span>Total</span><span class="amount" id="orderTotal">R$ 0,00</span></div>
+      </div>
+      <div class="order-actions">
+        <button class="btn-order btn-send" onclick="finalizeOrder()"><i class="fas fa-check-circle"></i> Finalizar Pedido</button>
+        <button class="btn-order btn-hold" onclick="holdOrder()"><i class="fas fa-pause-circle"></i> Guardar Comanda</button>
+        <button class="btn-order btn-cancel" onclick="clearOrder()"><i class="fas fa-times-circle"></i> Limpar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE ORDER TOGGLE -->
+<div class="order-toggle">
+  <button class="fab-order-toggle" onclick="toggleOrderPanel()">
+    <i class="fas fa-receipt"></i>
+    <span class="fab-count" id="fabCount">0</span>
+  </button>
+</div>
+
+<!-- HELD ORDERS MODAL -->
+<div class="modal-overlay" id="heldModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-clipboard-list"></i> Comandas Abertas</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('heldModal')" style="padding:8px 12px;border-radius:8px;background:var(--gray-light);color:var(--gray);font-size:0.8rem;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="heldList">
+      <p style="text-align:center;color:var(--gray);padding:40px;">Nenhuma comanda aberta</p>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY SUMMARY MODAL -->
+<div class="modal-overlay" id="summaryModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-chart-bar"></i> Resumo do Dia</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('summaryModal')" style="padding:8px 12px;border-radius:8px;background:var(--gray-light);color:var(--gray);font-size:0.8rem;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="summaryContent"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- AUDIO ALERT -->
+<audio id="alertSound" preload="auto">
+  <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2LkpGKgHRpaGx2g42UlI2BesJYZ3J9iZGTjoh+dG5uc3qEi5OTjIF1amhsdoGMlJOMgHRnaW14g46Vk4x/c2dmbnqFj5aUjYF0ZmdueIOOlZSMfnNmZm56hY+WlI2BdGZnbniDjpWUjH5zZmZueoWPlpSNgXRmZ254g46VlIx+c2dmbnqFj5aUjYF0ZmdueIOOlZSMfnNmZm56hY+WlI2BdA==" type="audio/wav">
+</audio>
+
+<script>
+// ========================================
+// PRODUCTS DATA
+// ========================================
+const products = [
+  {id:1,name:'Smash Burger Clássico',price:24.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80',tag:'hot'},
+  {id:2,name:'Bacon Lover Burger',price:29.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&q=80',tag:'hot'},
+  {id:3,name:'Chicken Crispy',price:22.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&q=80',tag:'new'},
+  {id:4,name:'Double Cheese',price:32.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80',tag:''},
+  {id:5,name:'Veggie Burger',price:21.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1520072959219-c595e6cdc07a?w=400&q=80',tag:'new'},
+  {id:6,name:'BBQ Monster',price:35.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400&q=80',tag:'hot'},
+  {id:7,name:'Fish Burger',price:23.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1571091655789-405eb7a3a3a8?w=400&q=80',tag:''},
+  {id:8,name:'Kids Burger',price:18.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=400&q=80',tag:''},
+  {id:9,name:'Mega Burger MH',price:42.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=400&q=80',tag:'hot'},
+  {id:10,name:'Classic Cheese',price:19.90,category:'hamburguer',img:'https://images.unsplash.com/photo-1571091655789-405eb7a3a3a8?w=400&q=80',tag:''},
+  {id:11,name:'Pizza Margherita',price:34.90,category:'pizza',img:'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=80',tag:''},
+  {id:12,name:'Pizza Pepperoni',price:38.90,category:'pizza',img:'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80',tag:'hot'},
+  {id:13,name:'Pizza 4 Queijos',price:39.90,category:'pizza',img:'https://images.unsplash.com/photo-15131048901346375-23c9450c58cd?w=400&q=80',tag:''},
+  {id:14,name:'Pizza Calabresa',price:32.90,category:'pizza',img:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80',tag:'sale'},
+  {id:15,name:'Pizza Frango',price:36.90,category:'pizza',img:'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=400&q=80',tag:''},
+  {id:16,name:'Pizza Portuguesa',price:37.90,category:'pizza',img:'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&q=80',tag:''},
+  {id:17,name:'Pizza Napolitana',price:35.90,category:'pizza',img:'https://images.unsplash.com/photo-1595854341625-f33ee10dbf94?w=400&q=80',tag:''},
+  {id:18,name:'Pizza Chocolate',price:36.90,category:'pizza',img:'https://images.unsplash.com/photo-1588315029754-2dd089d39a1a?w=400&q=80',tag:'new'},
+  {id:19,name:'Pizza Supreme Meat',price:42.90,category:'pizza',img:'https://images.unsplash.com/photo-1600028068383-ea11a7a101f3?w=400&q=80',tag:'hot'},
+  {id:20,name:'Pizza Mussarela',price:28.90,category:'pizza',img:'https://images.unsplash.com/photo-1573821663912-569905455b1c?w=400&q=80',tag:''},
+  {id:21,name:'Pastel de Carne',price:12.90,category:'pastel',img:'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=400&q=80',tag:''},
+  {id:22,name:'Pastel de Queijo',price:11.90,category:'pastel',img:'https://images.unsplash.com/photo-1604908176997-125f696c5b59?w=400&q=80',tag:''},
+  {id:23,name:'Pastel de Frango',price:12.90,category:'pastel',img:'https://images.unsplash.com/photo-1562967916-eb82221dfb44?w=400&q=80',tag:''},
+  {id:24,name:'Pastel Pizza',price:14.90,category:'pastel',img:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=80',tag:'hot'},
+  {id:25,name:'Pastel Palmito',price:15.90,category:'pastel',img:'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&q=80',tag:'new'},
+  {id:26,name:'Pastel Camarão',price:18.90,category:'pastel',img:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=80',tag:'hot'},
+  {id:27,name:'Pastel Bacon',price:14.90,category:'pastel',img:'https://images.unsplash.com/photo-1541592106381-b31e9677c0e4?w=400&q=80',tag:''},
+  {id:28,name:'Pastel Calabresa',price:13.90,category:'pastel',img:'https://images.unsplash.com/photo-1582234372722-50d7ccc30ebd?w=400&q=80',tag:''},
+  {id:29,name:'Pastel Chocolate',price:13.90,category:'pastel',img:'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&q=80',tag:''},
+  {id:30,name:'Pastel Mix Especial',price:19.90,category:'pastel',img:'https://images.unsplash.com/photo-1605478371310-a9f1e96b4ff4?w=400&q=80',tag:'hot'},
+  {id:31,name:'Batata Frita',price:16.90,category:'porcao',img:'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&q=80',tag:''},
+  {id:32,name:'Batata Cheddar Bacon',price:22.90,category:'porcao',img:'https://images.unsplash.com/photo-1585109649979-4a8133b47094?w=400&q=80',tag:'hot'},
+  {id:33,name:'Onion Rings',price:18.90,category:'porcao',img:'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400&q=80',tag:''},
+  {id:34,name:'Nuggets (12un)',price:19.90,category:'porcao',img:'https://images.unsplash.com/photo-1562967914-8c4c53663e4e?w=400&q=80',tag:''},
+  {id:35,name:'Polenta Frita',price:15.90,category:'porcao',img:'https://images.unsplash.com/photo-1588166524941-3bf61a9c4175?w=400&q=80',tag:''},
+  {id:36,name:'Mandioca Frita',price:14.90,category:'porcao',img:'https://images.unsplash.com/photo-1598514983318-2f64f8f4796c?w=400&q=80',tag:''},
+  {id:37,name:'Frango a Passarinho',price:28.90,category:'porcao',img:'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&q=80',tag:'hot'},
+  {id:38,name:'Porção MH Completa',price:45.90,category:'porcao',img:'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',tag:'hot'},
+  {id:39,name:'Coca-Cola 350ml',price:6.90,category:'bebida',img:'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400&q=80',tag:''},
+  {id:40,name:'Guaraná 350ml',price:6.90,category:'bebida',img:'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400&q=80',tag:''},
+  {id:41,name:'Suco Natural 500ml',price:10.90,category:'bebida',img:'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&q=80',tag:''},
+  {id:42,name:'Água Mineral',price:4.90,category:'bebida',img:'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=400&q=80',tag:''},
+  {id:43,name:'Milk Shake 400ml',price:16.90,category:'bebida',img:'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400&q=80',tag:'new'},
+  {id:44,name:'Cerveja Artesanal',price:18.90,category:'bebida',img:'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&q=80',tag:''},
+  {id:45,name:'Chá Gelado 500ml',price:8.90,category:'bebida',img:'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&q=80',tag:'new'},
+  {id:46,name:'Brownie c/ Sorvete',price:18.90,category:'sobremesa',img:'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=400&q=80',tag:'hot'},
+  {id:47,name:'Petit Gateau',price:22.90,category:'sobremesa',img:'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&q=80',tag:'hot'},
+  {id:48,name:'Açaí 500ml',price:19.90,category:'sobremesa',img:'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=400&q=80',tag:''},
+  {id:49,name:'Churros (4un)',price:14.90,category:'sobremesa',img:'https://images.unsplash.com/photo-1624371414361-e670246e0e1e?w=400&q=80',tag:''},
+  {id:50,name:'Pudim de Leite',price:12.90,category:'sobremesa',img:'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&q=80',tag:''}
+];
+
+// ========================================
+// STATE
+// ========================================
+let currentOrder = [];
+let orderType = 'delivery';
+let currentCat = 'all';
+let heldOrders = JSON.parse(localStorage.getItem('mh_held_orders')) || '[]';
+if (typeof heldOrders === 'string') heldOrders = [];
+
+// ========================================
+// INIT
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderProducts();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(refreshOrders, 10000);
+  updateOrderCounts();
+});
+
+// ========================================
+// CLOCK
+// ========================================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('pt-BR');
+}
+
+// ========================================
+// RENDER PRODUCTS
+// ========================================
+function renderProducts() {
+  const grid = document.getElementById('pdvProducts');
+  const filtered = currentCat === 'all' ? products : products.filter(p => p.category === currentCat);
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="pdv-product" onclick="addToOrder(${p.id})">
+      <div class="pdv-product-img">
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+        ${p.tag ? `<span class="pdv-product-tag ${p.tag}">${p.tag==='hot'?'🔥':p.tag==='new'?'✨':'💰'}</span>` : ''}
+      </div>
+      <div class="pdv-product-info">
+        <div class="pdv-product-name">${p.name}</div>
+        <div class="pdv-product-price">R$ ${p.price.toFixed(2).replace('.',',')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+// ========================================
+// ORDER MANAGEMENT
+// ========================================
+function addToOrder(id) {
+  const product = products.find(p => p.id === id);
+  const existing = currentOrder.find(o => o.id === id);
+  if (existing) existing.qty++;
+  else currentOrder.push({...product, qty:1});
+  updateOrderUI();
+  showToast(`${product.name} adicionado`, 'success');
+
+  // Play alert sound
+  try { document.getElementById('alertSound').play().catch(()=>{}); } catch(e){}
+}
+
+function changeQty(id, delta) {
+  const item = currentOrder.find(o => o.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) currentOrder = currentOrder.filter(o => o.id !== id);
+  updateOrderUI();
+}
+
+function removeItem(id) {
+  currentOrder = currentOrder.filter(o => o.id !== id);
+  updateOrderUI();
+}
+
+function updateOrderUI() {
+  const container = document.getElementById('orderItems');
+  const subtotalEl = document.getElementById('orderSubtotal');
+  const totalEl = document.getElementById('orderTotal');
+  const fabCount = document.getElementById('fabCount');
+
+  const totalItems = currentOrder.reduce((s, c) => s + c.qty, 0);
+  const subtotal = currentOrder.reduce((s, c) => s + c.price * c.qty, 0);
+
+  fabCount.textContent = totalItems;
+
+  if (currentOrder.length === 0) {
+    container.innerHTML = '<div class="order-empty"><i class="fas fa-receipt"></i><p>Selecione produtos para<br>iniciar o pedido</p></div>';
+    subtotalEl.textContent = 'R$ 0,00';
+    totalEl.textContent = 'R$ 0,00';
+    return;
+  }
+
+  container.innerHTML = currentOrder.map((item, i) => `
+    <div class="order-item">
+      <div class="order-item-num">${i+1}</div>
+      <div class="order-item-info">
+        <div class="order-item-name">${item.name}</div>
+        <div class="order-item-price">R$ ${item.price.toFixed(2).replace('.',',')}</div>
+      </div>
+      <div class="order-item-qty">
+        <button onclick="changeQty(${item.id},-1)"><i class="fas fa-minus"></i></button>
+        <span>${item.qty}</span>
+        <button onclick="changeQty(${item.id},1)"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="order-item-total">R$ ${(item.price * item.qty).toFixed(2).replace('.',',')}</div>
+      <button class="order-item-remove" onclick="removeItem(${item.id})"><i class="fas fa-trash"></i></button>
+    </div>
+  `).join('');
+
+  subtotalEl.textContent = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
+  totalEl.textContent = `R$ ${subtotal.toFixed(2).replace('.',',')}`;
+}
+
+function clearOrder() {
+  if (currentOrder.length === 0) return;
+  if (confirm('Limpar pedido atual?')) {
+    currentOrder = [];
+    updateOrderUI();
+    showToast('Pedido limpo', 'info');
+  }
+}
+
+// ========================================
+// ORDER TYPE
+// ========================================
+function setOrderType(type) {
+  orderType = type;
+  document.querySelectorAll('.order-type-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`otype-${type}`).classList.add('active');
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  setOrderType(tab);
+}
+
+// ========================================
+// FINALIZE ORDER
+// ========================================
+function finalizeOrder() {
+  if (currentOrder.length === 0) { showToast('Adicione itens ao pedido!', 'error'); return; }
+
+  const subtotal = currentOrder.reduce((s, c) => s + c.price * c.qty, 0);
+  const order = {
+    id: Date.now(),
+    type: orderType,
+    items: currentOrder.map(c => ({id:c.id, name:c.name, price:c.price, qty:c.qty})),
+    subtotal,
+    total: subtotal,
+    status: 'Novo',
+    date: new Date().toISOString(),
+    createdAt: new Date().toLocaleTimeString('pt-BR')
+  };
+
+  const orders = JSON.parse(localStorage.getItem('mh_orders') || '[]');
+  orders.push(order);
+  localStorage.setItem('mh_orders', JSON.stringify(orders));
+
+  currentOrder = [];
+  updateOrderUI();
+  showToast(`Pedido #${String(order.id).slice(-6)} finalizado! 🎉`, 'success');
+}
+
+// ========================================
+// HOLD ORDER (COMANDA)
+// ========================================
+function holdOrder() {
+  if (currentOrder.length === 0) { showToast('Adicione itens primeiro!', 'error'); return; }
+  const subtotal = currentOrder.reduce((s, c) => s + c.price * c.qty, 0);
+  heldOrders.push({
+    id: Date.now(),
+    type: orderType,
+    items: [...currentOrder],
+    subtotal,
+    date: new Date().toISOString(),
+    createdAt: new Date().toLocaleTimeString('pt-BR')
+  });
+  localStorage.setItem('mh_held_orders', JSON.stringify(heldOrders));
+  currentOrder = [];
+  updateOrderUI();
+  updateOrderCounts();
+  showToast('Comanda guardada! 📋', 'success');
+}
+
+function openHeldOrders() {
+  heldOrders = JSON.parse(localStorage.getItem('mh_held_orders') || '[]');
+  if (typeof heldOrders === 'string') heldOrders = [];
+  const list = document.getElementById('heldList');
+
+  if (heldOrders.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--gray);padding:40px;">Nenhuma comanda aberta</p>';
+  } else {
+    list.innerHTML = heldOrders.map((o, i) => `
+      <div class="held-order" onclick="loadHeldOrder(${i})">
+        <div class="held-order-info">
+          <h4>Comanda #${String(o.id).slice(-6)}</h4>
+          <p>${o.type === 'delivery' ? '🚚 Delivery' : o.type === 'mesa' ? '🪑 Mesa' : '📋 Comanda'} • ${o.createdAt} • ${o.items.length} itens</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="held-order-total">R$ ${o.subtotal.toFixed(2).replace('.',',')}</div>
+          <button onclick="event.stopPropagation();deleteHeldOrder(${i})" style="background:#FEE2E2;color:#DC2626;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-trash" style="font-size:0.7rem;"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('heldModal').classList.add('open');
+}
+
+function loadHeldOrder(idx) {
+  const order = heldOrders[idx];
+  currentOrder = [...order.items];
+  orderType = order.type;
+  document.querySelectorAll('.order-type-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`otype-${orderType}`).classList.add('active');
+  heldOrders.splice(idx, 1);
+  localStorage.setItem('mh_held_orders', JSON.stringify(heldOrders));
+  updateOrderUI();
+  updateOrderCounts();
+  closeModal('heldModal');
+  showToast('Comanda carregada!', 'info');
+}
+
+function deleteHeldOrder(idx) {
+  heldOrders.splice(idx, 1);
+  localStorage.setItem('mh_held_orders', JSON.stringify(heldOrders));
+  updateOrderCounts();
+  openHeldOrders();
+  showToast('Comanda excluída', 'info');
+}
+
+function updateOrderCounts() {
+  const orders = JSON.parse(localStorage.getItem('mh_orders') || '[]');
+  const today = new Date().toDateString();
+  const todayOrders = orders.filter(o => new Date(o.date).toDateString() === today);
+  document.getElementById('deliveryCount').textContent = todayOrders.filter(o => o.type === 'delivery').length;
+  document.getElementById('comandaCount').textContent = todayOrders.filter(o => o.type === 'comanda').length;
+  document.getElementById('mesaCount').textContent = todayOrders.filter(o => o.type === 'mesa').length;
+}
+
+// ========================================
+// DAILY SUMMARY
+// ========================================
+function openDailySummary() {
+  const orders = JSON.parse(localStorage.getItem('mh_orders') || '[]');
+  const today = new Date().toDateString();
+  const todayOrders = orders.filter(o => new Date(o.date).toDateString() === today);
+
+  const totalRevenue = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const avgTicket = todayOrders.length > 0 ? totalRevenue / todayOrders.length : 0;
+
+  const paymentBreakdown = {};
+  todayOrders.forEach(o => {
+    const p = o.payment || 'N/A';
+    paymentBreakdown[p] = (paymentBreakdown[p] || 0) + (o.total || 0);
+  });
+
+  document.getElementById('summaryContent').innerHTML = `
+    <div class="summary-cards">
+      <div class="summary-card"><h4>Pedidos Hoje</h4><div class="value red">${todayOrders.length}</div></div>
+      <div class="summary-card"><h4>Faturamento</h4><div class="value green">R$ ${totalRevenue.toFixed(2).replace('.',',')}</div></div>
+      <div class="summary-card"><h4>Ticket Médio</h4><div class="value blue">R$ ${avgTicket.toFixed(2).replace('.',',')}</div></div>
+    </div>
+    <h4 style="margin-bottom:12px;font-size:0.9rem;">Pagamentos</h4>
+    ${Object.entries(paymentBreakdown).map(([k,v]) => `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:0.85rem;">
+        <span>${k}</span><strong>R$ ${v.toFixed(2).replace('.',',')}</strong>
+      </div>
+    `).join('') || '<p style="color:var(--gray);text-align:center;padding:20px;">Nenhum pedido hoje</p>'}
+  `;
+  document.getElementById('summaryModal').classList.add('open');
+}
+
+// ========================================
+// REFRESH
+// ========================================
+function refreshOrders() {
+  updateOrderCounts();
+  showToast('Dados atualizados!', 'info');
+}
+
+// ========================================
+// MODALS
+// ========================================
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ========================================
+// MOBILE
+// ========================================
+function toggleOrderPanel() {
+  document.getElementById('orderPanel').classList.toggle('open');
+}
+
+// ========================================
+// TOAST
+// ========================================
+function showToast(msg, type='success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle'}"></i><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>
