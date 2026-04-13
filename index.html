@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MH Lanches - Delivery</title>
+    <title id="pageTitle">MH Lanches - Delivery</title>
+    <link id="siteFavicon" rel="icon" type="image/png" href="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -90,13 +91,22 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        @keyframes logoFloatSwing {
+            0% { transform: rotate(-2deg) scale(0.96); }
+            50% { transform: rotate(2deg) scale(1.04); }
+            100% { transform: rotate(-2deg) scale(0.96); }
+        }
+        .hero-logo-animate {
+            animation: logoFloatSwing 7s ease-in-out infinite;
+            transform-origin: center;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
@@ -110,7 +120,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        window.firebaseDB = { db, ref, set, push, onValue };
+        window.firebaseDB = { db, ref, set, get, push, onValue };
     </script>
 
     <!-- Status Bar -->
@@ -140,12 +150,12 @@
     <!-- Header -->
     <header class="pt-16 pb-8 px-4">
         <div class="max-w-7xl mx-auto text-center">
-            <img src="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572" 
+             <img id="heroLogo" src="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572" 
                  alt="MH Lanches Logo" 
-                 class="mx-auto mb-4 w-64 h-auto md:w-80"
+                 class="hero-logo-animate mx-auto mb-4 w-64 h-auto md:w-80"
                  style="border: none;">
-            <h1 class="font-orbitron text-4xl md:text-6xl font-black neon-text neon-pink mb-2">MH LANCHES</h1>
-            <p class="text-gray-400 text-lg">Seu delivery favorito, sempre aberto para você!</p>
+            <h1 id="heroTitle" class="font-orbitron text-4xl md:text-6xl font-black neon-text neon-pink mb-2">MH LANCHES</h1>
+            <p id="heroSubtitle" class="text-gray-400 text-lg">Seu delivery favorito, sempre aberto para você!</p>
         </div>
     </header>
 
@@ -154,11 +164,7 @@
         <div class="max-w-4xl mx-auto">
             <div id="bannerContainer" class="glass rounded-2xl overflow-hidden relative h-48 md:h-64">
                 <div id="bannerSlider" class="w-full h-full"></div>
-                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                    <span class="banner-dot w-3 h-3 rounded-full bg-white cursor-pointer" data-index="0"></span>
-                    <span class="banner-dot w-3 h-3 rounded-full bg-gray-500 cursor-pointer" data-index="1"></span>
-                    <span class="banner-dot w-3 h-3 rounded-full bg-gray-500 cursor-pointer" data-index="2"></span>
-                </div>
+                <div id="bannerDots" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2"></div>
             </div>
         </div>
     </section>
@@ -182,18 +188,21 @@
     <!-- Sobre Nós -->
     <section class="px-4 mb-8">
         <div class="max-w-4xl mx-auto">
-            <h2 class="font-orbitron text-2xl font-bold neon-cyan mb-6 text-center">Sobre Nós</h2>
+            <h2 id="aboutTitle" class="font-orbitron text-2xl font-bold neon-cyan mb-6 text-center">Sobre Nós</h2>
             <div class="glass rounded-2xl p-6">
                 <div id="aboutCarousel" class="relative">
                     <div class="carousel-content text-center">
-                        <div class="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#ff00ff] to-[#00ffff] flex items-center justify-center">
+                        <div id="aboutImageWrap" class="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#ff00ff] to-[#00ffff] flex items-center justify-center overflow-hidden">
                             <i class="fas fa-hamburger text-5xl text-white"></i>
                         </div>
                         <h3 class="text-xl font-bold mb-4 neon-pink">Nossa História</h3>
-                        <p class="text-gray-300 leading-relaxed">
+                        <p id="aboutText1" class="text-gray-300 leading-relaxed mb-3">
                             Fundada em 2018, a MH Lanches nasceu do sonho de dois amigos de oferecer lanches de qualidade 
                             com um atendimento excepcional. Hoje, somos referência em delivery na região, com mais de 
                             50.000 pedidos entregues e uma equipe apaixonada por gastronomia.
+                        </p>
+                        <p id="aboutText2" class="text-gray-400 leading-relaxed">
+                            Atendimento rapido, ingredientes selecionados e tecnologia para deixar seu pedido mais simples.
                         </p>
                     </div>
                 </div>
@@ -323,15 +332,15 @@
     <!-- Footer -->
     <footer class="glass py-8 px-4 mt-12">
         <div class="max-w-7xl mx-auto text-center">
-            <h3 class="font-orbitron text-2xl font-bold neon-pink mb-4">MH LANCHES</h3>
-            <div class="flex justify-center gap-6 mb-6">
+            <h3 id="footerBrand" class="font-orbitron text-2xl font-bold neon-pink mb-4">MH LANCHES</h3>
+            <div id="footerSocialLinks" class="flex justify-center gap-6 mb-6">
                 <a href="#" class="text-2xl hover:text-[#ff00ff] transition-colors"><i class="fab fa-instagram"></i></a>
                 <a href="#" class="text-2xl hover:text-[#00ffff] transition-colors"><i class="fab fa-facebook"></i></a>
                 <a href="#" class="text-2xl hover:text-[#25D366] transition-colors"><i class="fab fa-whatsapp"></i></a>
             </div>
             <p class="text-gray-400 text-sm">
-                © 2024 MH Lanches. Todos os direitos reservados.<br>
-                <span class="neon-cyan">Delivery:</span> (00) 00000-0000
+                <span id="footerCopyright">© 2024 MH Lanches. Todos os direitos reservados.</span><br>
+                <span class="neon-cyan">Delivery:</span> <span id="footerContact">(00) 00000-0000</span>
             </p>
         </div>
     </footer>
@@ -415,22 +424,50 @@
         ];
 
         const categorias = ["Todos", "Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
+        const LOCAL_CONFIG_KEY = 'mh_json_config';
 
-        const banners = [
-            { titulo: "NOVO! Western Burger", subtitulo: "Experimente nosso novo hambúrguer com bacon e onion rings!", cor: "from-[#ff00ff] to-[#ff4444]" },
-            { titulo: "PIZZA MEIA-MEIA", subtitulo: "Monte sua pizza com 2 sabores diferentes!", cor: "from-[#00ffff] to-[#00ff88]" },
-            { titulo: "COMBO FAMÍLIA", subtitulo: "2 Hambúrgueres + Batata + 2 Refrigerantes por R$ 69,90", cor: "from-[#ffaa00] to-[#ff00ff]" }
-        ];
-
-        const horariosFuncionamento = {
-            0: { aberto: true, abertura: "18:00", fechamento: "23:00" },
-            1: { aberto: false, abertura: "00:00", fechamento: "00:00" },
-            2: { aberto: true, abertura: "18:00", fechamento: "23:00" },
-            3: { aberto: true, abertura: "18:00", fechamento: "23:00" },
-            4: { aberto: true, abertura: "18:00", fechamento: "00:00" },
-            5: { aberto: true, abertura: "18:00", fechamento: "01:00" },
-            6: { aberto: true, abertura: "18:00", fechamento: "01:00" }
+        let siteConfig = {
+            logoUrl: "https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572",
+            favicon: "https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572",
+            tituloPrincipal: "MH LANCHES",
+            slogan: "Seu delivery favorito, sempre aberto para você!",
+            sobreTitulo: "Sobre Nós",
+            sobreTexto1: "Fundada em 2018, a MH Lanches nasceu do sonho de oferecer lanches de qualidade com atendimento excepcional.",
+            sobreTexto2: "Mais de 50.000 pedidos entregues com sabor e agilidade.",
+            sobreImagem: "",
+            lojaNome: "MH Lanches",
+            lojaTelefone: "(00) 00000-0000",
+            whatsapp: "https://wa.me/5500000000000",
+            valorMinimo: 15,
+            taxaEntrega: 5,
+            fechamentoAtivo: false,
+            fechamentoInicio: "",
+            fechamentoFim: "",
+            fechamentoMensagem: "Loja temporariamente fechada.",
+            horarios: [
+                { dia: "Domingo", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Segunda-feira", aberto: false, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Terça-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Quarta-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Quinta-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Sexta-feira", aberto: true, abertura: "18:00", fechamento: "00:00" },
+                { dia: "Sábado", aberto: true, abertura: "18:00", fechamento: "00:00" }
+            ],
+            instagram: "",
+            facebook: "",
+            tiktok: "",
+            twitter: "",
+            youtube: "",
+            website: "",
+            copyright: "© 2024 MH Lanches. Todos os direitos reservados.",
+            anuncios: [
+                { titulo: "NOVO! Western Burger", texto: "Experimente nosso novo hambúrguer com bacon e onion rings!", link: "", ativo: true },
+                { titulo: "PIZZA MEIA-MEIA", texto: "Monte sua pizza com 2 sabores diferentes!", link: "", ativo: true },
+                { titulo: "COMBO FAMÍLIA", texto: "2 Hambúrgueres + Batata + 2 Refrigerantes por R$ 69,90", link: "", ativo: true }
+            ]
         };
+
+        let banners = siteConfig.anuncios;
 
         // Estado do App
         let carrinho = JSON.parse(localStorage.getItem('mh_carrinho') || '[]');
@@ -441,7 +478,9 @@
         let customizingProduct = null;
 
         // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSiteConfig();
+            applySiteConfig();
             renderCategories();
             renderProducts();
             renderBanner();
@@ -496,6 +535,77 @@
             }
         });
 
+        async function loadSiteConfig() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            try {
+                if (dbMode === 'local') {
+                    const localConfig = localStorage.getItem(LOCAL_CONFIG_KEY);
+                    if (localConfig) siteConfig = { ...siteConfig, ...JSON.parse(localConfig) };
+                } else if (window.firebaseDB) {
+                    const { db, ref, get, onValue } = window.firebaseDB;
+                    const snapshot = await get(ref(db, 'config'));
+                    if (snapshot.exists()) {
+                        siteConfig = { ...siteConfig, ...snapshot.val() };
+                    }
+
+                    onValue(ref(db, 'config'), (snap) => {
+                        if (snap.exists()) {
+                            siteConfig = { ...siteConfig, ...snap.val() };
+                            applySiteConfig();
+                            checkOpenStatus();
+                            renderBanner();
+                        }
+                    });
+                }
+            } catch (error) {
+                const fallback = localStorage.getItem('mh_site_config');
+                if (fallback) siteConfig = { ...siteConfig, ...JSON.parse(fallback) };
+            }
+
+            if (!Array.isArray(siteConfig.anuncios)) siteConfig.anuncios = [];
+            banners = siteConfig.anuncios.filter((a) => a.ativo !== false && (a.titulo || a.texto));
+            if (!banners.length) banners = [{ titulo: 'MH LANCHES', texto: 'Bem-vindo ao nosso delivery', link: '', ativo: true }];
+        }
+
+        function applySiteConfig() {
+            document.getElementById('siteFavicon').href = siteConfig.favicon || siteConfig.logoUrl;
+            document.title = `${siteConfig.lojaNome || 'MH Lanches'} - Delivery`;
+
+            document.getElementById('heroLogo').src = siteConfig.logoUrl;
+            document.getElementById('heroTitle').textContent = siteConfig.tituloPrincipal || siteConfig.lojaNome;
+            document.getElementById('heroSubtitle').textContent = siteConfig.slogan || '';
+
+            document.getElementById('aboutTitle').textContent = siteConfig.sobreTitulo || 'Sobre Nós';
+            document.getElementById('aboutText1').textContent = siteConfig.sobreTexto1 || '';
+            document.getElementById('aboutText2').textContent = siteConfig.sobreTexto2 || '';
+
+            if (siteConfig.sobreImagem) {
+                document.getElementById('aboutImageWrap').innerHTML = `<img src="${siteConfig.sobreImagem}" alt="Sobre nós" class="w-full h-full object-cover">`;
+            }
+
+            document.getElementById('footerBrand').textContent = siteConfig.lojaNome || 'MH LANCHES';
+            document.getElementById('footerCopyright').textContent = siteConfig.copyright || '';
+            document.getElementById('footerContact').textContent = siteConfig.lojaTelefone || '';
+            renderSocialLinks();
+        }
+
+        function renderSocialLinks() {
+            const links = [
+                { key: 'instagram', icon: 'fab fa-instagram', color: 'hover:text-[#ff00ff]' },
+                { key: 'facebook', icon: 'fab fa-facebook', color: 'hover:text-[#00ffff]' },
+                { key: 'whatsapp', icon: 'fab fa-whatsapp', color: 'hover:text-[#25D366]' },
+                { key: 'tiktok', icon: 'fab fa-tiktok', color: 'hover:text-white' },
+                { key: 'website', icon: 'fas fa-globe', color: 'hover:text-[#00ffff]' }
+            ];
+
+            const html = links
+                .filter((item) => siteConfig[item.key])
+                .map((item) => `<a href="${siteConfig[item.key]}" target="_blank" rel="noopener" class="text-2xl transition-colors ${item.color}"><i class="${item.icon}"></i></a>`)
+                .join('');
+
+            document.getElementById('footerSocialLinks').innerHTML = html || '<span class="text-sm text-gray-500">Configure as redes sociais no painel admin.</span>';
+        }
+
         function renderCategories() {
             const container = document.getElementById('categoriesNav');
             container.innerHTML = categorias.map(cat => `
@@ -546,22 +656,26 @@
 
         function renderBanner() {
             const container = document.getElementById('bannerSlider');
-            const dots = document.querySelectorAll('.banner-dot');
+            const dotsContainer = document.getElementById('bannerDots');
+            const banner = banners[currentBanner] || { titulo: 'MH LANCHES', texto: 'Bem-vindo' };
             
             container.innerHTML = `
-                <div class="w-full h-full bg-gradient-to-r ${banners[currentBanner].cor} flex flex-col justify-center items-center p-8 banner-slide">
-                    <h3 class="font-orbitron text-2xl md:text-4xl font-black text-white mb-2 text-center">${banners[currentBanner].titulo}</h3>
-                    <p class="text-white/90 text-center text-lg">${banners[currentBanner].subtitulo}</p>
-                </div>
+                <a href="${banner.link || '#'}" ${banner.link ? 'target="_blank" rel="noopener"' : ''} class="w-full h-full block">
+                    <div class="w-full h-full bg-gradient-to-r from-[#ff00ff] to-[#00ffff] flex flex-col justify-center items-center p-8 banner-slide">
+                        <h3 class="font-orbitron text-2xl md:text-4xl font-black text-white mb-2 text-center">${banner.titulo || ''}</h3>
+                        <p class="text-white/90 text-center text-lg">${banner.texto || ''}</p>
+                    </div>
+                </a>
             `;
             
-            dots.forEach((dot, i) => {
-                dot.className = `banner-dot w-3 h-3 rounded-full cursor-pointer ${i === currentBanner ? 'bg-white' : 'bg-gray-500'}`;
-                dot.onclick = () => {
-                    currentBanner = i;
-                    renderBanner();
-                };
-            });
+            dotsContainer.innerHTML = banners.map((_, i) => `
+                <button class="banner-dot w-3 h-3 rounded-full cursor-pointer ${i === currentBanner ? 'bg-white' : 'bg-gray-500'}" onclick="setBanner(${i})"></button>
+            `).join('');
+        }
+
+        function setBanner(index) {
+            currentBanner = index;
+            renderBanner();
         }
 
         function updateTime() {
@@ -572,13 +686,30 @@
         function checkOpenStatus() {
             const now = new Date();
             const diaSemana = now.getDay();
-            const horario = horariosFuncionamento[diaSemana];
+            const horario = (siteConfig.horarios || [])[diaSemana];
             const horaAtual = now.getHours() * 60 + now.getMinutes();
+
+            if (!horario) return;
+
+            if (siteConfig.fechamentoAtivo && siteConfig.fechamentoInicio && siteConfig.fechamentoFim) {
+                const inicio = new Date(siteConfig.fechamentoInicio);
+                const fim = new Date(siteConfig.fechamentoFim);
+                if (now >= inicio && now <= fim) {
+                    document.getElementById('openStatus').className = 'w-3 h-3 rounded-full bg-red-500';
+                    document.getElementById('statusText').textContent = 'FECHADO';
+                    document.getElementById('statusText').className = 'text-sm font-semibold text-red-500';
+                    return;
+                }
+            }
             
             const abertura = parseInt(horario.abertura.split(':')[0]) * 60 + parseInt(horario.abertura.split(':')[1]);
             const fechamento = parseInt(horario.fechamento.split(':')[0]) * 60 + parseInt(horario.fechamento.split(':')[1]);
             
-            const estaAberto = horario.aberto && horaAtual >= abertura && horaAtual < fechamento;
+            const cruzaMeiaNoite = fechamento <= abertura;
+            const dentroHorario = cruzaMeiaNoite
+                ? (horaAtual >= abertura || horaAtual < fechamento)
+                : (horaAtual >= abertura && horaAtual < fechamento);
+            const estaAberto = horario.aberto && dentroHorario;
             
             const statusEl = document.getElementById('openStatus');
             const textEl = document.getElementById('statusText');
@@ -686,7 +817,7 @@
             `).join('');
             
             const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            const entrega = 5.00;
+            const entrega = Number(siteConfig.taxaEntrega || 0);
             const total = subtotal + entrega;
             
             document.getElementById('subtotal').textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
@@ -747,8 +878,13 @@
             
             // Calculate totals
             const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            const entrega = 5.00;
+            const entrega = Number(siteConfig.taxaEntrega || 0);
             const total = subtotal + entrega;
+
+            if (total < Number(siteConfig.valorMinimo || 0)) {
+                alert(`Pedido minimo de R$ ${Number(siteConfig.valorMinimo).toFixed(2).replace('.', ',')}`);
+                return;
+            }
             
             // Build message
             let mensagem = `🍔 *PEDIDO MH LANCHES* 🍔\n\n`;
@@ -799,7 +935,8 @@
             
             // Open WhatsApp
             const texto = encodeURIComponent(mensagem);
-            const whatsappUrl = `https://wa.me/5500000000000?text=${texto}`;
+            const whatsappBase = siteConfig.whatsapp || 'https://wa.me/5500000000000';
+            const whatsappUrl = `${whatsappBase}${whatsappBase.includes('?') ? '&' : '?'}text=${texto}`;
             window.open(whatsappUrl, '_blank');
             
             // Clear cart
