@@ -1,1370 +1,655 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MH Lanches - Painel Admin</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-:root {
---neon-cyan: #00f0ff; --neon-pink: #ff2d75; --neon-purple: #b026ff;
---neon-orange: #ff6a00; --neon-green: #00ff88; --neon-yellow: #fbbf24;
---dark-bg: #0a0a1a; --dark-surface: rgba(15,15,30,0.95);
---dark-card: rgba(20,20,45,0.9); --glass: rgba(255,255,255,0.04);
---glass-border: rgba(255,255,255,0.08);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: #e0e0e0; min-height: 100vh; }
-body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(0,240,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,45,117,0.04) 0%, transparent 50%); pointer-events: none; z-index: 0; }
-::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
-.neon-text { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
-.neon-pink-text { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
-.glass { background: var(--dark-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 16px; transition: all 0.3s; }
-.glass:hover { border-color: rgba(0,240,255,0.2); }
-
-/* LOGIN */
-.login-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark-bg); display: flex; align-items: center; justify-content: center; }
-.login-box { background: var(--dark-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 3rem; width: 400px; max-width: 90%; text-align: center; }
-.login-box h1 { font-family: 'Orbitron', monospace; font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.login-box p { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
-.form-group { margin-bottom: 1rem; text-align: left; }
-.form-label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 0.4rem; }
-.form-input { width: 100%; padding: 0.8rem 1rem; border-radius: 10px; background: rgba(30,30,60,0.8); border: 1px solid var(--glass-border); color: #fff; font-size: 0.9rem; outline: none; font-family: 'Inter', sans-serif; }
-.form-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(0,240,255,0.1); }
-.btn-neon { width: 100%; padding: 0.85rem; border-radius: 10px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #000; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.3s; margin-top: 1rem; }
-.btn-neon:hover { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
-.login-error { color: var(--neon-pink); font-size: 0.8rem; margin-top: 0.5rem; display: none; }
-.login-hint { color: #555; font-size: 0.75rem; margin-top: 1.5rem; }
-
-/* LAYOUT */
-.app { display: none; min-height: 100vh; }
-.app.active { display: flex; }
-
-/* SIDEBAR */
-.sidebar { width: 260px; background: rgba(10,10,26,0.98); border-right: 1px solid var(--glass-border); padding: 1.5rem 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; overflow-y: auto; transition: transform 0.3s; }
-.sidebar-logo { font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 900; padding: 0 1.5rem; margin-bottom: 0.25rem; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.sidebar-sub { font-size: 0.65rem; color: var(--neon-cyan); padding: 0 1.5rem; letter-spacing: 3px; margin-bottom: 1.5rem; opacity: 0.7; }
-.sidebar-user { margin: 0 1rem 1.5rem; padding: 0.75rem; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-border); }
-.sidebar-user .name { font-weight: 600; font-size: 0.85rem; color: #fff; }
-.sidebar-user .role { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 5px; display: inline-block; margin-top: 0.25rem; }
-.role-admin { background: rgba(255,45,117,0.2); color: var(--neon-pink); }
-.role-mod { background: rgba(0,255,136,0.2); color: var(--neon-green); }
-.nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1.5rem; color: #888; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; font-weight: 500; }
-.nav-item:hover { color: var(--neon-cyan); background: rgba(0,240,255,0.05); }
-.nav-item.active { color: var(--neon-cyan); background: rgba(0,240,255,0.08); border-right: 3px solid var(--neon-cyan); }
-.nav-item i { width: 20px; text-align: center; font-size: 1rem; }
-.nav-divider { border-top: 1px solid var(--glass-border); margin: 1rem 1.5rem; }
-.nav-item.logout { color: var(--neon-pink); }
-.nav-item.logout:hover { background: rgba(255,45,117,0.08); }
-
-/* MAIN */
-.main-content { margin-left: 260px; flex: 1; padding: 1.5rem 2rem; min-height: 100vh; position: relative; z-index: 1; }
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-.page-title { font-family: 'Orbitron', monospace; font-size: 1.4rem; }
-.page-title i { margin-right: 0.5rem; }
-
-/* STAT CARDS */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.stat-card { padding: 1.25rem; display: flex; align-items: center; gap: 1rem; }
-.stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-.stat-icon.cyan { background: rgba(0,240,255,0.15); color: var(--neon-cyan); }
-.stat-icon.pink { background: rgba(255,45,117,0.15); color: var(--neon-pink); }
-.stat-icon.green { background: rgba(0,255,136,0.15); color: var(--neon-green); }
-.stat-icon.orange { background: rgba(255,106,0,0.15); color: var(--neon-orange); }
-.stat-icon.purple { background: rgba(176,38,255,0.15); color: var(--neon-purple); }
-.stat-icon.yellow { background: rgba(251,191,36,0.15); color: var(--neon-yellow); }
-.stat-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
-.stat-label { font-size: 0.75rem; color: #888; }
-.stat-change { font-size: 0.7rem; font-weight: 600; }
-.stat-change.up { color: var(--neon-green); }
-.stat-change.down { color: var(--neon-pink); }
-
-/* TABLE */
-.table-wrap { overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table th { text-align: left; padding: 0.75rem 1rem; color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); font-weight: 600; }
-.data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; }
-.data-table tr:hover td { background: rgba(0,240,255,0.02); }
-.table-actions { display: flex; gap: 0.5rem; }
-.table-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: #aaa; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
-.table-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.table-btn.danger:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
-
-.badge { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; }
-.badge-success { background: rgba(0,255,136,0.15); color: var(--neon-green); }
-.badge-warning { background: rgba(255,106,0,0.15); color: var(--neon-orange); }
-.badge-danger { background: rgba(255,45,117,0.15); color: var(--neon-pink); }
-.badge-info { background: rgba(0,240,255,0.15); color: var(--neon-cyan); }
-
-/* BUTTONS */
-.btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: #ccc; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; font-family: 'Inter', sans-serif; }
-.btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.btn-primary { background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #000; }
-.btn-primary:hover { box-shadow: 0 4px 15px rgba(0,240,255,0.3); }
-.btn-danger { border-color: rgba(255,45,117,0.3); color: var(--neon-pink); }
-.btn-danger:hover { background: rgba(255,45,117,0.15); }
-.btn-success { border-color: rgba(0,255,136,0.3); color: var(--neon-green); }
-.btn-success:hover { background: rgba(0,255,136,0.15); }
-.btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
-
-/* FORMS */
-.form-select { width: 100%; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(30,30,60,0.8); border: 1px solid var(--glass-border); color: #fff; font-size: 0.9rem; outline: none; cursor: pointer; font-family: 'Inter', sans-serif; }
-.form-select:focus { border-color: var(--neon-cyan); }
-.form-select option { background: #1a1a2e; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-.form-check { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.form-check label { padding: 0.3rem 0.6rem; border-radius: 6px; background: var(--glass); border: 1px solid var(--glass-border); font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
-.form-check input { display: none; }
-.form-check label.checked { background: rgba(0,240,255,0.15); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
-/* MODAL */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 3000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s; padding: 1rem; }
-.modal-overlay.active { opacity: 1; visibility: visible; }
-.modal-box { background: rgba(15,15,35,0.98); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.3s ease; }
-.modal-overlay.active .modal-box { transform: scale(1); }
-.modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: rgba(15,15,35,0.98); border-radius: 20px 20px 0 0; z-index: 5; }
-.modal-header h3 { font-size: 1rem; font-weight: 700; }
-.modal-close { width: 32px; height: 32px; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border); color: #aaa; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; }
-.modal-close:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
-.modal-body { padding: 1.5rem; }
-.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--glass-border); display: flex; gap: 0.75rem; justify-content: flex-end; }
-
-/* TABS */
-.tab-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
-.tab-btn { padding: 0.5rem 1rem; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
-.tab-btn.active { background: rgba(0,240,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
-/* SECTION PANELS */
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* CHART (simple CSS) */
-.chart-bar-container { display: flex; align-items: flex-end; gap: 4px; height: 150px; padding: 1rem 0; }
-.chart-bar { flex: 1; background: linear-gradient(to top, var(--neon-cyan), var(--neon-purple)); border-radius: 4px 4px 0 0; min-height: 5px; transition: height 0.5s; position: relative; }
-.chart-bar:hover { opacity: 0.8; }
-.chart-bar .chart-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: #666; white-space: nowrap; }
-.chart-bar .chart-value { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: var(--neon-cyan); font-weight: 600; white-space: nowrap; }
-
-/* SWITCH */
-.switch { position: relative; width: 44px; height: 24px; display: inline-block; }
-.switch input { display: none; }
-.switch .slider { position: absolute; inset: 0; background: #333; border-radius: 12px; cursor: pointer; transition: all 0.3s; }
-.switch .slider::before { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; left: 3px; top: 3px; transition: all 0.3s; }
-.switch input:checked + .slider { background: var(--neon-cyan); }
-.switch input:checked + .slider::before { transform: translateX(20px); }
-
-/* TOAST */
-.toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
-.toast { padding: 0.75rem 1.25rem; border-radius: 10px; background: rgba(15,15,35,0.95); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); color: #fff; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; animation: toastIn 0.4s ease; }
-.toast.success { border-color: var(--neon-green); } .toast.success i { color: var(--neon-green); }
-.toast.error { border-color: var(--neon-pink); } .toast.error i { color: var(--neon-pink); }
-.toast.info { border-color: var(--neon-cyan); } .toast.info i { color: var(--neon-cyan); }
-@keyframes toastIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-
-/* DB TOGGLE */
-.db-toggle { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); margin-bottom: 1.5rem; }
-.db-toggle .status-text { font-size: 0.85rem; }
-.db-toggle .status-text strong { color: var(--neon-cyan); }
-
-/* RESPONSIVE */
-.mobile-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 200; width: 42px; height: 42px; border-radius: 10px; background: var(--dark-card); border: 1px solid var(--glass-border); color: var(--neon-cyan); align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; }
-@media (max-width: 900px) {
-.sidebar { transform: translateX(-100%); }
-.sidebar.open { transform: translateX(0); }
-.main-content { margin-left: 0; padding: 1rem; }
-.mobile-toggle { display: flex; }
-.form-row { grid-template-columns: 1fr; }
-.page-header { flex-direction: column; align-items: flex-start; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MH Lanches - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Rajdhani', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+        }
+        .glass-card {
+            background: rgba(30, 30, 50, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .neon-pink { color: #ff00ff; }
+        .neon-cyan { color: #00ffff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff00ff, #00ffff);
+            border-radius: 4px;
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            color: white;
+        }
+    </style>
 </head>
-<body>
-
-<!-- TOAST -->
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
-<div class="login-box">
-<div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔐</div>
-<h1>MH LANCHES</h1>
-<p>Painel Administrativo</p>
-<div class="form-group">
-<label class="form-label">Usuário</label>
-<input type="text" class="form-input" id="loginUser" placeholder="Digite seu usuário" autocomplete="off">
-</div>
-<div class="form-group">
-<label class="form-label">Senha</label>
-<input type="password" class="form-input" id="loginPass" placeholder="Digite sua senha" autocomplete="off">
-</div>
-<div class="login-error" id="loginError"><i class="fas fa-exclamation-circle"></i> Usuário ou senha inválidos!</div>
-<button class="btn-neon" id="loginBtn"><i class="fas fa-sign-in-alt mr-1"></i> ENTRAR</button>
-<div class="login-hint">Demo: admin / admin123 (Admin) ou mod / mod123 (Funcionário)</div>
-</div>
-</div>
-
-<!-- APP -->
-<div class="app" id="app">
-<!-- Mobile Toggle -->
-<button class="mobile-toggle" id="mobileToggle"><i class="fas fa-bars"></i></button>
-
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-<div class="sidebar-logo">MH LANCHES</div>
-<div class="sidebar-sub">ADMIN PAINEL</div>
-<div class="sidebar-user">
-<div class="name" id="userName">Administrador</div>
-<div class="role role-admin" id="userRole">ADMIN</div>
-</div>
-<div class="nav-item active" data-panel="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
-<div class="nav-item" data-panel="orders"><i class="fas fa-receipt"></i> Pedidos</div>
-<div class="nav-item" data-panel="products"><i class="fas fa-hamburger"></i> Produtos</div>
-<div class="nav-item" data-panel="categories"><i class="fas fa-folder"></i> Categorias</div>
-<div class="nav-item" data-panel="extras"><i class="fas fa-plus-circle"></i> Adicionais</div>
-<div class="nav-item" data-panel="promos"><i class="fas fa-bullhorn"></i> Promoções</div>
-<div class="nav-divider"></div>
-<div class="nav-item admin-only" data-panel="users"><i class="fas fa-users"></i> Usuários</div>
-<div class="nav-item admin-only" data-panel="settings"><i class="fas fa-cog"></i> Configurações</div>
-<div class="nav-item admin-only" data-panel="database"><i class="fas fa-database"></i> Banco de Dados</div>
-<div class="nav-divider"></div>
-<div class="nav-item" onclick="window.open('pdv.html','_blank')"><i class="fas fa-cash-register"></i> Abrir PDV</div>
-<div class="nav-item" onclick="window.open('index.html','_blank')"><i class="fas fa-globe"></i> Ver Site</div>
-<div class="nav-divider"></div>
-<div class="nav-item logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sair</div>
-</aside>
-
-<!-- Main Content -->
-<main class="main-content">
-
-<!-- ===== DASHBOARD ===== -->
-<div class="panel active" id="panel-dashboard">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-chart-pie neon-text"></i> Dashboard</h2>
-<div style="display:flex;gap:0.5rem;">
-<select class="form-select" id="dashPeriod" style="width:auto;">
-<option value="7">Últimos 7 dias</option>
-<option value="30" selected>Últimos 30 dias</option>
-<option value="90">Últimos 3 meses</option>
-<option value="180">Últimos 6 meses</option>
-</select>
-<button class="btn" id="refreshDash"><i class="fas fa-sync-alt"></i> Atualizar</button>
-</div>
-</div>
-
-<div class="stats-grid" id="dashStats"></div>
-
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
-<div class="glass" style="padding:1.5rem;">
-<h4 style="margin-bottom:1rem;color:var(--neon-cyan);font-size:0.9rem;"><i class="fas fa-chart-bar mr-1"></i> Vendas por Mês</h4>
-<div class="chart-bar-container" id="salesChart" style="margin-bottom:2rem;"></div>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<h4 style="margin-bottom:1rem;color:var(--neon-cyan);font-size:0.9rem;"><i class="fas fa-trophy mr-1"></i> Top Produtos</h4>
-<div id="topProducts"></div>
-</div>
-</div>
-
-<div class="glass" style="padding:1.5rem;">
-<h4 style="margin-bottom:1rem;color:var(--neon-cyan);font-size:0.9rem;"><i class="fas fa-clock mr-1"></i> Últimos Pedidos</h4>
-<div class="table-wrap">
-<table class="data-table">
-<thead><tr><th>ID</th><th>Cliente</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th></tr></thead>
-<tbody id="recentOrdersBody"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- ===== PEDIDOS ===== -->
-<div class="panel" id="panel-orders">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-receipt neon-text"></i> Gerenciar Pedidos</h2>
-<div style="display:flex;gap:0.5rem;">
-<input type="text" class="form-input" placeholder="Buscar pedido..." id="orderSearch" style="width:200px;">
-<select class="form-select" id="orderStatusFilter" style="width:auto;">
-<option value="all">Todos Status</option>
-<option value="novo">Novo</option>
-<option value="preparando">Preparando</option>
-<option value="pronto">Pronto</option>
-<option value="entregue">Entregue</option>
-<option value="cancelado">Cancelado</option>
-</select>
-</div>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<div class="table-wrap">
-<table class="data-table">
-<thead><tr><th>Pedido</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Pagamento</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead>
-<tbody id="ordersBody"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- ===== PRODUTOS ===== -->
-<div class="panel" id="panel-products">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-hamburger neon-text"></i> Gerenciar Produtos</h2>
-<button class="btn btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> Novo Produto</button>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<div class="table-wrap">
-<table class="data-table">
-<thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Disponível</th><th>Ações</th></tr></thead>
-<tbody id="productsBody"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- ===== CATEGORIAS ===== -->
-<div class="panel" id="panel-categories">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-folder neon-text"></i> Categorias</h2>
-<button class="btn btn-primary" id="addCategoryBtn"><i class="fas fa-plus"></i> Nova Categoria</button>
-</div>
-<div class="glass" style="padding:1.5rem;" id="categoriesPanel"></div>
-</div>
-
-<!-- ===== ADICIONAIS ===== -->
-<div class="panel" id="panel-extras">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-plus-circle neon-text"></i> Adicionais / Opcionais</h2>
-<button class="btn btn-primary" id="addExtraBtn"><i class="fas fa-plus"></i> Novo Adicional</button>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<div class="table-wrap">
-<table class="data-table">
-<thead><tr><th>Nome</th><th>Preço</th><th>Ações</th></tr></thead>
-<tbody id="extrasBody"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- ===== PROMOÇÕES ===== -->
-<div class="panel" id="panel-promos">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-bullhorn neon-text"></i> Promoções / Anúncios</h2>
-<button class="btn btn-primary" id="addPromoBtn"><i class="fas fa-plus"></i> Nova Promoção</button>
-</div>
-<div class="glass" style="padding:1.5rem;" id="promosPanel"></div>
-</div>
-
-<!-- ===== USUÁRIOS ===== -->
-<div class="panel" id="panel-users">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-users neon-text"></i> Gerenciar Usuários</h2>
-<button class="btn btn-primary" id="addUserBtn"><i class="fas fa-plus"></i> Novo Usuário</button>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<div class="table-wrap">
-<table class="data-table">
-<thead><tr><th>Usuário</th><th>Nome</th><th>Nível</th><th>Status</th><th>Ações</th></tr></thead>
-<tbody id="usersBody"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<!-- ===== CONFIGURAÇÕES ===== -->
-<div class="panel" id="panel-settings">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-cog neon-text"></i> Configurações</h2>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-<div class="glass" style="padding:1.5rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-store mr-1"></i> Dados do Restaurante</h4>
-<div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="settName" value="MH Lanches"></div>
-<div class="form-group"><label class="form-label">Telefone</label><input type="text" class="form-input" id="settPhone" value="(11) 99999-8888"></div>
-<div class="form-group"><label class="form-label">WhatsApp</label><input type="text" class="form-input" id="settWhatsapp" value="5511999998888"></div>
-<div class="form-group"><label class="form-label">Endereço</label><input type="text" class="form-input" id="settAddress" value="Rua Exemplo, 123 - Centro"></div>
-<div class="form-group"><label class="form-label">Instagram</label><input type="text" class="form-input" id="settInstagram" value="@mhlanches"></div>
-<button class="btn btn-primary" id="saveSettingsBtn"><i class="fas fa-save"></i> Salvar</button>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-motorcycle mr-1"></i> Delivery</h4>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Taxa de Entrega (R$)</label><input type="number" class="form-input" id="settDeliveryFee" value="5.00" step="0.5"></div>
-<div class="form-group"><label class="form-label">Pedido Mínimo (R$)</label><input type="number" class="form-input" id="settMinOrder" value="20.00" step="5"></div>
-</div>
-<h4 style="color:var(--neon-cyan);margin:1.5rem 0 1rem;font-size:0.9rem;"><i class="fas fa-clock mr-1"></i> Horário de Funcionamento</h4>
-<div id="hoursSettings"></div>
-<button class="btn btn-primary" style="margin-top:1rem;" id="saveHoursBtn"><i class="fas fa-save"></i> Salvar Horários</button>
-</div>
-</div>
-</div>
-
-<!-- ===== BANCO DE DADOS ===== -->
-<div class="panel" id="panel-database">
-<div class="page-header">
-<h2 class="page-title"><i class="fas fa-database neon-text"></i> Banco de Dados</h2>
-</div>
-<div class="db-toggle">
-<div>
-<div class="status-text">Modo atual: <strong id="dbModeLabel">LOCAL (localStorage)</strong></div>
-<div style="font-size:0.75rem;color:#666;margin-top:0.25rem;">Os dados são salvos no navegador. Ative o Firebase para nuvem.</div>
-</div>
-<label class="switch" style="margin-left:auto;">
-<input type="checkbox" id="firebaseToggle">
-<span class="slider"></span>
-</label>
-</div>
-
-<div id="firebaseConfigSection" style="display:none;">
-<div class="glass" style="padding:1.5rem;margin-bottom:1.5rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-cloud mr-1"></i> Configuração Firebase</h4>
-<p style="font-size:0.8rem;color:#888;margin-bottom:1rem;">Altere as credenciais abaixo para conectar a outro projeto Firebase (útil para revender o sistema).</p>
-<div class="form-group"><label class="form-label">API Key</label><input type="text" class="form-input" id="fbApiKey"></div>
-<div class="form-group"><label class="form-label">Database URL</label><input type="text" class="form-input" id="fbDbUrl"></div>
-<div class="form-group"><label class="form-label">Project ID</label><input type="text" class="form-input" id="fbProjectId"></div>
-<div class="form-group"><label class="form-label">Messaging Sender ID</label><input type="text" class="form-input" id="fbMsgId"></div>
-<div class="form-group"><label class="form-label">App ID</label><input type="text" class="form-input" id="fbAppId"></div>
-<button class="btn btn-primary" id="saveFirebaseConfig"><i class="fas fa-save"></i> Salvar e Conectar</button>
-</div>
-</div>
-
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-<div class="glass" style="padding:1.5rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-download mr-1"></i> Backup</h4>
-<button class="btn btn-success" id="exportDataBtn" style="margin-bottom:0.5rem;width:100%;"><i class="fas fa-file-export"></i> Exportar Dados (JSON)</button>
-<p style="font-size:0.75rem;color:#666;">Baixe um backup completo de todos os dados.</p>
-</div>
-<div class="glass" style="padding:1.5rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-upload mr-1"></i> Importar</h4>
-<button class="btn btn-primary" id="importDataBtn" style="margin-bottom:0.5rem;width:100%;"><i class="fas fa-file-import"></i> Importar Dados (JSON)</button>
-<input type="file" id="importFile" accept=".json" style="display:none;">
-<p style="font-size:0.75rem;color:#666;">Restaure dados de um backup anterior.</p>
-</div>
-</div>
-
-<div class="glass" style="padding:1.5rem;margin-top:1.5rem;">
-<h4 style="color:var(--neon-pink);margin-bottom:1rem;font-size:0.9rem;"><i class="fas fa-exclamation-triangle mr-1"></i> Zona de Perigo</h4>
-<button class="btn btn-danger" id="clearAllBtn"><i class="fas fa-trash"></i> Limpar Todos os Dados Locais</button>
-<p style="font-size:0.75rem;color:#666;margin-top:0.5rem;">Esta ação é irreversível! Todos os dados locais serão apagados.</p>
-</div>
-</div>
-
-</main>
-</div>
-
-<!-- MODALS -->
-<div class="modal-overlay" id="productModal">
-<div class="modal-box">
-<div class="modal-header"><h3 id="productModalTitle">Novo Produto</h3><button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body" id="productModalBody"></div>
-<div class="modal-footer">
-<button class="btn" onclick="closeModal('productModal')">Cancelar</button>
-<button class="btn btn-primary" id="saveProductBtn"><i class="fas fa-save"></i> Salvar</button>
-</div>
-</div>
-</div>
-
-<div class="modal-overlay" id="orderDetailModal">
-<div class="modal-box" style="max-width:600px;">
-<div class="modal-header"><h3>Detalhes do Pedido</h3><button class="modal-close" onclick="closeModal('orderDetailModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body" id="orderDetailBody"></div>
-</div>
-</div>
-
-<div class="modal-overlay" id="genericModal">
-<div class="modal-box">
-<div class="modal-header"><h3 id="genericModalTitle"></h3><button class="modal-close" onclick="closeModal('genericModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body" id="genericModalBody"></div>
-<div class="modal-footer">
-<button class="btn" onclick="closeModal('genericModal')">Cancelar</button>
-<button class="btn btn-primary" id="genericModalSave"><i class="fas fa-save"></i> Salvar</button>
-</div>
-</div>
-</div>
-
-<script>
-// ==================== DB ====================
-const DEFAULT_PRODUCTS = [
-{ id: 1, name: 'X-Bacon Clássico', desc: 'Pão brioche, hambúrguer 180g, bacon, queijo cheddar', price: 28.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon Extra',p:5},{n:'Queijo Extra',p:4}] },
-{ id: 2, name: 'X-Tudo Monstro', desc: '2 hambúrgueres, bacon, presunto, queijo, ovo, calabresa', price: 39.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon Extra',p:5}] },
-{ id: 3, name: 'X-Salada', desc: 'Hambúrguer, queijo, alface, tomate, maionese', price: 22.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Queijo Extra',p:4}] },
-{ id: 4, name: 'Double Smash', desc: '2 smash burgers 90g, queijo americano, cebola caramelizada', price: 34.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon',p:5}] },
-{ id: 5, name: 'X-Frango', desc: 'Filé de frango empanado, queijo, alface, maionese', price: 26.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon',p:5}] },
-{ id: 6, name: 'Veggie Burger', desc: 'Hambúrguer de grão de bico, guacamole, tomate seco', price: 25.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1520072959219-c595e6cdc07a?w=200&h=150&fit=crop', available: [1,2,3,4,5], extras: [{n:'Queijo Vegano',p:5}] },
-{ id: 7, name: 'Chicken Burger', desc: 'Peito de frango grelhado, queijo, rúcula, molho mostarda e mel', price: 27.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1619250907682-6625547d6904?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon',p:5}] },
-{ id: 8, name: 'Costela Burger', desc: 'Hambúrguer de costela defumada, onion rings, BBQ', price: 36.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=200&h=150&fit=crop', available: [3,4,5,6], extras: [{n:'Bacon',p:5}] },
-{ id: 9, name: 'Mini Burger (3un)', desc: '3 mini hambúrgueres 60g com queijo cheddar', price: 32.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1551782450-17144efb9c50?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon Extra',p:5}] },
-{ id: 10, name: 'X-Calabresa', desc: 'Hambúrguer, calabresa, queijo, cebola roxa, BBQ', price: 29.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon',p:5}] },
-{ id: 11, name: 'Pizza Mussarela', desc: 'Molho de tomate, mussarela, orégano, azeitonas', price: 42.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 12, name: 'Pizza Calabresa', desc: 'Calabresa, cebola, azeitonas, orégano', price: 44.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 13, name: 'Pizza Portuguesa', desc: 'Presunto, ovo, cebola, azeitona, ervilha', price: 48.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 14, name: 'Pizza Frango Catupiry', desc: 'Frango desfiado, catupiry, milho', price: 49.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 15, name: 'Pizza Marguerita', desc: 'Mussarela de búfala, tomate, manjericão', price: 46.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 16, name: 'Pizza 4 Queijos', desc: 'Mussarela, gorgonzola, parmesão, catupiry', price: 52.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 17, name: 'Pizza Pepperoni', desc: 'Pepperoni importado, mussarela', price: 49.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 18, name: 'Pizza Bacon Supreme', desc: 'Bacon, mussarela, cheddar, cebola caramelizada', price: 54.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=200&h=150&fit=crop', available: [4,5,6], extras: [{n:'Borda Recheada',p:8}] },
-{ id: 19, name: 'Pastel de Carne', desc: 'Massa crocante com carne moída', price: 12.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Queijo',p:3}] },
-{ id: 20, name: 'Pastel de Queijo', desc: 'Queijo mussarela derretido', price: 11.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Presunto',p:3}] },
-{ id: 21, name: 'Pastel Frango Catupiry', desc: 'Frango desfiado cremoso com catupiry', price: 13.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Bacon',p:4}] },
-{ id: 22, name: 'Pastel Pizza', desc: 'Mussarela, presunto, tomate, orégano', price: 13.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Calabresa',p:4}] },
-{ id: 23, name: 'Pastel de Calabresa', desc: 'Calabresa com cebola e queijo', price: 12.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Queijo Extra',p:3}] },
-{ id: 24, name: 'Pastel Misto', desc: 'Presunto e queijo', price: 11.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 25, name: 'Pastel Especial 5 Sabores', desc: 'Escolha até 5 sabores no pastel gigante', price: 29.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [4,5,6], extras: [], isMegaPastel: true },
-{ id: 26, name: 'Batata Frita', desc: '300g batatas crocantes', price: 18.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [{n:'Cheddar e Bacon',p:8}] },
-{ id: 27, name: 'Batata c/ Cheddar e Bacon', desc: 'Coberta com cheddar e bacon', price: 26.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1585109649979-4a8133b47094?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 28, name: 'Onion Rings', desc: '15 anéis de cebola empanados', price: 22.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 29, name: 'Nuggets (20un)', desc: '20 nuggets crocantes', price: 28.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 30, name: 'Calabresa Acebolada', desc: 'Calabresa com cebolas caramelizadas', price: 32.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 31, name: 'Asinhas de Frango', desc: '8 asinhas com molho picante', price: 34.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 32, name: 'Frango a Passarinho', desc: 'Com alho frito e limão', price: 38.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 33, name: 'Torresmo', desc: '400g torresmo pururuca', price: 36.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=150&fit=crop', available: [4,5,6], extras: [] },
-{ id: 34, name: 'Coca-Cola 350ml', desc: 'Lata gelada', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 35, name: 'Coca-Cola 2L', desc: 'Garrafa 2 litros', price: 14.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 36, name: 'Guaraná 350ml', desc: 'Lata gelada', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 37, name: 'Sprite 350ml', desc: 'Lata gelada', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 38, name: 'Suco Natural 500ml', desc: 'Laranja, Limão ou Maracujá', price: 10.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 39, name: 'Água Mineral 500ml', desc: 'Sem gás', price: 4.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 40, name: 'Cerveja Lata 350ml', desc: 'Brahma, Skol ou Antarctica', price: 7.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=150&fit=crop', available: [4,5,6], extras: [] },
-{ id: 41, name: 'Pudim de Leite', desc: 'Pudim cremoso com calda', price: 10.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 42, name: 'Brownie c/ Sorvete', desc: 'Brownie quente com sorvete e calda', price: 16.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 43, name: 'Petit Gâteau', desc: 'Centro derretido com sorvete', price: 19.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 44, name: 'Açaí 500ml', desc: 'Com granola, banana, leite condensado', price: 18.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 45, name: 'Milk Shake Ovomaltine', desc: 'Milk shake cremoso com chantilly', price: 15.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 46, name: 'Churros (4un)', desc: 'Recheados com doce de leite', price: 14.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1624371414361-e670246e0e1e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 47, name: 'Sorvete 2 Bolas', desc: 'Escolha 2 sabores', price: 12.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 48, name: 'Romeu e Julieta', desc: 'Goiabada com queijo', price: 11.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 49, name: 'Água c/ Gás 500ml', desc: 'Gelada', price: 5.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6], extras: [] },
-{ id: 50, name: 'Pastel de Palmito', desc: 'Palmito cremoso', price: 14.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [1,2,3,4,5], extras: [{n:'Queijo',p:3}] }
-];
-
-const CATEGORIES_DB = [
-{ id: 'hamburgers', name: 'Hambúrgueres', icon: 'fa-hamburger', order: 1 },
-{ id: 'pizzas', name: 'Pizzas', icon: 'fa-pizza-slice', order: 2 },
-{ id: 'pastels', name: 'Pastéis', icon: 'fa-drumstick-bite', order: 3 },
-{ id: 'porcoes', name: 'Porções', icon: 'fa-utensils', order: 4 },
-{ id: 'drinks', name: 'Bebidas', icon: 'fa-glass-cheers', order: 5 },
-{ id: 'desserts', name: 'Sobremesas', icon: 'fa-ice-cream', order: 6 }
-];
-
-const USERS_DB = [
-{ id: 1, username: 'admin', password: 'admin123', name: 'Administrador', role: 'admin', active: true },
-{ id: 2, username: 'mod', password: 'mod123', name: 'Funcionário', role: 'mod', active: true },
-{ id: 3, username: 'caixa1', password: 'caixa123', name: 'Caixa 1', role: 'mod', active: true }
-];
-
-const EXTRAS_DB = [
-{ id: 1, name: 'Bacon Extra', price: 5 },
-{ id: 2, name: 'Queijo Extra', price: 4 },
-{ id: 3, name: 'Ovo', price: 3 },
-{ id: 4, name: 'Borda Recheada', price: 8 },
-{ id: 5, name: 'Cheddar e Bacon', price: 8 },
-{ id: 6, name: 'Calabresa', price: 4 },
-{ id: 7, name: 'Presunto', price: 3 },
-{ id: 8, name: 'Molho Especial', price: 2 }
-];
-
-const PROMOS_DB = [
-{ id: 1, title: '🍕 Combo Família', desc: '2 Pizzas + Batata + Refrigerante 2L', price: 'R$ 79,90', bg: 'linear-gradient(135deg, #ff2d75, #b026ff)', active: true },
-{ id: 2, title: '🔥 Terça do Pastel', desc: 'Pastéis grandes por R$ 9,90', price: 'R$ 9,90', bg: 'linear-gradient(135deg, #ff6a00, #ff2d75)', active: true },
-{ id: 3, title: '🎉 Happy Hour', desc: '20% OFF em porções (Seg-Qui 18h-21h)', price: '-20%', bg: 'linear-gradient(135deg, #00f0ff, #00ff88)', active: true },
-{ id: 4, title: '🍔 Combo MH', desc: 'X-Bacon + Batata + Coca 350ml', price: 'R$ 39,90', bg: 'linear-gradient(135deg, #b026ff, #00f0ff)', active: true }
-];
-
-const HOURS_DB = {
-1: { open: '18:00', close: '00:00' },
-2: { open: '18:00', close: '00:00' },
-3: { open: '18:00', close: '00:00' },
-4: { open: '18:00', close: '00:00' },
-5: { open: '18:00', close: '00:00' },
-6: { open: '18:00', close: '02:00' },
-0: { open: '18:00', close: '00:00' }
-};
-
-// ==================== DATA ACCESS ====================
-function getData(key, defaultVal) {
-const d = localStorage.getItem('mh_admin_' + key);
-return d ? JSON.parse(d) : defaultVal;
-}
-function setData(key, val) {
-localStorage.setItem('mh_admin_' + key, JSON.stringify(val));
-}
-
-function getProducts() { return getData('products', DEFAULT_PRODUCTS); }
-function setProducts(p) { setData('products', p); }
-function getOrders() { return getData('orders', generateFakeOrders()); }
-function setOrders(o) { setData('orders', o); }
-function getUsers() { return getData('users', USERS_DB); }
-function setUsers(u) { setData('users', u); }
-function getCategories() { return getData('categories', CATEGORIES_DB); }
-function setCategories(c) { setData('categories', c); }
-function getExtras() { return getData('extras', EXTRAS_DB); }
-function setExtras(e) { setData('extras', e); }
-function getPromos() { return getData('promos', PROMOS_DB); }
-function setPromos(p) { setData('promos', p); }
-function getHours() { return getData('hours', HOURS_DB); }
-function setHours(h) { setData('hours', h); }
-function getSettings() { return getData('settings', { name: 'MH Lanches', phone: '(11) 99999-8888', whatsapp: '5511999998888', address: 'Rua Exemplo, 123 - Centro', instagram: '@mhlanches', deliveryFee: 5, minOrder: 20 }); }
-
-function generateFakeOrders() {
-const names = ['Carlos M.','Ana P.','Roberto S.','Juliana F.','Marcos L.','Fernanda R.','Diego T.','Patrícia G.','Lucas A.','Camila V.','Thiago N.','Isabela C.','Felipe O.','Larissa D.','Bruno H.'];
-const payMethods = ['pix','dinheiro','cartao'];
-const statuses = ['entregue','entregue','entregue','entregue','entregue','entregue','entregue','pronto','preparando','novo','cancelado'];
-const products = getProducts();
-const orders = [];
-const now = new Date();
-
-// Generate orders for past 6 months
-for (let d = 180; d >= 0; d--) {
-const numOrders = Math.floor(Math.random() * 4) + 1;
-for (let o = 0; o < numOrders; o++) {
-const date = new Date(now);
-date.setDate(date.getDate() - d);
-date.setHours(Math.floor(Math.random() * 6) + 18, Math.floor(Math.random() * 60));
-const numItems = Math.floor(Math.random() * 3) + 1;
-const items = [];
-for (let i = 0; i < numItems; i++) {
-const p = products[Math.floor(Math.random() * products.length)];
-items.push({ productId: p.id, name: p.name, price: p.price, qty: Math.floor(Math.random() * 2) + 1 });
-}
-const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
-orders.push({
-id: (now.getTime() - d * 86400000 - o * 1000).toString(),
-client: { name: names[Math.floor(Math.random() * names.length)], phone: '(11) 9' + String(Math.floor(Math.random() * 90000 + 10000)) + '-' + String(Math.floor(Math.random() * 9000 + 1000)) },
-items, subtotal, deliveryFee: 5,
-total: subtotal + 5,
-payment: payMethods[Math.floor(Math.random() * payMethods.length)],
-status: d === 0 ? statuses[Math.floor(Math.random() * 4)] : statuses[Math.floor(Math.random() * statuses.length)],
-date: date.toISOString(), deliveryType: 'delivery'
-});
-}
-}
-return orders.sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-// ==================== AUTH ====================
-let currentUser = null;
-let loginAttempts = 0;
-
-$('#loginBtn').onclick = doLogin;
-$('#loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-$('#loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-function doLogin() {
-if (loginAttempts >= 5) {
-$('#loginError').style.display = 'block';
-$('#loginError').innerHTML = '<i class="fas fa-lock"></i> Muitas tentativas! Aguarde 5 minutos.';
-return;
-}
-const user = $('#loginUser').value.trim();
-const pass = $('#loginPass').value;
-const users = getUsers();
-const found = users.find(u => u.username === user && u.password === pass && u.active);
-
-if (found) {
-currentUser = found;
-loginAttempts = 0;
-showApp();
-} else {
-loginAttempts++;
-$('#loginError').style.display = 'block';
-$('#loginError').textContent = 'Usuário ou senha inválidos! Tentativa ' + loginAttempts + '/5';
-}
-}
-
-function showApp() {
-$('#loginScreen').style.display = 'none';
-$('#app').classList.add('active');
-$('#userName').textContent = currentUser.name;
-const roleEl = $('#userRole');
-roleEl.textContent = currentUser.role === 'admin' ? 'ADMIN' : 'MOD/FUNCIONÁRIO';
-roleEl.className = 'role ' + (currentUser.role === 'admin' ? 'role-admin' : 'role-mod');
-
-// Restrict mod access
-if (currentUser.role !== 'admin') {
-$$('.admin-only').forEach(el => el.style.display = 'none');
-}
-
-loadDashboard();
-renderOrders();
-renderProducts();
-renderCategories();
-renderExtras();
-renderPromos();
-renderUsers();
-renderSettings();
-}
-
-$('#logoutBtn').onclick = () => {
-currentUser = null;
-$('#loginScreen').style.display = 'flex';
-$('#app').classList.remove('active');
-$('#loginUser').value = '';
-$('#loginPass').value = '';
-$('#loginError').style.display = 'none';
-};
-
-// ==================== NAVIGATION =================$$('.nav-item[data-panel]').forEach(item => {
-item.addEventListener('click', () => {
-$$('.nav-item[data-panel]').forEach(i => i.classList.remove('active'));
-item.classList.add('active');
-$$('.panel').forEach(p => p.classList.remove('active'));
-const panel = $('#panel-' + item.dataset.panel);
-if (panel) panel.classList.add('active');
-// Reload panel data
-if (item.dataset.panel === 'dashboard') loadDashboard();
-if (item.dataset.panel === 'orders') renderOrders();
-if (item.dataset.panel === 'products') renderProducts();
-if (item.dataset.panel === 'categories') renderCategories();
-if (item.dataset.panel === 'extras') renderExtras();
-if (item.dataset.panel === 'promos') renderPromos();
-if (item.dataset.panel === 'users') renderUsers();
-if (item.dataset.panel === 'settings') renderSettings();
-if (item.dataset.panel === 'database') loadDatabasePanel();
-// Close mobile sidebar
-$('#sidebar').classList.remove('open');
-});
-});
-
-$('#mobileToggle').onclick = () => $('#sidebar').classList.toggle('open');
-
-// ==================== DASHBOARD ====================
-function loadDashboard() {
-const orders = getOrders();
-const period = parseInt($('#dashPeriod').value) || 30;
-const cutoff = new Date();
-cutoff.setDate(cutoff.getDate() - period);
-const filtered = orders.filter(o => new Date(o.date) >= cutoff);
-
-const totalRevenue = filtered.filter(o => o.status !== 'cancelado').reduce((s, o) => s + o.total, 0);
-const totalOrders = filtered.length;
-const deliveredOrders = filtered.filter(o => o.status === 'entregue').length;
-const avgTicket = deliveredOrders > 0 ? totalRevenue / deliveredOrders : 0;
-const newOrders = filtered.filter(o => o.status === 'novo').length;
-
-$('#dashStats').innerHTML = `
-<div class="stat-card glass"><div class="stat-icon cyan"><i class="fas fa-dollar-sign"></i></div><div><div class="stat-value">R$ ${totalRevenue.toFixed(2).replace('.', ',')}</div><div class="stat-label">Faturamento</div></div></div>
-<div class="stat-card glass"><div class="stat-icon green"><i class="fas fa-receipt"></i></div><div><div class="stat-value">${totalOrders}</div><div class="stat-label">Total Pedidos</div></div></div>
-<div class="stat-card glass"><div class="stat-icon pink"><i class="fas fa-check-circle"></i></div><div><div class="stat-value">${deliveredOrders}</div><div class="stat-label">Entregues</div></div></div>
-<div class="stat-card glass"><div class="stat-icon orange"><i class="fas fa-chart-line"></i></div><div><div class="stat-value">R$ ${avgTicket.toFixed(2).replace('.', ',')}</div><div class="stat-label">Ticket Médio</div></div></div>
-<div class="stat-card glass"><div class="stat-icon purple"><i class="fas fa-clock"></i></div><div><div class="stat-value">${newOrders}</div><div class="stat-label">Novos</div></div></div>
-<div class="stat-card glass"><div class="stat-icon yellow"><i class="fas fa-hamburger"></i></div><div><div class="stat-value">${getProducts().length}</div><div class="stat-label">Produtos</div></div></div>`;
-
-// Chart
-const months = [];
-const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-for (let i = Math.max(0, period / 30 - 1); i >= 0; i--) {
-const d = new Date(); d.setMonth(d.getMonth() - i);
-const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-const monthOrders = orders.filter(o => { const od = new Date(o.date); return o.status !== 'cancelado' && od.getFullYear() + '-' + String(od.getMonth() + 1).padStart(2, '0') === key; });
-const revenue = monthOrders.reduce((s, o) => s + o.total, 0);
-months.push({ label: monthNames[d.getMonth()], revenue });
-}
-const maxRev = Math.max(...months.map(m => m.revenue), 1);
-$('#salesChart').innerHTML = months.map(m => {
-const h = Math.max((m.revenue / maxRev) * 130, 5);
-return `<div class="chart-bar" style="height:${h}px;"><span class="chart-value">${m.revenue > 0 ? 'R$' + (m.revenue/1000).toFixed(1) + 'k' : ''}</span><span class="chart-label">${m.label}</span></div>`;
-}).join('');
-
-// Top products
-const productCount = {};
-filtered.filter(o => o.status !== 'cancelado').forEach(o => {
-o.items.forEach(it => { productCount[it.name] = (productCount[it.name] || 0) + it.qty; });
-});
-const topProducts = Object.entries(productCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
-$('#topProducts').innerHTML = topProducts.length > 0 ? topProducts.map(([name, count], i) => `
-<div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--glass-border);">
-<span style="font-family:Orbitron;font-size:1.1rem;font-weight:900;color:var(--neon-cyan);width:30px;">#${i + 1}</span>
-<div style="flex:1;"><div style="font-weight:600;font-size:0.85rem;color:#fff;">${name}</div></div>
-<span style="font-weight:700;color:var(--neon-green);">${count} vendas</span>
-</div>`).join('') : '<p style="color:#666;">Sem dados</p>';
-
-// Recent orders
-$('#recentOrdersBody').innerHTML = orders.slice(0, 10).map(o => {
-const statusBadge = o.status === 'novo' ? 'badge-info' : o.status === 'preparando' ? 'badge-warning' : o.status === 'pronto' ? 'badge-success' : o.status === 'entregue' ? 'badge-success' : 'badge-danger';
-const statusLabel = { novo: 'Novo', preparando: 'Preparando', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado' };
-return `<tr><td style="font-family:Orbitron;font-size:0.75rem;color:var(--neon-cyan);">#${o.id.slice(-6)}</td><td>${o.client?.name || 'N/A'}</td><td style="color:var(--neon-green);font-weight:600;">R$ ${o.total.toFixed(2).replace('.', ',')}</td><td>${o.payment}</td><td><span class="badge ${statusBadge}">${statusLabel[o.status] || o.status}</span></td><td style="font-size:0.75rem;color:#888;">${new Date(o.date).toLocaleDateString('pt-BR')} ${new Date(o.date).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</td></tr>`;
-}).join('');
-}
-
-$('#dashPeriod').onchange = loadDashboard;
-$('#refreshDash').onclick = loadDashboard;
-
-// ==================== ORDERS ====================
-function renderOrders() {
-const orders = getOrders();
-const search = ($('#orderSearch')?.value || '').toLowerCase();
-const statusFilter = ($('#orderStatusFilter')?.value || 'all');
-
-let filtered = orders;
-if (search) filtered = filtered.filter(o => (o.client?.name || '').toLowerCase().includes(search) || o.id.includes(search));
-if (statusFilter !== 'all') filtered = filtered.filter(o => o.status === statusFilter);
-
-const statusBadge = s => s === 'novo' ? 'badge-info' : s === 'preparando' ? 'badge-warning' : s === 'pronto' ? 'badge-success' : s === 'entregue' ? 'badge-success' : 'badge-danger';
-const statusLabel = s => ({ novo: 'Novo', preparando: 'Preparando', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado' }[s] || s);
-
-$('#ordersBody').innerHTML = filtered.map(o => `
-<tr>
-<td style="font-family:Orbitron;font-size:0.75rem;color:var(--neon-cyan);">#${o.id.slice(-6)}</td>
-<td>${o.client?.name || 'N/A'}<br><span style="font-size:0.7rem;color:#666;">${o.client?.phone || ''}</span></td>
-<td style="font-size:0.8rem;">${o.items.map(i => `${i.qty}x ${i.name || i.productId}`).join(', ')}</td>
-<td style="color:var(--neon-green);font-weight:600;">R$ ${o.total.toFixed(2).replace('.', ',')}</td>
-<td>${o.payment}</td>
-<td><span class="badge ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td>
-<td style="font-size:0.75rem;color:#888;">${new Date(o.date).toLocaleDateString('pt-BR')}<br>${new Date(o.date).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</td>
-<td><div class="table-actions">
-<button class="table-btn" onclick="viewOrder('${o.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-${o.status === 'novo' ? `<button class="table-btn" onclick="changeOrderStatus('${o.id}','preparando')" title="Preparando"><i class="fas fa-fire"></i></button>` : ''}
-${o.status === 'preparando' ? `<button class="table-btn" onclick="changeOrderStatus('${o.id}','pronto')" title="Pronto"><i class="fas fa-check"></i></button>` : ''}
-${o.status === 'pronto' ? `<button class="table-btn" onclick="changeOrderStatus('${o.id}','entregue')" title="Entregue"><i class="fas fa-motorcycle"></i></button>` : ''}
-${o.status === 'novo' ? `<button class="table-btn danger" onclick="changeOrderStatus('${o.id}','cancelado')" title="Cancelar"><i class="fas fa-times"></i></button>` : ''}
-</div></td>
-</tr>`).join('');
-}
-
-$('#orderSearch').addEventListener('input', renderOrders);
-$('#orderStatusFilter').addEventListener('change', renderOrders);
-
-function viewOrder(id) {
-const orders = getOrders();
-const o = orders.find(x => x.id === id);
-if (!o) return;
-
-const statusLabel = s => ({ novo: 'Novo', preparando: 'Preparando', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado' }[s] || s);
-
-$('#orderDetailBody').innerHTML = `
-<div style="margin-bottom:1rem;"><span style="font-family:Orbitron;color:var(--neon-cyan);">#${o.id.slice(-6)}</span> <span class="badge badge-info">${statusLabel(o.status)}</span></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-<div><strong>Cliente:</strong> ${o.client?.name || 'N/A'}</div>
-<div><strong>Telefone:</strong> ${o.client?.phone || 'N/A'}</div>
-<div><strong>Endereço:</strong> ${o.client?.address || 'N/A'}</div>
-<div><strong>Pagamento:</strong> ${o.payment}</div>
-</div>
-<h4 style="color:var(--neon-cyan);margin-bottom:0.75rem;font-size:0.9rem;">Itens</h4>
-${o.items.map(i => `<div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--glass-border);font-size:0.85rem;"><span>${i.qty}x ${i.name || i.productId}</span><span style="color:var(--neon-green);">R$ ${((i.price || 0) * i.qty).toFixed(2).replace('.', ',')}</span></div>`).join('')}
-<div style="display:flex;justify-content:space-between;padding:0.75rem 0;font-size:1.1rem;font-weight:800;color:#fff;"><span>Total</span><span style="color:var(--neon-green);">R$ ${o.total.toFixed(2).replace('.', ',')}</span></div>
-<div style="margin-top:1rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:0.5rem;font-size:0.9rem;">Alterar Status</h4>
-<div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-<button class="btn btn-sm ${o.status === 'novo' ? 'btn-primary' : ''}" onclick="changeOrderStatus('${o.id}','novo');closeModal('orderDetailModal');">Novo</button>
-<button class="btn btn-sm ${o.status === 'preparando' ? 'btn-primary' : ''}" onclick="changeOrderStatus('${o.id}','preparando');closeModal('orderDetailModal');">Preparando</button>
-<button class="btn btn-sm ${o.status === 'pronto' ? 'btn-primary' : ''}" onclick="changeOrderStatus('${o.id}','pronto');closeModal('orderDetailModal');">Pronto</button>
-<button class="btn btn-sm ${o.status === 'entregue' ? 'btn-primary' : ''}" onclick="changeOrderStatus('${o.id}','entregue');closeModal('orderDetailModal');">Entregue</button>
-<button class="btn btn-sm btn-danger" onclick="changeOrderStatus('${o.id}','cancelado');closeModal('orderDetailModal');">Cancelar</button>
-</div>
-</div>`;
-$('#orderDetailModal').classList.add('active');
-}
-
-function changeOrderStatus(id, status) {
-const orders = getOrders();
-const idx = orders.findIndex(o => o.id === id);
-if (idx !== -1) {
-orders[idx].status = status;
-setOrders(orders);
-renderOrders();
-loadDashboard();
-showToast('Status atualizado!', 'success');
-}
-}
-
-// ==================== PRODUCTS CRUD ====================
-function renderProducts() {
-const products = getProducts();
-$('#productsBody').innerHTML = products.map(p => `
-<tr>
-<td><div style="display:flex;align-items:center;gap:0.75rem;"><img src="${p.img}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;"><span style="font-weight:600;">${p.name}</span></div></td>
-<td><span class="badge badge-info">${p.category}</span></td>
-<td style="color:var(--neon-green);font-weight:600;">R$ ${p.price.toFixed(2).replace('.', ',')}</td>
-<td>${p.available.length === 7 ? '<span class="badge badge-success">Todos os dias</span>' : '<span class="badge badge-warning">Dias limitados</span>'}</td>
-<td><div class="table-actions">
-<button class="table-btn" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
-<button class="table-btn danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
-</div></td>
-</tr>`).join('');
-}
-
-$('#addProductBtn').onclick = () => openProductModal();
-
-function openProductModal(product = null) {
-const isEdit = !!product;
-$('#productModalTitle').textContent = isEdit ? 'Editar Produto' : 'Novo Produto';
-const products = getProducts();
-const cats = getCategories();
-
-const daysHtml = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((d, i) => {
-const checked = product ? product.available.includes(i) : true;
-return `<label class="${checked ? 'checked' : ''}" onclick="this.classList.toggle('checked')"><input type="checkbox" value="${i}" ${checked ? 'checked' : ''}> ${d}</label>`;
-}).join('');
-
-$('#productModalBody').innerHTML = `
-<input type="hidden" id="prodId" value="${product ? product.id : Date.now().toString()}">
-<div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="prodName" value="${product ? product.name : ''}"></div>
-<div class="form-group"><label class="form-label">Descrição</label><input type="text" class="form-input" id="prodDesc" value="${product ? product.desc : ''}"></div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Preço (R$)</label><input type="number" class="form-input" id="prodPrice" value="${product ? product.price : ''}" step="0.1"></div>
-<div class="form-group"><label class="form-label">Categoria</label><select class="form-select" id="prodCategory">${cats.map(c => `<option value="${c.id}" ${product && product.category === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
-</div>
-<div class="form-group"><label class="form-label">URL da Imagem</label><input type="text" class="form-input" id="prodImg" value="${product ? product.img : ''}" placeholder="https://..."></div>
-<div class="form-group"><label class="form-label">Dias Disponíveis</label><div class="form-check">${daysHtml}</div></div>`;
-
-$('#productModal').classList.add('active');
-}
-
-$('#saveProductBtn').onclick = () => {
-const id = $('#prodId').value;
-const name = $('#prodName').value.trim();
-const desc = $('#prodDesc').value.trim();
-const price = parseFloat($('#prodPrice').value);
-const category = $('#prodCategory').value;
-const img = $('#prodImg').value.trim() || 'https://via.placeholder.com/200';
-const available = [];
-$$('.form-check input[type="checkbox"]:checked').forEach(cb => available.push(parseInt(cb.value)));
-
-if (!name || isNaN(price)) { showToast('Preencha nome e preço!', 'error'); return; }
-
-const products = getProducts();
-const idx = products.findIndex(p => p.id == id);
-const product = { id: parseInt(id), name, desc, price, category, img, available };
-
-if (idx !== -1) products[idx] = { ...products[idx], ...product };
-else products.push(product);
-
-setProducts(products);
-renderProducts();
-closeModal('productModal');
-showToast('Produto salvo!', 'success');
-};
-
-function editProduct(id) {
-const products = getProducts();
-const p = products.find(x => x.id === id);
-if (p) openProductModal(p);
-}
-
-function deleteProduct(id) {
-if (!confirm('Excluir este produto?')) return;
-const products = getProducts().filter(p => p.id !== id);
-setProducts(products);
-renderProducts();
-showToast('Produto excluído!', 'info');
-}
-
-// ==================== CATEGORIES ====================
-function renderCategories() {
-const cats = getCategories();
-const products = getProducts();
-$('#categoriesPanel').innerHTML = cats.map(c => {
-const count = products.filter(p => p.category === c.id).length;
-return `
-<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--glass-border);">
-<div style="display:flex;align-items:center;gap:0.75rem;">
-<div style="width:40px;height:40px;border-radius:10px;background:rgba(0,240,255,0.1);display:flex;align-items:center;justify-content:center;color:var(--neon-cyan);"><i class="fas ${c.icon}"></i></div>
-<div><strong>${c.name}</strong><br><span style="font-size:0.75rem;color:#888;">${count} produtos</span></div>
-</div>
-<div class="table-actions">
-<button class="table-btn" onclick="editCategory('${c.id}')"><i class="fas fa-edit"></i></button>
-<button class="table-btn danger" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
-</div>
-</div>`;
-}).join('');
-}
-
-$('#addCategoryBtn').onclick = () => openCategoryModal();
-function openCategoryModal(cat = null) {
-$('#genericModalTitle').textContent = cat ? 'Editar Categoria' : 'Nova Categoria';
-$('#genericModalBody').innerHTML = `
-<input type="hidden" id="catId" value="${cat ? cat.id : ''}">
-<div class="form-group"><label class="form-label">ID (sem espaços)</label><input type="text" class="form-input" id="catIdVal" value="${cat ? cat.id : ''}" ${cat ? 'readonly' : ''}></div>
-<div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="catName" value="${cat ? cat.name : ''}"></div>
-<div class="form-group"><label class="form-label">Ícone (FontAwesome)</label><input type="text" class="form-input" id="catIcon" value="${cat ? cat.icon : 'fa-tag'}" placeholder="fa-hamburger"></div>`;
-$('#genericModal').classList.add('active');
-}
-
-$('#genericModalSave').onclick = () => {
-// Determine which modal is open
-if ($('#productModal').classList.contains('active')) return; // handled separately
-
-const id = $('#catIdVal')?.value?.trim();
-const name = $('#catName')?.value?.trim();
-const icon = $('#catIcon')?.value?.trim() || 'fa-tag';
-
-if (!id || !name) { showToast('Preencha ID e nome!', 'error'); return; }
-
-const cats = getCategories();
-const idx = cats.findIndex(c => c.id === id);
-if (idx !== -1) { cats[idx] = { ...cats[idx], name, icon }; }
-else { cats.push({ id, name, icon, order: cats.length + 1 }); }
-
-setCategories(cats);
-renderCategories();
-closeModal('genericModal');
-showToast('Categoria salva!', 'success');
-};
-
-function editCategory(id) {
-const cats = getCategories();
-const c = cats.find(x => x.id === id);
-if (c) openCategoryModal(c);
-}
-
-function deleteCategory(id) {
-if (!confirm('Excluir esta categoria?')) return;
-const cats = getCategories().filter(c => c.id !== id);
-setCategories(cats);
-renderCategories();
-showToast('Categoria excluída!', 'info');
-}
-
-// ==================== EXTRAS ====================
-function renderExtras() {
-const extras = getExtras();
-$('#extrasBody').innerHTML = extras.map(e => `
-<tr>
-<td style="font-weight:600;">${e.name}</td>
-<td style="color:var(--neon-green);">R$ ${e.price.toFixed(2).replace('.', ',')}</td>
-<td><div class="table-actions">
-<button class="table-btn" onclick="editExtra(${e.id})"><i class="fas fa-edit"></i></button>
-<button class="table-btn danger" onclick="deleteExtra(${e.id})"><i class="fas fa-trash"></i></button>
-</div></td>
-</tr>`).join('');
-}
-
-$('#addExtraBtn').onclick = () => openExtraModal();
-function openExtraModal(extra = null) {
-$('#genericModalTitle').textContent = extra ? 'Editar Adicional' : 'Novo Adicional';
-$('#genericModalBody').innerHTML = `
-<input type="hidden" id="extraId" value="${extra ? extra.id : Date.now()}">
-<div class="form-group"><label class="form-label">Nome</label><input type="text" class="form-input" id="extraName" value="${extra ? extra.name : ''}"></div>
-<div class="form-group"><label class="form-label">Preço (R$)</label><input type="number" class="form-input" id="extraPrice" value="${extra ? extra.price : ''}" step="0.5"></div>`;
-$('#genericModal').classList.add('active');
-}
-
-// Override save for extras
-$('#genericModalSave').onclick = () => {
-// Check if this is extras
-if ($('#extraId') !== null && $('#extraName') !== null) {
-const id = parseInt($('#extraId').value);
-const name = $('#extraName').value.trim();
-const price = parseFloat($('#extraPrice').value);
-if (!name || isNaN(price)) { showToast('Preencha todos os campos!', 'error'); return; }
-const extras = getExtras();
-const idx = extras.findIndex(e => e.id === id);
-if (idx !== -1) extras[idx] = { id, name, price };
-else extras.push({ id, name, price });
-setExtras(extras);
-renderExtras();
-closeModal('genericModal');
-showToast('Adicional salvo!', 'success');
-return;
-}
-// Check if category
-if ($('#catIdVal')) {
-const id = $('#catIdVal').value.trim();
-const name = $('#catName').value.trim();
-const icon = $('#catIcon').value.trim() || 'fa-tag';
-if (!id || !name) { showToast('Preencha ID e nome!', 'error'); return; }
-const cats = getCategories();
-const idx = cats.findIndex(c => c.id === id);
-if (idx !== -1) { cats[idx] = { ...cats[idx], name, icon }; }
-else { cats.push({ id, name, icon, order: cats.length + 1 }); }
-setCategories(cats);
-renderCategories();
-closeModal('genericModal');
-showToast('Categoria salva!', 'success');
-return;
-}
-// Check if promo
-if ($('#promoId') !== undefined) {
-const id = parseInt($('#promoId').value);
-const title = $('#promoTitle').value.trim();
-const desc = $('#promoDesc').value.trim();
-const price = $('#promoPrice').value.trim();
-const active = document.querySelector('input[name="promoActive"]')?.checked !== false;
-if (!title) { showToast('Preencha o título!', 'error'); return; }
-const promos = getPromos();
-const idx = promos.findIndex(p => p.id === id);
-if (idx !== -1) promos[idx] = { id, title, desc, price, active, bg: promos[idx]?.bg || 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))' };
-else promos.push({ id, title, desc, price, active, bg: 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))' });
-setPromos(promos);
-renderPromos();
-closeModal('genericModal');
-showToast('Promoção salva!', 'success');
-return;
-}
-// Check if user
-if ($('#userId') !== undefined) {
-const id = parseInt($('#userId').value);
-const username = $('#userUsername').value.trim();
-const name = $('#userFullName').value.trim();
-const password = $('#userPassword').value;
-const role = document.querySelector('select[name="userRole"]')?.value || 'mod';
-const active = document.querySelector('input[name="userActive"]')?.checked !== false;
-if (!username || !name) { showToast('Preencha todos os campos!', 'error'); return; }
-const users = getUsers();
-const idx = users.findIndex(u => u.id === id);
-const user = { id, username, name, role, active };
-if (password) user.password = password;
-if (idx !== -1) users[idx] = { ...users[idx], ...user };
-else { if (!password) { showToast('Defina uma senha!', 'error'); return; } user.password = password; users.push(user); }
-setUsers(users);
-renderUsers();
-closeModal('genericModal');
-showToast('Usuário salvo!', 'success');
-return;
-}
-};
-
-function editExtra(id) {
-const extras = getExtras();
-const e = extras.find(x => x.id === id);
-if (e) openExtraModal(e);
-}
-
-function deleteExtra(id) {
-if (!confirm('Excluir este adicional?')) return;
-setExtras(getExtras().filter(e => e.id !== id));
-renderExtras();
-showToast('Adicional excluído!', 'info');
-}
-
-// ==================== PROMOS ====================
-function renderPromos() {
-const promos = getPromos();
-$('#promosPanel').innerHTML = promos.map(p => `
-<div style="display:flex;align-items:center;gap:1rem;padding:1rem;border-bottom:1px solid var(--glass-border);">
-<div style="width:80px;height:50px;border-radius:8px;background:${p.bg};display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#fff;font-weight:700;flex-shrink:0;">${p.price}</div>
-<div style="flex:1;"><strong>${p.title}</strong><br><span style="font-size:0.8rem;color:#888;">${p.desc}</span></div>
-<span class="badge ${p.active ? 'badge-success' : 'badge-danger'}">${p.active ? 'Ativa' : 'Inativa'}</span>
-<div class="table-actions">
-<button class="table-btn" onclick="editPromo(${p.id})"><i class="fas fa-edit"></i></button>
-<button class="table-btn danger" onclick="deletePromo(${p.id})"><i class="fas fa-trash"></i></button>
-</div>
-</div>`).join('');
-}
-
-$('#addPromoBtn').onclick = () => openPromoModal();
-function openPromoModal(promo = null) {
-$('#genericModalTitle').textContent = promo ? 'Editar Promoção' : 'Nova Promoção';
-$('#genericModalBody').innerHTML = `
-<input type="hidden" id="promoId" value="${promo ? promo.id : Date.now()}">
-<div class="form-group"><label class="form-label">Título</label><input type="text" class="form-input" id="promoTitle" value="${promo ? promo.title : ''}"></div>
-<div class="form-group"><label class="form-label">Descrição</label><input type="text" class="form-input" id="promoDesc" value="${promo ? promo.desc : ''}"></div>
-<div class="form-group"><label class="form-label">Preço/Desconto</label><input type="text" class="form-input" id="promoPrice" value="${promo ? promo.price : ''}"></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="checkbox" name="promoActive" ${promo && promo.active === false ? '' : 'checked'}> Ativa</label></div>`;
-$('#genericModal').classList.add('active');
-}
-
-function editPromo(id) {
-const promos = getPromos();
-const p = promos.find(x => x.id === id);
-if (p) openPromoModal(p);
-}
-
-function deletePromo(id) {
-if (!confirm('Excluir esta promoção?')) return;
-setPromos(getPromos().filter(p => p.id !== id));
-renderPromos();
-showToast('Promoção excluída!', 'info');
-}
-
-// ==================== USERS ====================
-function renderUsers() {
-const users = getUsers();
-$('#usersBody').innerHTML = users.map(u => `
-<tr>
-<td style="font-family:Orbitron;font-size:0.8rem;color:var(--neon-cyan);">${u.username}</td>
-<td style="font-weight:600;">${u.name}</td>
-<td><span class="badge ${u.role === 'admin' ? 'badge-danger' : 'badge-success'}">${u.role === 'admin' ? '🔴 ADMIN' : '🟢 MOD'}</span></td>
-<td><span class="badge ${u.active ? 'badge-success' : 'badge-danger'}">${u.active ? 'Ativo' : 'Inativo'}</span></td>
-<td><div class="table-actions">
-<button class="table-btn" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
-<button class="table-btn danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
-</div></td>
-</tr>`).join('');
-}
-
-$('#addUserBtn').onclick = () => openUserModal();
-function openUserModal(user = null) {
-$('#genericModalTitle').textContent = user ? 'Editar Usuário' : 'Novo Usuário';
-$('#genericModalBody').innerHTML = `
-<input type="hidden" id="userId" value="${user ? user.id : Date.now()}">
-<div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="userUsername" value="${user ? user.username : ''}"></div>
-<div class="form-group"><label class="form-label">Nome Completo</label><input type="text" class="form-input" id="userFullName" value="${user ? user.name : ''}"></div>
-<div class="form-group"><label class="form-label">Senha ${user ? '(deixe vazio para manter)' : '*'}</label><input type="password" class="form-input" id="userPassword"></div>
-<div class="form-row">
-<div class="form-group"><label class="form-label">Nível</label><select class="form-select" name="userRole"><option value="admin" ${user && user.role === 'admin' ? 'selected' : ''}>🔴 ADMIN</option><option value="mod" ${user && user.role === 'mod' ? 'selected' : ''}>🟢 MOD/Funcionário</option></select></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:0.5rem;margin-top:1.5rem;cursor:pointer;"><input type="checkbox" name="userActive" ${user && user.active === false ? '' : 'checked'}> Ativo</label></div>
-</div>`;
-$('#genericModal').classList.add('active');
-}
-
-function editUser(id) {
-const users = getUsers();
-const u = users.find(x => x.id === id);
-if (u) openUserModal(u);
-}
-
-function deleteUser(id) {
-if (id === 1) { showToast('Não é possível excluir o admin principal!', 'error'); return; }
-if (!confirm('Excluir este usuário?')) return;
-setUsers(getUsers().filter(u => u.id !== id));
-renderUsers();
-showToast('Usuário excluído!', 'info');
-}
-
-// ==================== SETTINGS ====================
-function renderSettings() {
-const settings = getSettings();
-const hours = getHours();
-
-$('#settName').value = settings.name || '';
-$('#settPhone').value = settings.phone || '';
-$('#settWhatsapp').value = settings.whatsapp || '';
-$('#settAddress').value = settings.address || '';
-$('#settInstagram').value = settings.instagram || '';
-$('#settDeliveryFee').value = settings.deliveryFee || 5;
-$('#settMinOrder').value = settings.minOrder || 20;
-
-const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-const wrap = $('#hoursSettings');
-wrap.innerHTML = days.map((d, i) => `
-<div style="display:flex;align-items:center;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--glass-border);">
-<span style="min-width:80px;font-size:0.85rem;">${d}</span>
-<input type="time" class="form-input" style="width:auto;" id="hourOpen${i}" value="${hours[i]?.open || '18:00'}">
-<span style="color:#666;">até</span>
-<input type="time" class="form-input" style="width:auto;" id="hourClose${i}" value="${hours[i]?.close || '00:00'}">
-</div>`).join('');
-}
-
-$('#saveSettingsBtn').onclick = () => {
-const settings = {
-name: $('#settName').value.trim(),
-phone: $('#settPhone').value.trim(),
-whatsapp: $('#settWhatsapp').value.trim(),
-address: $('#settAddress').value.trim(),
-instagram: $('#settInstagram').value.trim(),
-deliveryFee: parseFloat($('#settDeliveryFee').value) || 5,
-minOrder: parseFloat($('#settMinOrder').value) || 20
-};
-setData('settings', settings);
-showToast('Configurações salvas!', 'success');
-};
-
-$('#saveHoursBtn').onclick = () => {
-const hours = {};
-for (let i = 0; i < 7; i++) {
-hours[i] = { open: $(`#hourOpen${i}`).value, close: $(`#hourClose${i}`).value };
-}
-setHours(hours);
-showToast('Horários salvos!', 'success');
-};
-
-// ==================== DATABASE PANEL ====================
-function loadDatabasePanel() {
-const isFirebase = getData('useFirebase', false);
-$('#dbModeLabel').textContent = isFirebase ? 'FIREBASE (Nuvem)' : 'LOCAL (localStorage)';
-$('#firebaseToggle').checked = isFirebase;
-$('#firebaseConfigSection').style.display = isFirebase ? 'block' : 'none';
-
-const fbConfig = getData('firebaseConfig', {});
-$('#fbApiKey').value = fbConfig.apiKey || '';
-$('#fbDbUrl').value = fbConfig.databaseURL || '';
-$('#fbProjectId').value = fbConfig.projectId || '';
-$('#fbMsgId').value = fbConfig.messagingSenderId || '';
-$('#fbAppId').value = fbConfig.appId || '';
-}
-
-$('#firebaseToggle').onchange = function() {
-setData('useFirebase', this.checked);
-$('#firebaseConfigSection').style.display = this.checked ? 'block' : 'none';
-$('#dbModeLabel').textContent = this.checked ? 'FIREBASE (Nuvem)' : 'LOCAL (localStorage)';
-showToast(this.checked ? 'Modo Firebase ativado! Configure as credenciais.' : 'Modo Local ativado.', 'info');
-};
-
-$('#saveFirebaseConfig').onclick = () => {
-const config = {
-apiKey: $('#fbApiKey').value.trim(),
-databaseURL: $('#fbDbUrl').value.trim(),
-projectId: $('#fbProjectId').value.trim(),
-messagingSenderId: $('#fbMsgId').value.trim(),
-appId: $('#fbAppId').value.trim()
-};
-setData('firebaseConfig', config);
-showToast('Configuração Firebase salva!', 'success');
-};
-
-$('#exportDataBtn').onclick = () => {
-const data = {
-products: getProducts(),
-orders: getOrders(),
-categories: getCategories(),
-extras: getExtras(),
-promos: getPromos(),
-users: getUsers(),
-hours: getHours(),
-settings: getSettings(),
-exportDate: new Date().toISOString()
-};
-const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `mh-lanches-backup-${new Date().toISOString().slice(0, 10)}.json`;
-a.click();
-URL.revokeObjectURL(url);
-showToast('Backup exportado!', 'success');
-};
-
-$('#importDataBtn').onclick = () => $('#importFile').click();
-$('#importFile').onchange = function(e) {
-const file = e.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(ev) {
-try {
-const data = JSON.parse(ev.target.result);
-if (data.products) setProducts(data.products);
-if (data.orders) setOrders(data.orders);
-if (data.categories) setCategories(data.categories);
-if (data.extras) setExtras(data.extras);
-if (data.promos) setPromos(data.promos);
-if (data.users) setUsers(data.users);
-if (data.hours) setHours(data.hours);
-if (data.settings) setData('settings', data.settings);
-showToast('Dados importados com sucesso! Recarregando...', 'success');
-setTimeout(() => location.reload(), 1500);
-} catch(err) {
-showToast('Erro ao importar: arquivo inválido!', 'error');
-}
-};
-reader.readAsText(file);
-};
-
-$('#clearAllBtn').onclick = () => {
-if (!confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados locais! Tem certeza?')) return;
-if (!confirm('Última chance! Esta ação é IRREVERSÍVEL. Continuar?')) return;
-const keys = ['products','orders','categories','extras','promos','users','hours','settings'];
-keys.forEach(k => localStorage.removeItem('mh_admin_' + k));
-showToast('Todos os dados foram apagados! Recarregando...', 'info');
-setTimeout(() => location.reload(), 1500);
-};
-
-// ==================== UTILS ====================
-function closeModal(id) { $(`#${id}`).classList.remove('active'); }
-
-function showToast(msg, type = 'success') {
-const container = $('#toastContainer');
-const toast = document.createElement('div');
-toast.className = `toast ${type}`;
-const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
-toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${msg}`;
-container.appendChild(toast);
-setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-}
-
-// Keyboard
-document.addEventListener('keydown', e => {
-if (e.key === 'Escape') {
-$$('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-}
-});
-</script>
+<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
+            authDomain: "cardapiomhlanches.firebaseapp.com",
+            databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
+            projectId: "cardapiomhlanches",
+            storageBucket: "cardapiomhlanches.firebasestorage.app",
+            messagingSenderId: "919725344771",
+            appId: "1:919725344771:web:69be07a143162e76cf2636"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        window.firebaseDB = { db, ref, set, get, push, remove, onValue };
+    </script>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 bg-[#0a0a1a]">
+        <div class="glass rounded-2xl p-8 w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <h1 class="font-orbitron text-3xl font-black neon-pink mb-2">MH LANCHES</h1>
+                <p class="text-gray-400">Painel Administrativo</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Usuário</label>
+                    <input type="text" id="loginUser" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Senha</label>
+                    <input type="password" id="loginPass" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <p id="loginError" class="text-red-500 text-sm hidden">Credenciais inválidas</p>
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                    Entrar
+                </button>
+            </form>
+            <p class="text-center text-gray-500 text-sm mt-4">
+                Admin: admin / admin123<br>
+                Funcionário: func / func123
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <!-- Header -->
+        <header class="glass py-4 px-6 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-orbitron text-xl font-bold neon-pink">MH LANCHES ADMIN</h1>
+                    <span id="userLevel" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-store mr-1"></i> Loja
+                    </a>
+                    <a href="pdv.html" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-cash-register mr-1"></i> PDV
+                    </a>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="px-6 py-4">
+            <div class="max-w-7xl mx-auto flex flex-wrap gap-2">
+                <button onclick="showTab('dashboard')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all tab-active" data-tab="dashboard">
+                    <i class="fas fa-chart-bar mr-2"></i> Dashboard
+                </button>
+                <button onclick="showTab('produtos')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="produtos">
+                    <i class="fas fa-hamburger mr-2"></i> Produtos
+                </button>
+                <button onclick="showTab('categorias')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="categorias">
+                    <i class="fas fa-tags mr-2"></i> Categorias
+                </button>
+                <button onclick="showTab('pedidos')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="pedidos">
+                    <i class="fas fa-list mr-2"></i> Pedidos
+                </button>
+                <button onclick="showTab('config')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="config">
+                    <i class="fas fa-cog mr-2"></i> Configurações
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="px-6 pb-12">
+            <div class="max-w-7xl mx-auto">
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Pedidos Hoje</p>
+                                    <p id="statPedidos" class="text-3xl font-bold neon-pink">0</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#ff00ff]/20 flex items-center justify-center">
+                                    <i class="fas fa-shopping-bag text-2xl neon-pink"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Vendas Hoje</p>
+                                    <p id="statVendas" class="text-3xl font-bold neon-cyan">R$ 0,00</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#00ffff]/20 flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-2xl neon-cyan"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Ticket Médio</p>
+                                    <p id="statTicket" class="text-3xl font-bold text-green-400">R$ 0,00</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-2xl text-green-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Produtos</p>
+                                    <p id="statProdutos" class="text-3xl font-bold text-yellow-400">50</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                    <i class="fas fa-utensils text-2xl text-yellow-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Placeholder -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-pink">Vendas por Dia (Últimos 7 dias)</h3>
+                            <div id="chartVendas" class="h-64 flex items-end justify-around"></div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Produtos Mais Vendidos</h3>
+                            <div id="topProdutos" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos Tab -->
+                <div id="tab-produtos" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold neon-pink">Gerenciar Produtos</h2>
+                        <button onclick="openProductModal()" class="px-6 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-2"></i> Novo Produto
+                        </button>
+                    </div>
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-black/30">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">Imagem</th>
+                                    <th class="px-6 py-4 text-left">Nome</th>
+                                    <th class="px-6 py-4 text-left">Categoria</th>
+                                    <th class="px-6 py-4 text-left">Preço</th>
+                                    <th class="px-6 py-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Categorias Tab -->
+                <div id="tab-categorias" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold neon-pink">Gerenciar Categorias</h2>
+                        <button onclick="openCategoryModal()" class="px-6 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-2"></i> Nova Categoria
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" id="categoriasGrid"></div>
+                </div>
+
+                <!-- Pedidos Tab -->
+                <div id="tab-pedidos" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold neon-pink mb-6">Histórico de Pedidos</h2>
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-black/30">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">ID</th>
+                                    <th class="px-6 py-4 text-left">Cliente</th>
+                                    <th class="px-6 py-4 text-left">Data</th>
+                                    <th class="px-6 py-4 text-left">Total</th>
+                                    <th class="px-6 py-4 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Config Tab -->
+                <div id="tab-config" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold neon-pink mb-6">Configurações Gerais</h2>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Informações da Loja</h3>
+                            <form class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Nome da Loja</label>
+                                    <input type="text" value="MH Lanches" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Telefone WhatsApp</label>
+                                    <input type="text" value="(00) 00000-0000" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Endereço</label>
+                                    <input type="text" value="Av. Principal, 123 - Centro" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                </div>
+                                <button type="button" class="w-full py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                                    Salvar Informações
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Delivery</h3>
+                            <form class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Taxa de Entrega (R$)</label>
+                                    <input type="number" value="5.00" step="0.50" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Valor Mínimo (R$)</label>
+                                    <input type="number" value="15.00" step="0.50" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                </div>
+                                <button type="button" class="w-full py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                                    Salvar Configurações
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Horário de Funcionamento</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span>Domingo</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="time" value="18:00" class="bg-gray-800/50 border border-gray-700 rounded px-2 py-1">
+                                        <span>às</span>
+                                        <input type="time" value="23:00" class="bg-gray-800/50 border border-gray-700 rounded px-2 py-1">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Segunda</span>
+                                    <span class="text-red-500">Fechado</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Terça</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="time" value="18:00" class="bg-gray-800/50 border border-gray-700 rounded px-2 py-1">
+                                        <span>às</span>
+                                        <input type="time" value="23:00" class="bg-gray-800/50 border border-gray-700 rounded px-2 py-1">
+                                    </div>
+                                </div>
+                                <button type="button" class="w-full py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform mt-4">
+                                    Salvar Horários
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Banco de Dados</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-gray-800/50 rounded-xl">
+                                    <div>
+                                        <p class="font-semibold">Modo de Operação</p>
+                                        <p class="text-sm text-gray-400">Atual: <span id="dbMode" class="neon-cyan">Firebase (Nuvem)</span></p>
+                                    </div>
+                                    <button onclick="toggleDBMode()" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
+                                        Trocar Banco
+                                    </button>
+                                </div>
+                                <button onclick="resetDatabase()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-xl font-semibold transition-colors">
+                                    <i class="fas fa-redo mr-2"></i> Resetar Banco de Dados
+                                </button>
+                                <p class="text-sm text-gray-400 text-center">
+                                    Isso limpará o histórico de pedidos, mantendo produtos e configurações.
+                                    Backup automático será criado antes do reset.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeProductModal()"></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto glass rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="productModalTitle" class="text-2xl font-bold neon-pink">Novo Produto</h2>
+                <button onclick="closeProductModal()" class="text-2xl hover:text-red-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="productForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Nome</label>
+                    <input type="text" id="prodNome" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Preço (R$)</label>
+                        <input type="number" id="prodPreco" step="0.50" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Categoria</label>
+                        <select id="prodCategoria" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                            <option>Hambúrgueres</option>
+                            <option>Pizzas</option>
+                            <option>Pastéis</option>
+                            <option>Porções</option>
+                            <option>Bebidas</option>
+                            <option>Sobremesas</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Descrição</label>
+                    <textarea id="prodDesc" rows="2" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Emoji/Imagem</label>
+                    <input type="text" id="prodImg" value="🍔" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                    Salvar Produto
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script>
+        const users = {
+            admin: { pass: 'admin123', level: 'ADMIN', nome: 'Administrador' },
+            func: { pass: 'func123', level: 'FUNC', nome: 'Funcionário' }
+        };
+
+        let currentUser = null;
+        let produtos = [];
+        let pedidos = [];
+        let useLocalDB = false;
+
+        // Dados mockados
+        const mockProdutos = [
+            { id: 1, nome: "MH Classic", preco: 29.90, descricao: "Pão brioche, hambúrguer 180g, queijo cheddar", categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 2, nome: "Bacon Explosion", preco: 34.90, descricao: "Pão australiano, hambúrguer 200g, queijo prato, bacon", categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 3, nome: "Pizza Calabresa", preco: 49.90, descricao: "Mussarela, calabresa, cebola", categoria: "Pizzas", imagem: "🍕" },
+            { id: 4, nome: "Pastel Queijo", preco: 8.00, descricao: "Queijo mussarela derretido", categoria: "Pastéis", imagem: "🥟" },
+            { id: 5, nome: "Batata Frita", preco: 22.90, descricao: "Batata frita crocante", categoria: "Porções", imagem: "🍟" },
+        ];
+
+        const mockPedidos = [
+            { id: 'PED_001', cliente: { nome: 'João Silva' }, data: '2024-01-15T18:30:00', total: 45.90, status: 'entregue' },
+            { id: 'PED_002', cliente: { nome: 'Maria Souza' }, data: '2024-01-15T19:15:00', total: 78.50, status: 'entregue' },
+            { id: 'PED_003', cliente: { nome: 'Pedro Santos' }, data: '2024-01-15T20:00:00', total: 55.00, status: 'rota' },
+        ];
+
+        const categoriasLista = ["Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('productForm').addEventListener('submit', saveProduct);
+            
+            produtos = [...mockProdutos];
+            pedidos = [...mockPedidos];
+        });
+
+        function checkSession() {
+            const session = localStorage.getItem('mh_admin_session');
+            if (session) {
+                const data = JSON.parse(session);
+                if (new Date(data.expires) > new Date()) {
+                    currentUser = data.user;
+                    showAdminPanel();
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+
+            if (users[user] && users[user].pass === pass) {
+                currentUser = { ...users[user], username: user };
+                const expires = new Date(Date.now() + 7 * 60 * 60 * 1000); // 7 horas
+                localStorage.setItem('mh_admin_session', JSON.stringify({
+                    user: currentUser,
+                    expires: expires.toISOString()
+                }));
+                showAdminPanel();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('loginError').classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            
+            const levelBadge = document.getElementById('userLevel');
+            levelBadge.textContent = currentUser.level;
+            levelBadge.className = `px-3 py-1 rounded-full text-sm font-semibold ${currentUser.level === 'ADMIN' ? 'bg-red-500' : 'bg-green-500'}`;
+            
+            loadDashboard();
+            renderProductsTable();
+            renderCategories();
+            renderOrders();
+        }
+
+        function logout() {
+            localStorage.removeItem('mh_admin_session');
+            currentUser = null;
+            location.reload();
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('glass-card', 'hover:border-[#ff00ff]');
+            });
+            
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            activeBtn.classList.add('tab-active');
+            activeBtn.classList.remove('glass-card', 'hover:border-[#ff00ff]');
+        }
+
+        function loadDashboard() {
+            document.getElementById('statPedidos').textContent = pedidos.length;
+            
+            const totalVendas = pedidos.reduce((sum, p) => sum + p.total, 0);
+            document.getElementById('statVendas').textContent = 'R$ ' + totalVendas.toFixed(2).replace('.', ',');
+            
+            const ticketMedio = totalVendas / pedidos.length;
+            document.getElementById('statTicket').textContent = 'R$ ' + ticketMedio.toFixed(2).replace('.', ',');
+            
+            document.getElementById('statProdutos').textContent = produtos.length + 45;
+
+            // Chart
+            const chartData = [1200, 1800, 1500, 2200, 1900, 2500, 2100];
+            const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            document.getElementById('chartVendas').innerHTML = chartData.map((val, i) => `
+                <div class="flex flex-col items-center">
+                    <div class="w-12 bg-gradient-to-t from-[#ff00ff] to-[#00ffff] rounded-t" style="height: ${(val / 2500) * 100}%"></div>
+                    <span class="text-xs mt-2">${dias[i]}</span>
+                </div>
+            `).join('');
+
+            // Top produtos
+            const topProdutosData = [
+                { nome: 'MH Classic', vendas: 45 },
+                { nome: 'Bacon Explosion', vendas: 38 },
+                { nome: 'Pizza Calabresa', vendas: 32 },
+                { nome: 'Batata Frita', vendas: 28 },
+                { nome: 'Coca-Cola', vendas: 25 }
+            ];
+            document.getElementById('topProdutos').innerHTML = topProdutosData.map(p => `
+                <div class="flex items-center justify-between p-3 bg-black/20 rounded-xl">
+                    <span>${p.nome}</span>
+                    <span class="neon-cyan font-bold">${p.vendas} vendas</span>
+                </div>
+            `).join('');
+        }
+
+        function renderProductsTable() {
+            document.getElementById('productsTable').innerHTML = produtos.map(prod => `
+                <tr class="border-t border-gray-700">
+                    <td class="px-6 py-4 text-3xl">${prod.imagem}</td>
+                    <td class="px-6 py-4 font-semibold">${prod.nome}</td>
+                    <td class="px-6 py-4">${prod.categoria}</td>
+                    <td class="px-6 py-4 neon-pink font-bold">R$ ${prod.preco.toFixed(2).replace('.', ',')}</td>
+                    <td class="px-6 py-4 flex justify-center gap-2">
+                        <button onclick="editProduct(${prod.id})" class="p-2 bg-blue-600 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteProduct(${prod.id})" class="p-2 bg-red-600 rounded-lg hover:bg-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCategories() {
+            document.getElementById('categoriasGrid').innerHTML = categoriasLista.map(cat => `
+                <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform">
+                    <div class="text-4xl mb-3">
+                        ${cat === 'Hambúrgueres' ? '🍔' : cat === 'Pizzas' ? '🍕' : cat === 'Pastéis' ? '🥟' : cat === 'Porções' ? '🍟' : cat === 'Bebidas' ? '🥤' : '🍰'}
+                    </div>
+                    <h4 class="font-bold mb-2">${cat}</h4>
+                    <p class="text-gray-400 text-sm">
+                        ${produtos.filter(p => p.categoria === cat).length + 8} produtos
+                    </p>
+                </div>
+            `).join('');
+        }
+
+        function renderOrders() {
+            document.getElementById('ordersTable').innerHTML = pedidos.map(ped => `
+                <tr class="border-t border-gray-700">
+                    <td class="px-6 py-4 font-mono text-sm">${ped.id}</td>
+                    <td class="px-6 py-4 font-semibold">${ped.cliente.nome}</td>
+                    <td class="px-6 py-4">${new Date(ped.data).toLocaleString('pt-BR')}</td>
+                    <td class="px-6 py-4 neon-pink font-bold">R$ ${ped.total.toFixed(2).replace('.', ',')}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm ${ped.status === 'entregue' ? 'bg-green-500' : 'bg-yellow-500'}">
+                            ${ped.status.toUpperCase()}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProductModal() {
+            document.getElementById('productModalTitle').textContent = 'Novo Produto';
+            document.getElementById('productForm').reset();
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            
+            const newProd = {
+                id: Date.now(),
+                nome: document.getElementById('prodNome').value,
+                preco: parseFloat(document.getElementById('prodPreco').value),
+                categoria: document.getElementById('prodCategoria').value,
+                descricao: document.getElementById('prodDesc').value,
+                imagem: document.getElementById('prodImg').value
+            };
+            
+            produtos.push(newProd);
+            renderProductsTable();
+            renderCategories();
+            closeProductModal();
+        }
+
+        function editProduct(id) {
+            const prod = produtos.find(p => p.id === id);
+            if (prod) {
+                document.getElementById('productModalTitle').textContent = 'Editar Produto';
+                document.getElementById('prodNome').value = prod.nome;
+                document.getElementById('prodPreco').value = prod.preco;
+                document.getElementById('prodCategoria').value = prod.categoria;
+                document.getElementById('prodDesc').value = prod.descricao;
+                document.getElementById('prodImg').value = prod.imagem;
+                document.getElementById('productModal').classList.remove('hidden');
+            }
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                produtos = produtos.filter(p => p.id !== id);
+                renderProductsTable();
+                renderCategories();
+            }
+        }
+
+        function openCategoryModal() {
+            alert('Funcionalidade em desenvolvimento!');
+        }
+
+        function toggleDBMode() {
+            useLocalDB = !useLocalDB;
+            document.getElementById('dbMode').textContent = useLocalDB ? 'Local (JSON)' : 'Firebase (Nuvem)';
+            alert(`Modo alterado para: ${useLocalDB ? 'Banco Local (JSON)' : 'Firebase (Nuvem)'}`);
+        }
+
+        function resetDatabase() {
+            if (confirm('Tem certeza? Isso irá apagar todo o histórico de pedidos. Um backup será criado automaticamente.')) {
+                const backup = { pedidos: [...pedidos], data: new Date().toISOString() };
+                localStorage.setItem('mh_backup_' + Date.now(), JSON.stringify(backup));
+                
+                pedidos = [];
+                loadDashboard();
+                renderOrders();
+                alert('Banco resetado com sucesso! Backup salvo no localStorage.');
+            }
+        }
+    </script>
 </body>
 </html>

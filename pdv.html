@@ -1,853 +1,1014 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MH Lanches - PDV (Ponto de Venda)</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-:root {
---neon-cyan: #00f0ff; --neon-pink: #ff2d75; --neon-purple: #b026ff;
---neon-orange: #ff6a00; --neon-green: #00ff88; --neon-yellow: #fbbf24;
---dark-bg: #0a0a1a; --dark-card: rgba(20,20,45,0.9);
---glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.08);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: var(--dark-bg); color: #e0e0e0; min-height: 100vh; }
-body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(0,240,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,45,117,0.04) 0%, transparent 50%); pointer-events: none; z-index: 0; }
-::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
-.neon-text { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
-.glass { background: var(--dark-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 14px; }
-
-/* LAYOUT */
-.pdv-layout { display: grid; grid-template-columns: 1fr 380px; height: 100vh; position: relative; z-index: 1; }
-@media (max-width: 900px) { .pdv-layout { grid-template-columns: 1fr; } .pdv-sidebar { display: none; } }
-
-/* LEFT: PRODUCTS */
-.pdv-main { padding: 1rem; overflow-y: auto; }
-.pdv-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
-.pdv-logo { font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.pdv-time { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: #888; }
-.pdv-stats { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-.pdv-stat { padding: 0.6rem 1rem; border-radius: 10px; font-size: 0.8rem; }
-.pdv-stat .val { font-size: 1.2rem; font-weight: 800; color: #fff; }
-.pdv-stat .lbl { font-size: 0.65rem; color: #888; }
-
-/* CATEGORY TABS */
-.pdv-cats { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-.pdv-cat { flex-shrink: 0; padding: 0.4rem 0.8rem; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 0.3rem; }
-.pdv-cat:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.pdv-cat.active { background: rgba(0,240,255,0.15); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
-/* PRODUCT GRID */
-.pdv-products { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
-.pdv-product {
-padding: 0.75rem; border-radius: 12px;
-background: var(--dark-card); border: 1px solid var(--glass-border);
-cursor: pointer; transition: all 0.2s; text-align: center;
-}
-.pdv-product:hover { border-color: var(--neon-cyan); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-.pdv-product:active { transform: scale(0.97); }
-.pdv-product-img { width: 100%; height: 80px; border-radius: 8px; overflow: hidden; margin-bottom: 0.5rem; background: rgba(0,240,255,0.05); }
-.pdv-product-img img { width: 100%; height: 100%; object-fit: cover; }
-.pdv-product-name { font-size: 0.75rem; font-weight: 600; color: #fff; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pdv-product-price { font-size: 0.85rem; font-weight: 800; color: var(--neon-green); }
-
-/* ORDER TYPE SELECTOR */
-.order-type-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-.order-type-btn { flex: 1; padding: 0.6rem; border-radius: 10px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.2s; }
-.order-type-btn:hover { border-color: var(--neon-cyan); }
-.order-type-btn.active { background: rgba(0,240,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.order-type-btn i { display: block; font-size: 1.2rem; margin-bottom: 0.25rem; }
-
-/* TABLE/COMANDA NUMBER */
-.comanda-input { display: none; margin-bottom: 1rem; }
-.comanda-input.active { display: block; }
-.comanda-input .form-input { width: 100%; padding: 0.6rem 1rem; border-radius: 8px; background: var(--dark-card); border: 1px solid var(--glass-border); color: #fff; font-size: 0.9rem; outline: none; font-family: 'Inter', sans-serif; }
-.comanda-input .form-input:focus { border-color: var(--neon-cyan); }
-
-/* RIGHT: ORDER */
-.pdv-sidebar { background: rgba(10,10,26,0.98); border-left: 1px solid var(--glass-border); display: flex; flex-direction: column; }
-.sidebar-header { padding: 1rem; border-bottom: 1px solid var(--glass-border); }
-.sidebar-header h3 { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
-.sidebar-header .order-id { font-family: 'Orbitron', monospace; font-size: 0.75rem; color: var(--neon-cyan); }
-.order-items { flex: 1; overflow-y: auto; padding: 0.5rem 1rem; }
-.order-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-.order-item-name { flex: 1; font-size: 0.8rem; font-weight: 500; }
-.order-item-qty { display: flex; align-items: center; gap: 0.3rem; }
-.oqty-btn { width: 22px; height: 22px; border-radius: 5px; background: var(--glass); border: 1px solid var(--glass-border); color: #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem; }
-.oqty-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.oqty-val { font-weight: 600; font-size: 0.8rem; min-width: 18px; text-align: center; }
-.order-item-price { font-size: 0.8rem; font-weight: 700; color: var(--neon-green); white-space: nowrap; }
-.order-item-remove { background: none; border: none; color: #555; cursor: pointer; font-size: 0.7rem; margin-left: 0.25rem; }
-.order-item-remove:hover { color: var(--neon-pink); }
-.order-empty { text-align: center; padding: 2rem 1rem; color: #555; }
-.order-empty i { font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.5rem; }
-
-.sidebar-footer { padding: 1rem; border-top: 1px solid var(--glass-border); background: rgba(5,5,15,0.95); }
-.order-summary { margin-bottom: 0.75rem; }
-.order-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
-.order-row.total { font-size: 1.1rem; font-weight: 800; color: #fff; padding-top: 0.5rem; border-top: 1px solid var(--glass-border); }
-.order-row.total span:last-child { color: var(--neon-green); }
-
-.payment-methods { display: flex; gap: 0.3rem; margin-bottom: 0.75rem; }
-.pay-btn { flex: 1; padding: 0.4rem; border-radius: 6px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; cursor: pointer; font-size: 0.7rem; text-align: center; transition: all 0.2s; }
-.pay-btn:hover { border-color: var(--neon-cyan); }
-.pay-btn.active { background: rgba(0,240,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.pay-btn i { display: block; font-size: 1rem; margin-bottom: 0.15rem; }
-
-.pdv-actions { display: flex; gap: 0.5rem; }
-.pdv-btn { flex: 1; padding: 0.75rem; border-radius: 10px; border: none; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-.pdv-btn-primary { background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); color: #000; }
-.pdv-btn-primary:hover { box-shadow: 0 4px 15px rgba(0,240,255,0.3); }
-.pdv-btn-secondary { background: var(--glass); border: 1px solid var(--glass-border); color: #888; }
-.pdv-btn-danger { background: rgba(255,45,117,0.15); border: 1px solid rgba(255,45,117,0.3); color: var(--neon-pink); }
-
-/* TABS */
-.pdv-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
-.pdv-tab { flex: 1; padding: 0.5rem; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; cursor: pointer; text-align: center; font-size: 0.75rem; font-weight: 500; transition: all 0.2s; }
-.pdv-tab.active { background: rgba(0,240,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-
-/* ORDERS LIST */
-.orders-list { display: none; }
-.orders-list.active { display: block; }
-.order-card { padding: 0.75rem; border-radius: 10px; background: var(--dark-card); border: 1px solid var(--glass-border); margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s; }
-.order-card:hover { border-color: var(--neon-cyan); }
-.order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
-.order-card-id { font-family: 'Orbitron', monospace; font-size: 0.7rem; color: var(--neon-cyan); }
-.order-card-status { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600; }
-.status-novo { background: rgba(0,240,255,0.15); color: var(--neon-cyan); }
-.status-preparando { background: rgba(255,106,0,0.15); color: var(--neon-orange); }
-.status-pronto { background: rgba(0,255,136,0.15); color: var(--neon-green); }
-.status-entregue { background: rgba(0,255,136,0.1); color: var(--neon-green); }
-.status-pago { background: rgba(251,191,36,0.15); color: var(--neon-yellow); }
-.status-finalizado { background: rgba(136,136,136,0.15); color: #888; }
-.status-cancelado { background: rgba(255,45,117,0.15); color: var(--neon-pink); }
-.order-card-client { font-size: 0.8rem; font-weight: 600; color: #fff; }
-.order-card-items { font-size: 0.7rem; color: #888; }
-.order-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
-.order-card-total { font-weight: 800; color: var(--neon-green); font-size: 0.85rem; }
-.order-card-actions { display: flex; gap: 0.25rem; }
-.oc-action { width: 24px; height: 24px; border-radius: 5px; background: var(--glass); border: 1px solid var(--glass-border); color: #888; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.6rem; }
-.oc-action:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.oc-action.next { border-color: rgba(0,255,136,0.3); color: var(--neon-green); }
-.oc-action.next:hover { background: rgba(0,255,136,0.15); }
-
-/* TOAST */
-.toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
-.toast { padding: 0.6rem 1rem; border-radius: 8px; background: rgba(15,15,35,0.95); border: 1px solid var(--glass-border); color: #fff; font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem; animation: toastIn 0.4s ease; }
-.toast.success { border-color: var(--neon-green); } .toast.success i { color: var(--neon-green); }
-.toast.info { border-color: var(--neon-cyan); } .toast.info i { color: var(--neon-cyan); }
-.toast.warning { border-color: var(--neon-orange); } .toast.warning i { color: var(--neon-orange); }
-@keyframes toastIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-
-/* ALERT SOUND VISUAL */
-.pdv-alert { position: fixed; inset: 0; background: rgba(0,240,255,0.05); z-index: 5000; display: none; pointer-events: none; animation: alertPulse 0.5s ease 3; }
-@keyframes alertPulse { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-
-/* PRINT STYLES */
-@media print {
-body * { visibility: hidden; }
-.print-receipt, .print-receipt * { visibility: visible; }
-.print-receipt { position: absolute; left: 0; top: 0; width: 58mm; padding: 5mm; font-family: monospace; font-size: 10px; color: #000; background: #fff; }
-}
-
-/* MODAL */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 3000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s; padding: 1rem; }
-.modal-overlay.active { opacity: 1; visibility: visible; }
-.modal-box { background: rgba(15,15,35,0.98); border: 1px solid var(--glass-border); border-radius: 16px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; transform: scale(0.9); transition: transform 0.3s; }
-.modal-overlay.active .modal-box { transform: scale(1); }
-.modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
-.modal-header h3 { font-size: 0.95rem; }
-.modal-close { width: 30px; height: 30px; border-radius: 8px; background: var(--glass); border: 1px solid var(--glass-border); color: #aaa; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
-.modal-close:hover { border-color: var(--neon-pink); color: var(--neon-pink); }
-.modal-body { padding: 1.25rem; }
-.form-input { width: 100%; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(30,30,60,0.8); border: 1px solid var(--glass-border); color: #fff; font-size: 0.85rem; outline: none; font-family: 'Inter', sans-serif; }
-.form-input:focus { border-color: var(--neon-cyan); }
-.form-label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 0.3rem; }
-.form-group { margin-bottom: 0.75rem; }
-.btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: #ccc; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-.btn-primary { background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #000; }
-.btn-primary:hover { box-shadow: 0 4px 15px rgba(0,240,255,0.3); }
-
-/* AUTO REFRESH INDICATOR */
-.refresh-bar { height: 2px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); position: fixed; top: 0; left: 0; right: 0; z-index: 100; opacity: 0; transition: opacity 0.3s; }
-.refresh-bar.active { opacity: 1; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MH Lanches - PDV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Rajdhani', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+        }
+        .glass-card {
+            background: rgba(30, 30, 50, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .neon-pink { color: #ff00ff; }
+        .neon-cyan { color: #00ffff; }
+        .status-novo { background: linear-gradient(135deg, #ff00ff, #ff4444); }
+        .status-producao { background: linear-gradient(135deg, #ffaa00, #ff6600); }
+        .status-pronto { background: linear-gradient(135deg, #00ff88, #00cc66); }
+        .status-pago { background: linear-gradient(135deg, #00ffff, #0088ff); }
+        .status-finalizado { background: linear-gradient(135deg, #666, #444); }
+        .pulse-alert { animation: pulse 1s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff00ff, #00ffff);
+            border-radius: 3px;
+        }
+    </style>
 </head>
-<body>
-
-<div class="refresh-bar" id="refreshBar"></div>
-<div class="toast-container" id="toastContainer"></div>
-<div class="pdv-alert" id="pdvAlert"></div>
-
-<div class="pdv-layout">
-<!-- LEFT: Products & Orders -->
-<div class="pdv-main">
-<div class="pdv-header">
-<div class="pdv-logo">MH LANCHES <span style="font-size:0.6rem; opacity:0.5;">PDV</span></div>
-<div style="display:flex;align-items:center;gap:0.75rem;">
-<div class="pdv-time" id="pdvTime">00:00:00</div>
-<button class="btn" id="toggleOrdersBtn" style="font-size:0.75rem;"><i class="fas fa-list mr-1"></i> Pedidos</button>
-<button class="btn" id="adminLink" onclick="window.open('admin.html','_blank')" style="font-size:0.75rem;"><i class="fas fa-cog mr-1"></i> Admin</button>
-</div>
-</div>
-
-<!-- Stats -->
-<div class="pdv-stats">
-<div class="pdv-stat glass"><div class="val" id="statOrders">0</div><div class="lbl">Pedidos Hoje</div></div>
-<div class="pdv-stat glass"><div class="val" id="statRevenue">R$ 0</div><div class="lbl">Faturamento</div></div>
-<div class="pdv-stat glass"><div class="val" id="statOpen">0</div><div class="lbl">Abertos</div></div>
-<div class="pdv-stat glass"><div class="val" id="statAvg">R$ 0</div><div class="lbl">Ticket Médio</div></div>
-</div>
-
-<!-- Order Type -->
-<div class="order-type-selector">
-<div class="order-type-btn active" data-type="delivery" onclick="setOrderType('delivery')"><i class="fas fa-motorcycle"></i>Delivery</div>
-<div class="order-type-btn" data-type="mesa" onclick="setOrderType('mesa')"><i class="fas fa-chair"></i>Mesa</div>
-<div class="order-type-btn" data-type="balcao" onclick="setOrderType('balcao')"><i class="fas fa-store"></i>Balcão</div>
-</div>
-
-<!-- Comanda Input -->
-<div class="comanda-input" id="comandaInput">
-<input type="number" class="form-input" id="comandaNumber" placeholder="Número da mesa/comanda...">
-</div>
-
-<!-- Product Search -->
-<div style="margin-bottom:1rem;">
-<input type="text" class="form-input" id="pdvSearch" placeholder="🔍 Buscar produto..." style="width:100%;">
-</div>
-
-<!-- Categories -->
-<div class="pdv-cats" id="pdvCats"></div>
-
-<!-- Products -->
-<div class="pdv-products" id="pdvProducts"></div>
-
-<!-- Orders List (toggle) -->
-<div class="orders-list" id="ordersList">
-<div class="pdv-tabs">
-<div class="pdv-tab active" data-filter="all" onclick="filterOrders('all')">Todos</div>
-<div class="pdv-tab" data-filter="novo" onclick="filterOrders('novo')">Novos</div>
-<div class="pdv-tab" data-filter="preparando" onclick="filterOrders('preparando')">Preparando</div>
-<div class="pdv-tab" data-filter="pronto" onclick="filterOrders('pronto')">Prontos</div>
-</div>
-<div id="ordersCards"></div>
-</div>
-</div>
-
-<!-- RIGHT: Current Order -->
-<div class="pdv-sidebar">
-<div class="sidebar-header">
-<h3>
-<span><i class="fas fa-receipt mr-1"></i> Pedido Atual</span>
-<span class="order-id" id="currentOrderId">#---</span>
-</h3>
-</div>
-<div class="order-items" id="orderItems">
-<div class="order-empty">
-<i class="fas fa-plus-circle"></i>
-<p style="font-size:0.8rem;">Clique nos produtos para adicionar</p>
-</div>
-</div>
-<div class="sidebar-footer">
-<div class="order-summary">
-<div class="order-row"><span>Subtotal</span><span id="orderSubtotal">R$ 0,00</span></div>
-<div class="order-row"><span>Taxa entrega</span><span id="orderDelivery">R$ 5,00</span></div>
-<div class="order-row total"><span>Total</span><span id="orderTotal">R$ 0,00</span></div>
-</div>
-<div class="payment-methods">
-<div class="pay-btn active" data-pay="pix" onclick="setPayment('pix')"><i class="fas fa-qrcode"></i>Pix</div>
-<div class="pay-btn" data-pay="dinheiro" onclick="setPayment('dinheiro')"><i class="fas fa-money-bill-wave"></i>$</div>
-<div class="pay-btn" data-pay="cartao" onclick="setPayment('cartao')"><i class="fas fa-credit-card"></i>Cartão</div>
-</div>
-<div class="pdv-actions">
-<button class="pdv-btn pdv-btn-secondary" onclick="clearOrder()"><i class="fas fa-trash"></i></button>
-<button class="pdv-btn pdv-btn-secondary" onclick="holdOrder()"><i class="fas fa-pause"></i></button>
-<button class="pdv-btn pdv-btn-danger" onclick="printReceipt()"><i class="fas fa-print"></i></button>
-<button class="pdv-btn pdv-btn-primary" onclick="finalizeOrder()">FINALIZAR</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- ORDER DETAIL MODAL -->
-<div class="modal-overlay" id="orderModal">
-<div class="modal-box">
-<div class="modal-header"><h3>Detalhes do Pedido</h3><button class="modal-close" onclick="closeModal('orderModal')"><i class="fas fa-times"></i></button></div>
-<div class="modal-body" id="orderModalBody"></div>
-</div>
-</div>
-
-<!-- RECEIPT (hidden, for printing) -->
-<div class="print-receipt" id="printReceipt" style="display:none;"></div>
-
-<script>
-// ==================== DATA ====================
-function getData(key, def) { const d = localStorage.getItem('mh_admin_' + key); return d ? JSON.parse(d) : def; }
-function setData(key, val) { localStorage.setItem('mh_admin_' + key, JSON.stringify(val)); }
-
-const DEFAULT_PRODUCTS = [
-{ id: 1, name: 'X-Bacon Clássico', price: 28.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 2, name: 'X-Tudo Monstro', price: 39.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 3, name: 'X-Salada', price: 22.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 4, name: 'Double Smash', price: 34.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 5, name: 'X-Frango', price: 26.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 6, name: 'Veggie Burger', price: 25.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1520072959219-c595e6cdc07a?w=200&h=150&fit=crop', available: [1,2,3,4,5] },
-{ id: 7, name: 'Chicken Burger', price: 27.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1619250907682-6625547d6904?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 8, name: 'Costela Burger', price: 36.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=200&h=150&fit=crop', available: [3,4,5,6] },
-{ id: 9, name: 'Mini Burger (3un)', price: 32.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1551782450-17144efb9c50?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 10, name: 'X-Calabresa', price: 29.90, category: 'hamburgers', img: 'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 11, name: 'Pizza Mussarela', price: 42.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 12, name: 'Pizza Calabresa', price: 44.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 13, name: 'Pizza Portuguesa', price: 48.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 14, name: 'Pizza Frango Catupiry', price: 49.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 15, name: 'Pizza Marguerita', price: 46.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 16, name: 'Pizza 4 Queijos', price: 52.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 17, name: 'Pizza Pepperoni', price: 49.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 18, name: 'Pizza Bacon Supreme', price: 54.90, category: 'pizzas', img: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=200&h=150&fit=crop', available: [4,5,6] },
-{ id: 19, name: 'Pastel de Carne', price: 12.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 20, name: 'Pastel de Queijo', price: 11.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 21, name: 'Pastel Frango Catupiry', price: 13.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 22, name: 'Pastel Pizza', price: 13.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 23, name: 'Pastel Calabresa', price: 12.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 24, name: 'Pastel Misto', price: 11.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 25, name: 'Pastel Especial 5 Sab.', price: 29.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [4,5,6] },
-{ id: 26, name: 'Batata Frita', price: 18.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 27, name: 'Batata Cheddar Bacon', price: 26.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1585109649979-4a8133b47094?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 28, name: 'Onion Rings', price: 22.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 29, name: 'Nuggets (20un)', price: 28.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 30, name: 'Calabresa Acebolada', price: 32.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 31, name: 'Asinhas de Frango', price: 34.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 32, name: 'Frango Passarinho', price: 38.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 33, name: 'Torresmo', price: 36.90, category: 'porcoes', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=150&fit=crop', available: [4,5,6] },
-{ id: 34, name: 'Coca-Cola 350ml', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 35, name: 'Coca-Cola 2L', price: 14.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 36, name: 'Guaraná 350ml', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 37, name: 'Sprite 350ml', price: 6.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 38, name: 'Suco Natural 500ml', price: 10.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 39, name: 'Água Mineral 500ml', price: 4.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 40, name: 'Cerveja Lata 350ml', price: 7.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=200&h=150&fit=crop', available: [4,5,6] },
-{ id: 41, name: 'Pudim de Leite', price: 10.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 42, name: 'Brownie c/ Sorvete', price: 16.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 43, name: 'Petit Gâteau', price: 19.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 44, name: 'Açaí 500ml', price: 18.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 45, name: 'Milk Shake Ovomaltine', price: 15.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 46, name: 'Churros (4un)', price: 14.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1624371414361-e670246e0e1e?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 47, name: 'Sorvete 2 Bolas', price: 12.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 48, name: 'Romeu e Julieta', price: 11.90, category: 'desserts', img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 49, name: 'Água c/ Gás 500ml', price: 5.90, category: 'drinks', img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200&h=150&fit=crop', available: [0,1,2,3,4,5,6] },
-{ id: 50, name: 'Pastel de Palmito', price: 14.90, category: 'pastels', img: 'https://images.unsplash.com/photo-1604467707321-70d009801bf8?w=200&h=150&fit=crop', available: [1,2,3,4,5] }
-];
-
-const CATS = [
-{ id: 'all', name: 'Todos', icon: 'fa-th-large' },
-{ id: 'hamburgers', name: 'Hambúrgueres', icon: 'fa-hamburger' },
-{ id: 'pizzas', name: 'Pizzas', icon: 'fa-pizza-slice' },
-{ id: 'pastels', name: 'Pastéis', icon: 'fa-drumstick-bite' },
-{ id: 'porcoes', name: 'Porções', icon: 'fa-utensils' },
-{ id: 'drinks', name: 'Bebidas', icon: 'fa-glass-cheers' },
-{ id: 'desserts', name: 'Sobremesas', icon: 'fa-ice-cream' }
-];
-
-const FLOW = ['novo', 'preparando', 'pronto', 'entregue', 'pago', 'finalizado'];
-const FLOW_LABELS = { novo: 'Novo', preparando: 'Preparando', pronto: 'Pronto', entregue: 'Entregue', pago: 'Pago', finalizado: 'Finalizado', cancelado: 'Cancelado' };
-
-// ==================== STATE ====================
-let state = {
-products: getData('products', DEFAULT_PRODUCTS),
-currentOrder: [],
-orderType: 'delivery',
-payment: 'pix',
-comandaNum: '',
-currentCat: 'all',
-search: '',
-orderFilter: 'all',
-lastOrderCount: 0,
-orderId: null
-};
-
-// ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', () => {
-renderCategories();
-renderProducts();
-renderOrdersList();
-updateStats();
-updateClock();
-setInterval(updateClock, 1000);
-setInterval(autoRefresh, 10000); // Refresh every 10 seconds
-
-// Search
-$('#pdvSearch').addEventListener('input', e => {
-state.search = e.target.value.toLowerCase();
-renderProducts();
-});
-});
-
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
-function formatPrice(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
-
-// ==================== CLOCK ====================
-function updateClock() {
-const now = new Date();
-$('#pdvTime').textContent = now.toLocaleTimeString('pt-BR');
-}
-
-// ==================== CATEGORIES ====================
-function renderCategories() {
-$('#pdvCats').innerHTML = CATS.map(c =>
-`<div class="pdv-cat ${state.currentCat === c.id ? 'active' : ''}" data-cat="${c.id}">
-<i class="fas ${c.icon}"></i> ${c.name}
-</div>`
-).join('');
-
-$('#pdvCats').addEventListener('click', e => {
-const chip = e.target.closest('.pdv-cat');
-if (!chip) return;
-state.currentCat = chip.dataset.cat;
-$$('.pdv-cat').forEach(c => c.classList.remove('active'));
-chip.classList.add('active');
-renderProducts();
-});
-}
-
-// ==================== PRODUCTS ====================
-function renderProducts() {
-let filtered = state.currentCat === 'all' ? [...state.products] : state.products.filter(p => p.category === state.currentCat);
-if (state.search) filtered = filtered.filter(p => p.name.toLowerCase().includes(state.search));
-
-$('#pdvProducts').innerHTML = filtered.map(p => {
-const today = new Date().getDay();
-const avail = p.available.includes(today);
-return `
-<div class="pdv-product" ${!avail ? 'style="opacity:0.4;pointer-events:none;"' : ''} data-id="${p.id}">
-<div class="pdv-product-img"><img src="${p.img}" alt="${p.name}" loading="lazy"></div>
-<div class="pdv-product-name">${p.name}</div>
-<div class="pdv-product-price">${formatPrice(p.price)}</div>
-</div>`;
-}).join('');
-
-$$('.pdv-product').forEach(el => {
-el.addEventListener('click', () => addToOrder(parseInt(el.dataset.id)));
-});
-}
-
-// ==================== ORDER ====================
-function addToOrder(productId) {
-const p = state.products.find(x => x.id === productId);
-if (!p) return;
-
-const existing = state.currentOrder.find(i => i.productId === productId);
-if (existing) existing.qty++;
-else state.currentOrder.push({ productId, name: p.name, price: p.price, qty: 1 });
-
-updateOrderUI();
-showToast(`${p.name} adicionado`, 'success');
-}
-
-function updateOrderUI() {
-const items = $('#orderItems');
-if (state.currentOrder.length === 0) {
-items.innerHTML = '<div class="order-empty"><i class="fas fa-plus-circle"></i><p style="font-size:0.8rem;">Clique nos produtos para adicionar</p></div>';
-$('#currentOrderId').textContent = '#---';
-} else {
-if (!state.orderId) state.orderId = Date.now().toString();
-$('#currentOrderId').textContent = '#' + state.orderId.slice(-6);
-
-items.innerHTML = state.currentOrder.map((item, idx) => `
-<div class="order-item">
-<div class="order-item-name">${item.name}</div>
-<div class="order-item-qty">
-<button class="oqty-btn" onclick="changeOrderQty(${idx}, -1)">−</button>
-<span class="oqty-val">${item.qty}</span>
-<button class="oqty-btn" onclick="changeOrderQty(${idx}, 1)">+</button>
-</div>
-<div class="order-item-price">${formatPrice(item.price * item.qty)}</div>
-<button class="order-item-remove" onclick="removeOrderItem(${idx})"><i class="fas fa-times"></i></button>
-</div>`).join('');
-}
-
-const subtotal = state.currentOrder.reduce((s, i) => s + i.price * i.qty, 0);
-const delivery = state.orderType === 'delivery' ? 5 : 0;
-const total = subtotal + delivery;
-
-$('#orderSubtotal').textContent = formatPrice(subtotal);
-$('#orderDelivery').textContent = formatPrice(delivery);
-$('#orderTotal').textContent = formatPrice(total);
-}
-
-function changeOrderQty(idx, delta) {
-state.currentOrder[idx].qty += delta;
-if (state.currentOrder[idx].qty <= 0) state.currentOrder.splice(idx, 1);
-updateOrderUI();
-}
-
-function removeOrderItem(idx) {
-state.currentOrder.splice(idx, 1);
-updateOrderUI();
-}
-
-function clearOrder() {
-state.currentOrder = [];
-state.orderId = null;
-state.comandaNum = '';
-updateOrderUI();
-showToast('Pedido limpo', 'info');
-}
-
-// ==================== ORDER TYPE ====================
-function setOrderType(type) {
-state.orderType = type;
-$$('.order-type-btn').forEach(b => b.classList.remove('active'));
-$(`.order-type-btn[data-type="${type}"]`).classList.add('active');
-
-const comandaInput = $('#comandaInput');
-if (type === 'mesa' || type === 'balcao') {
-comandaInput.classList.add('active');
-} else {
-comandaInput.classList.remove('active');
-}
-updateOrderUI();
-}
-
-// ==================== PAYMENT ====================
-function setPayment(method) {
-state.payment = method;
-$$('.pay-btn').forEach(b => b.classList.remove('active'));
-$(`.pay-btn[data-pay="${method}"]`).classList.add('active');
-}
-
-// ==================== FINALIZE ====================
-function finalizeOrder() {
-if (state.currentOrder.length === 0) { showToast('Adicione itens ao pedido!', 'warning'); return; }
-
-const comandaNum = state.orderType !== 'delivery' ? ($('#comandaNumber')?.value || '') : '';
-const subtotal = state.currentOrder.reduce((s, i) => s + i.price * i.qty, 0);
-const delivery = state.orderType === 'delivery' ? 5 : 0;
-const total = subtotal + delivery;
-
-const order = {
-id: state.orderId || Date.now().toString(),
-type: state.orderType,
-comanda: comandaNum,
-client: { name: comandaNum ? `${state.orderType === 'mesa' ? 'Mesa' : 'Balcão'} ${comandaNum}` : 'Cliente PDV', phone: '' },
-items: [...state.currentOrder],
-subtotal, deliveryFee: delivery, total,
-payment: state.payment,
-status: 'pago',
-date: new Date().toISOString()
-};
-
-// Save
-const orders = getData('orders', []);
-orders.push(order);
-setData('orders', orders);
-
-// Generate receipt
-generateReceipt(order);
-
-clearOrder();
-updateStats();
-showToast(`Pedido finalizado! Total: ${formatPrice(total)}`, 'success');
-}
-
-function holdOrder() {
-if (state.currentOrder.length === 0) { showToast('Adicione itens!', 'warning'); return; }
-
-const subtotal = state.currentOrder.reduce((s, i) => s + i.price * i.qty, 0);
-const order = {
-id: Date.now().toString(),
-type: state.orderType,
-comanda: $('#comandaNumber')?.value || '',
-client: { name: 'Pedido em espera', phone: '' },
-items: [...state.currentOrder],
-subtotal, deliveryFee: state.orderType === 'delivery' ? 5 : 0,
-total: subtotal + (state.orderType === 'delivery' ? 5 : 0),
-payment: state.payment,
-status: 'novo',
-date: new Date().toISOString()
-};
-
-const orders = getData('orders', []);
-orders.push(order);
-setData('orders', orders);
-
-clearOrder();
-updateStats();
-renderOrdersList();
-showToast('Pedido salvo na lista!', 'info');
-}
-
-// ==================== PRINT RECEIPT ====================
-function generateReceipt(order) {
-const settings = getData('settings', { name: 'MH Lanches', phone: '(11) 99999-8888', address: 'Rua Exemplo, 123' });
-const el = $('#printReceipt');
-el.innerHTML = `
-<div style="text-align:center;margin-bottom:10px;">
-<strong style="font-size:14px;">${settings.name || 'MH Lanches'}</strong><br>
-<span style="font-size:9px;">${settings.phone || ''}</span><br>
-<span style="font-size:9px;">${settings.address || ''}</span><br>
-<span style="font-size:9px;">================================</span><br>
-<strong style="font-size:11px;">CUPOM NÃO FISCAL</strong><br>
-<span style="font-size:9px;">================================</span>
-</div>
-<div style="font-size:9px;margin-bottom:8px;">
-Pedido: #${order.id.slice(-6)}<br>
-Data: ${new Date(order.date).toLocaleString('pt-BR')}<br>
-Tipo: ${order.type === 'delivery' ? 'Delivery' : order.type === 'mesa' ? 'Mesa ' + order.comanda : 'Balcão ' + order.comanda}<br>
-Pgto: ${order.payment === 'pix' ? 'Pix' : order.payment === 'dinheiro' ? 'Dinheiro' : 'Cartão'}<br>
-<span style="font-size:9px;">--------------------------------</span>
-</div>
-${order.items.map(i => `<div style="font-size:9px;">${i.qty}x ${i.name}<br>&nbsp;&nbsp;&nbsp;&nbsp;${(i.price * i.qty).toFixed(2).replace('.', ',')}</div>`).join('')}
-<div style="font-size:9px;margin-top:8px;">
-<span style="font-size:9px;">--------------------------------</span><br>
-Subtotal: ${order.subtotal.toFixed(2).replace('.', ',')}<br>
-${order.deliveryFee > 0 ? 'Entrega: ' + order.deliveryFee.toFixed(2).replace('.', ',') + '<br>' : ''}
-<strong style="font-size:12px;">TOTAL: ${order.total.toFixed(2).replace('.', ',')}</strong>
-</div>
-<div style="text-align:center;margin-top:15px;font-size:9px;">
-<span style="font-size:9px;">================================</span><br>
-Obrigado pela preferência!<br>
-Volte sempre! ❤️
-</div>`;
-}
-
-function printReceipt() {
-if (state.currentOrder.length === 0) { showToast('Adicione itens primeiro!', 'warning'); return; }
-
-const subtotal = state.currentOrder.reduce((s, i) => s + i.price * i.qty, 0);
-const delivery = state.orderType === 'delivery' ? 5 : 0;
-
-generateReceipt({
-id: state.orderId || Date.now().toString(),
-type: state.orderType,
-comanda: $('#comandaNumber')?.value || '',
-client: { name: 'Cliente PDV', phone: '' },
-items: [...state.currentOrder],
-subtotal, deliveryFee: delivery,
-total: subtotal + delivery,
-payment: state.payment,
-date: new Date().toISOString()
-});
-
-const printContent = $('#printReceipt').innerHTML;
-const win = window.open('', '_blank', 'width=300,height=600');
-win.document.write(`
-<html><head><title>Comanda</title>
-<style>body{font-family:monospace;font-size:10px;width:58mm;margin:0;padding:5mm;color:#000;}
-@media print{body{margin:0;padding:5mm;}}</style></head>
-<body>${printContent}</body></html>`);
-win.document.close();
-setTimeout(() => { win.print(); }, 500);
-}
-
-// ==================== ORDERS LIST ====================
-function renderOrdersList() {
-const orders = getData('orders', []);
-let filtered = state.orderFilter === 'all' ? orders : orders.filter(o => o.status === state.orderFilter);
-filtered = filtered.filter(o => !['finalizado', 'cancelado'].includes(o.status)).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-const cards = $('#ordersCards');
-if (filtered.length === 0) {
-cards.innerHTML = '<div style="text-align:center;padding:2rem;color:#555;"><i class="fas fa-inbox" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.5rem;"></i>Nenhum pedido aberto</div>';
-return;
-}
-
-cards.innerHTML = filtered.map(o => {
-const statusClass = 'status-' + (o.status || 'novo');
-const nextStatus = getNextStatus(o.status);
-return `
-<div class="order-card">
-<div class="order-card-header">
-<span class="order-card-id">#${o.id.slice(-6)}</span>
-<span class="order-card-status ${statusClass}">${FLOW_LABELS[o.status] || o.status}</span>
-</div>
-<div class="order-card-client">${o.client?.name || 'N/A'} ${o.type === 'delivery' ? '🚗' : o.type === 'mesa' ? '🪑' + (o.comanda || '') : '🏪' + (o.comanda || '')}</div>
-<div class="order-card-items">${o.items.map(i => `${i.qty}x ${i.name || i.productId}`).join(', ')}</div>
-<div class="order-card-footer">
-<span class="order-card-total">${formatPrice(o.total)}</span>
-<div class="order-card-actions">
-<button class="oc-action" onclick="viewOrderDetail('${o.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-${nextStatus ? `<button class="oc-action next" onclick="advanceOrder('${o.id}')" title="${FLOW_LABELS[nextStatus]}"><i class="fas fa-arrow-right"></i></button>` : ''}
-<button class="oc-action" onclick="printExistingReceipt('${o.id}')" title="Imprimir"><i class="fas fa-print"></i></button>
-</div>
-</div>
-</div>`;
-}).join('');
-}
-
-function filterOrders(filter) {
-state.orderFilter = filter;
-$$('.pdv-tab').forEach(t => t.classList.remove('active'));
-$(`.pdv-tab[data-filter="${filter}"]`).classList.add('active');
-renderOrdersList();
-}
-
-function getNextStatus(status) {
-const idx = FLOW.indexOf(status);
-if (idx === -1 || idx >= FLOW.length - 1) return null;
-return FLOW[idx + 1];
-}
-
-function advanceOrder(id) {
-const orders = getData('orders', []);
-const idx = orders.findIndex(o => o.id === id);
-if (idx === -1) return;
-const next = getNextStatus(orders[idx].status);
-if (next) {
-orders[idx].status = next;
-setData('orders', orders);
-renderOrdersList();
-updateStats();
-showToast(`Pedido #${id.slice(-6)} → ${FLOW_LABELS[next]}`, 'success');
-}
-}
-
-function viewOrderDetail(id) {
-const orders = getData('orders', []);
-const o = orders.find(x => x.id === id);
-if (!o) return;
-
-const statusClass = 'status-' + (o.status || 'novo');
-$('#orderModalBody').innerHTML = `
-<div style="margin-bottom:1rem;"><span style="font-family:Orbitron;color:var(--neon-cyan);">#${o.id.slice(-6)}</span> <span class="order-card-status ${statusClass}" style="font-size:0.75rem;">${FLOW_LABELS[o.status] || o.status}</span></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;font-size:0.85rem;">
-<div><strong>Cliente:</strong> ${o.client?.name || 'N/A'}</div>
-<div><strong>Tipo:</strong> ${o.type === 'delivery' ? '🚗 Delivery' : o.type === 'mesa' ? '🪑 Mesa ' + (o.comanda || '') : '🏪 Balcão ' + (o.comanda || '')}</div>
-<div><strong>Pagamento:</strong> ${o.payment}</div>
-<div><strong>Data:</strong> ${new Date(o.date).toLocaleString('pt-BR')}</div>
-</div>
-<h4 style="color:var(--neon-cyan);margin-bottom:0.5rem;font-size:0.9rem;">Itens</h4>
-${o.items.map(i => `<div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--glass-border);font-size:0.8rem;"><span>${i.qty}x ${i.name || i.productId}</span><span style="color:var(--neon-green);">${formatPrice((i.price || 0) * i.qty)}</span></div>`).join('')}
-<div style="display:flex;justify-content:space-between;padding:0.5rem 0;font-size:1rem;font-weight:800;color:#fff;"><span>Total</span><span style="color:var(--neon-green);">${formatPrice(o.total)}</span></div>
-<div style="margin-top:1rem;">
-<h4 style="color:var(--neon-cyan);margin-bottom:0.5rem;font-size:0.9rem;">Avançar Status</h4>
-<div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
-${FLOW.map(s => `<button class="btn btn-sm ${o.status === s ? 'btn-primary' : ''}" onclick="advanceOrder('${o.id}');closeModal('orderModal');">${FLOW_LABELS[s]}</button>`).join('')}
-${o.status !== 'cancelado' ? `<button class="btn btn-sm" style="border-color:rgba(255,45,117,0.3);color:var(--neon-pink);" onclick="cancelOrder('${o.id}');closeModal('orderModal');">Cancelar</button>` : ''}
-</div>
-</div>`;
-$('#orderModal').classList.add('active');
-}
-
-function cancelOrder(id) {
-if (!confirm('Cancelar este pedido?')) return;
-const orders = getData('orders', []);
-const idx = orders.findIndex(o => o.id === id);
-if (idx !== -1) {
-orders[idx].status = 'cancelado';
-setData('orders', orders);
-renderOrdersList();
-updateStats();
-showToast('Pedido cancelado', 'warning');
-}
-}
-
-function printExistingReceipt(id) {
-const orders = getData('orders', []);
-const o = orders.find(x => x.id === id);
-if (!o) return;
-generateReceipt(o);
-const printContent = $('#printReceipt').innerHTML;
-const win = window.open('', '_blank', 'width=300,height=600');
-win.document.write(`<html><head><title>Comanda</title><style>body{font-family:monospace;font-size:10px;width:58mm;margin:0;padding:5mm;color:#000;}</style></head><body>${printContent}</body></html>`);
-win.document.close();
-setTimeout(() => { win.print(); }, 500);
-}
-
-// ==================== STATS ====================
-function updateStats() {
-const orders = getData('orders', []);
-const today = new Date().toDateString();
-const todayOrders = orders.filter(o => new Date(o.date).toDateString() === today);
-const todayRevenue = todayOrders.filter(o => o.status !== 'cancelado').reduce((s, o) => s + o.total, 0);
-const openOrders = orders.filter(o => !['finalizado', 'cancelado', 'pago', 'entregue'].includes(o.status)).length;
-const avgTicket = todayOrders.filter(o => o.status !== 'cancelado').length > 0 ? todayRevenue / todayOrders.filter(o => o.status !== 'cancelado').length : 0;
-
-$('#statOrders').textContent = todayOrders.length;
-$('#statRevenue').textContent = formatPrice(todayRevenue);
-$('#statOpen').textContent = openOrders;
-$('#statAvg').textContent = formatPrice(avgTicket);
-}
-
-// ==================== AUTO REFRESH ====================
-function autoRefresh() {
-const orders = getData('orders', []);
-const currentCount = orders.length;
-
-if (currentCount > state.lastOrderCount && state.lastOrderCount > 0) {
-// New order detected!
-$('#pdvAlert').style.display = 'block';
-setTimeout(() => $('#pdvAlert').style.display = 'none', 2000);
-
-// Play alert sound
-try {
-const ctx = new (window.AudioContext || window.webkitAudioContext)();
-const osc = ctx.createOscillator();
-const gain = ctx.createGain();
-osc.connect(gain);
-gain.connect(ctx.destination);
-osc.frequency.value = 800;
-gain.gain.value = 0.3;
-osc.start();
-setTimeout(() => { osc.frequency.value = 1000; }, 200);
-setTimeout(() => { osc.frequency.value = 1200; }, 400);
-setTimeout(() => { osc.stop(); ctx.close(); }, 600);
-} catch(e) {}
-
-showToast('🔔 Novo pedido recebido!', 'warning');
-}
-
-state.lastOrderCount = currentCount;
-renderOrdersList();
-updateStats();
-
-// Show refresh bar
-$('#refreshBar').classList.add('active');
-setTimeout(() => $('#refreshBar').classList.remove('active'), 1000);
-}
-
-// ==================== TOGGLE ORDERS VIEW ====================
-$('#toggleOrdersBtn').onclick = () => {
-const productsEl = $('#pdvProducts');
-const catsEl = $('#pdvCats');
-const listEl = $('#ordersList');
-const btn = $('#toggleOrdersBtn');
-
-if (listEl.classList.contains('active')) {
-listEl.classList.remove('active');
-productsEl.style.display = 'grid';
-catsEl.style.display = 'flex';
-btn.innerHTML = '<i class="fas fa-list mr-1"></i> Pedidos';
-} else {
-listEl.classList.add('active');
-productsEl.style.display = 'none';
-catsEl.style.display = 'none';
-btn.innerHTML = '<i class="fas fa-utensils mr-1"></i> Produtos';
-renderOrdersList();
-}
-};
-
-// ==================== UTILS ====================
-function closeModal(id) { $(`#${id}`).classList.remove('active'); }
-
-function showToast(msg, type = 'success') {
-const container = $('#toastContainer');
-const toast = document.createElement('div');
-toast.className = `toast ${type}`;
-const icons = { success: 'fa-check-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle' };
-toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${msg}`;
-container.appendChild(toast);
-setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-}
-
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-if (e.key === 'Escape') closeModal('orderModal');
-if (e.ctrlKey && e.key === 'k') { e.preventDefault(); $('#pdvSearch').focus(); }
-});
-</script>
+<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
+            authDomain: "cardapiomhlanches.firebaseapp.com",
+            databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
+            projectId: "cardapiomhlanches",
+            storageBucket: "cardapiomhlanches.firebasestorage.app",
+            messagingSenderId: "919725344771",
+            appId: "1:919725344771:web:69be07a143162e76cf2636"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        window.firebaseDB = { db, ref, set, push, onValue };
+    </script>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 bg-[#0a0a1a]">
+        <div class="glass rounded-2xl p-8 w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <h1 class="font-orbitron text-3xl font-black neon-cyan mb-2">MH LANCHES</h1>
+                <p class="text-gray-400">Ponto de Venda</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Usuário</label>
+                    <input type="text" id="loginUser" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#00ffff] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Senha</label>
+                    <input type="password" id="loginPass" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#00ffff] focus:outline-none">
+                </div>
+                <p id="loginError" class="text-red-500 text-sm hidden">Credenciais inválidas</p>
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#00ffff] to-[#00ff88] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
+                    Acessar PDV
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PDV Panel -->
+    <div id="pdvPanel" class="hidden">
+        <!-- Header -->
+        <header class="glass py-3 px-4 sticky top-0 z-40">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-orbitron text-xl font-bold neon-cyan">PDV - MH LANCHES</h1>
+                    <span id="currentTime" class="text-lg font-mono neon-pink"></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="refreshOrders()" class="px-4 py-2 glass-card rounded-lg hover:border-[#00ffff] transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i> Atualizar
+                    </button>
+                    <button onclick="printReport()" class="px-4 py-2 glass-card rounded-lg hover:border-[#00ffff] transition-colors">
+                        <i class="fas fa-print mr-2"></i> Imprimir
+                    </button>
+                    <a href="admin.html" class="px-4 py-2 glass-card rounded-lg hover:border-[#00ffff] transition-colors">
+                        <i class="fas fa-cog mr-2"></i> Admin
+                    </a>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-400">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="px-4 py-3 grid grid-cols-4 gap-4">
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full status-novo flex items-center justify-center">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Novos</p>
+                    <p id="countNovos" class="text-2xl font-bold">0</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full status-producao flex items-center justify-center">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Produção</p>
+                    <p id="countProducao" class="text-2xl font-bold">0</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full status-pronto flex items-center justify-center">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Prontos</p>
+                    <p id="countProntos" class="text-2xl font-bold">0</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full status-pago flex items-center justify-center">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Total Hoje</p>
+                    <p id="totalHoje" class="text-2xl font-bold neon-cyan">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="px-4 pb-8">
+            <div class="grid grid-cols-12 gap-4">
+                <!-- Orders Column -->
+                <div class="col-span-8">
+                    <!-- Tabs -->
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="showOrderTab('delivery')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all status-novo" data-tab="delivery">
+                            <i class="fas fa-motorcycle mr-2"></i> Delivery
+                        </button>
+                        <button onclick="showOrderTab('mesa')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff]" data-tab="mesa">
+                            <i class="fas fa-utensils mr-2"></i> Mesas
+                        </button>
+                        <button onclick="showOrderTab('balcao')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff]" data-tab="balcao">
+                            <i class="fas fa-cash-register mr-2"></i> Balcão
+                        </button>
+                    </div>
+
+                    <!-- Delivery Orders -->
+                    <div id="tab-delivery" class="order-content">
+                        <div id="deliveryOrders" class="grid grid-cols-2 gap-4">
+                        </div>
+                    </div>
+
+                    <!-- Table Orders -->
+                    <div id="tab-mesa" class="order-content hidden">
+                        <div class="grid grid-cols-5 gap-4 mb-4">
+                            <div class="col-span-5">
+                                <button onclick="newTableOrder()" class="w-full py-4 bg-gradient-to-r from-[#00ffff] to-[#00ff88] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
+                                    <i class="fas fa-plus mr-2"></i> Nova Comanda de Mesa
+                                </button>
+                            </div>
+                        </div>
+                        <div id="tableOrders" class="grid grid-cols-3 gap-4">
+                        </div>
+                    </div>
+
+                    <!-- Counter Sale -->
+                    <div id="tab-balcao" class="order-content hidden">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan">Venda Rápida - Balcão</h3>
+                            
+                            <!-- Quick Categories -->
+                            <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                                <button onclick="filterQuickProducts('Todos')" class="quick-cat-btn px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff00ff] to-[#00ffff] font-semibold whitespace-nowrap">Todos</button>
+                                <button onclick="filterQuickProducts('Hambúrgueres')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Hambúrgueres</button>
+                                <button onclick="filterQuickProducts('Porções')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Porções</button>
+                                <button onclick="filterQuickProducts('Bebidas')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Bebidas</button>
+                                <button onclick="filterQuickProducts('Sobremesas')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Sobremesas</button>
+                            </div>
+
+                            <!-- Products Grid -->
+                            <div id="quickProducts" class="grid grid-cols-5 gap-2 mb-6 max-h-64 overflow-y-auto">
+                            </div>
+
+                            <!-- Current Sale -->
+                            <div class="border-t border-gray-700 pt-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h4 class="font-bold">Itens da Venda</h4>
+                                    <button onclick="clearQuickSale()" class="text-red-500 hover:text-red-400">
+                                        <i class="fas fa-trash mr-1"></i> Limpar
+                                    </button>
+                                </div>
+                                <div id="quickSaleItems" class="space-y-2 max-h-40 overflow-y-auto mb-4">
+                                    <p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>
+                                </div>
+                                <div class="flex justify-between items-center p-4 bg-black/30 rounded-xl">
+                                    <span class="text-xl font-bold">Total:</span>
+                                    <span id="quickSaleTotal" class="text-2xl font-bold neon-cyan">R$ 0,00</span>
+                                </div>
+                                <button onclick="finishQuickSale()" class="w-full mt-4 py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
+                                    <i class="fas fa-cash-register mr-2"></i> Finalizar Venda
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Resumo -->
+                <div class="col-span-4">
+                    <div class="glass-card rounded-2xl p-6 sticky top-20">
+                        <h3 class="text-xl font-bold mb-4 neon-pink">Resumo do Dia</h3>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Pedidos Delivery</span>
+                                <span id="resumoDelivery" class="font-bold">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Comandas de Mesa</span>
+                                <span id="resumoMesa" class="font-bold">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Vendas Balcão</span>
+                                <span id="resumoBalcao" class="font-bold">0</span>
+                            </div>
+                            <div class="border-t border-gray-700 pt-4">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Pix</span>
+                                    <span id="resumoPix" class="font-bold">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Dinheiro</span>
+                                    <span id="resumoDinheiro" class="font-bold">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Cartão</span>
+                                    <span id="resumoCartao" class="font-bold">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div class="border-t border-gray-700 pt-4">
+                                <div class="flex justify-between text-xl">
+                                    <span class="font-bold">Total do Dia</span>
+                                    <span id="resumoTotal" class="font-bold neon-cyan">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="printDailyReport()" class="w-full py-3 glass rounded-xl font-semibold hover:border-[#ff00ff] transition-colors">
+                            <i class="fas fa-print mr-2"></i> Imprimir Resumo Diário
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="orderModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeOrderModal()"></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-2xl mx-auto glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modalOrderId" class="text-2xl font-bold neon-pink">PEDIDO #0001</h2>
+                <button onclick="closeOrderModal()" class="text-2xl hover:text-red-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="modalContent">
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="updateStatus('novo')" class="flex-1 py-3 status-novo rounded-xl font-semibold">
+                    Novo
+                </button>
+                <button onclick="updateStatus('producao')" class="flex-1 py-3 status-producao rounded-xl font-semibold">
+                    Produção
+                </button>
+                <button onclick="updateStatus('pronto')" class="flex-1 py-3 status-pronto rounded-xl font-semibold">
+                    Pronto
+                </button>
+                <button onclick="updateStatus('pago')" class="flex-1 py-3 status-pago rounded-xl font-semibold text-black">
+                    Pago
+                </button>
+            </div>
+            <button onclick="updateStatus('finalizado')" class="w-full mt-3 py-3 status-finalizado rounded-xl font-semibold">
+                Finalizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Order Modal -->
+    <div id="tableModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeTableModal()"></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-2xl mx-auto glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="tableModalTitle" class="text-2xl font-bold neon-cyan">Mesa 1</h2>
+                <button onclick="closeTableModal()" class="text-2xl hover:text-red-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="tableModalContent">
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio for new orders -->
+    <audio id="alertSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script>
+        const users = {
+            admin: { pass: 'admin123', level: 'ADMIN' },
+            func: { pass: 'func123', level: 'FUNC' }
+        };
+
+        let currentUser = null;
+        let currentOrder = null;
+        let currentTableOrder = null;
+        let quickSaleItems = [];
+        let currentQuickCategory = 'Todos';
+
+        // Mock Products for quick sale
+        const quickProducts = [
+            { id: 101, nome: "MH Classic", preco: 29.90, categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 102, nome: "Bacon Burger", preco: 34.90, categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 103, nome: "Cheese Burger", preco: 32.90, categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 104, nome: "Chicken Burger", preco: 26.90, categoria: "Hambúrgueres", imagem: "🍔" },
+            { id: 105, nome: "Batata Frita", preco: 22.90, categoria: "Porções", imagem: "🍟" },
+            { id: 106, nome: "Batata Cheddar", preco: 28.90, categoria: "Porções", imagem: "🍟" },
+            { id: 107, nome: "Anéis de Cebola", preco: 24.90, categoria: "Porções", imagem: "🧅" },
+            { id: 108, nome: "Nuggets (15un)", preco: 26.90, categoria: "Porções", imagem: "🍗" },
+            { id: 109, nome: "Coca-Cola Lata", preco: 6.00, categoria: "Bebidas", imagem: "🥤" },
+            { id: 110, nome: "Guaraná Lata", preco: 6.00, categoria: "Bebidas", imagem: "🥤" },
+            { id: 111, nome: "Suco Laranja", preco: 8.00, categoria: "Bebidas", imagem: "🍊" },
+            { id: 112, nome: "Água Mineral", preco: 4.00, categoria: "Bebidas", imagem: "💧" },
+            { id: 113, nome: "Sundae Chocolate", preco: 12.90, categoria: "Sobremesas", imagem: "🍨" },
+            { id: 114, nome: "Sorvete 3 Bolas", preco: 14.90, categoria: "Sobremesas", imagem: "🍦" },
+            { id: 115, nome: "Milk Shake", preco: 16.90, categoria: "Sobremesas", imagem: "🥛" },
+        ];
+
+        // Mock Orders
+        let orders = [
+            {
+                id: 'PED_001',
+                tipo: 'delivery',
+                cliente: { nome: 'João Silva', telefone: '(00) 90000-0001', endereco: 'Rua A, 123' },
+                itens: [
+                    { nome: 'MH Classic', quantidade: 2, preco: 29.90 },
+                    { nome: 'Coca-Cola Lata', quantidade: 2, preco: 6.00 }
+                ],
+                pagamento: 'dinheiro',
+                total: 76.80,
+                status: 'novo',
+                data: new Date().toISOString()
+            },
+            {
+                id: 'PED_002',
+                tipo: 'delivery',
+                cliente: { nome: 'Maria Souza', telefone: '(00) 90000-0002', endereco: 'Av. B, 456' },
+                itens: [
+                    { nome: 'Bacon Burger', quantidade: 1, preco: 34.90 },
+                    { nome: 'Batata Frita', quantidade: 1, preco: 22.90 }
+                ],
+                pagamento: 'pix',
+                total: 57.80,
+                status: 'producao',
+                data: new Date(Date.now() - 10 * 60000).toISOString()
+            },
+            {
+                id: 'PED_003',
+                tipo: 'delivery',
+                cliente: { nome: 'Pedro Santos', telefone: '(00) 90000-0003', endereco: 'Rua C, 789' },
+                itens: [
+                    { nome: 'Pizza Calabresa', quantidade: 1, preco: 49.90 }
+                ],
+                pagamento: 'cartao',
+                total: 54.90,
+                status: 'pronto',
+                data: new Date(Date.now() - 20 * 60000).toISOString()
+            }
+        ];
+
+        let tableOrders = [
+            {
+                id: 'MESA_01',
+                mesa: 1,
+                itens: [
+                    { nome: 'MH Classic', quantidade: 2, preco: 29.90 },
+                    { nome: 'Coca-Cola Lata', quantidade: 2, preco: 6.00 }
+                ],
+                status: 'aberta',
+                data: new Date().toISOString()
+            },
+            {
+                id: 'MESA_02',
+                mesa: 2,
+                itens: [
+                    { nome: 'Batata Frita', quantidade: 1, preco: 22.90 }
+                ],
+                status: 'aberta',
+                data: new Date().toISOString()
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(refreshOrders, 10000);
+            renderQuickProducts();
+            
+            // Listen for Firebase orders
+            if (window.firebaseDB) {
+                setTimeout(() => {
+                    if (window.firebaseDB.onValue) {
+                        window.firebaseDB.onValue(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos'), (snapshot) => {
+                            const data = snapshot.val();
+                            if (data) {
+                                const newOrders = Object.values(data);
+                                const hasNewOrder = newOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
+                                if (hasNewOrder) {
+                                    playAlertSound();
+                                }
+                                orders = [...orders, ...newOrders.filter(o => !orders.find(existing => existing.id === o.id))];
+                                renderAllOrders();
+                                updateStats();
+                            }
+                        });
+                    }
+                }, 2000);
+            }
+        });
+
+        function checkSession() {
+            const session = localStorage.getItem('mh_admin_session');
+            if (session) {
+                const data = JSON.parse(session);
+                if (new Date(data.expires) > new Date()) {
+                    currentUser = data.user;
+                    showPDVPanel();
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+
+            if (users[user] && users[user].pass === pass) {
+                currentUser = { ...users[user], username: user };
+                const expires = new Date(Date.now() + 7 * 60 * 60 * 1000);
+                localStorage.setItem('mh_admin_session', JSON.stringify({
+                    user: currentUser,
+                    expires: expires.toISOString()
+                }));
+                showPDVPanel();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('loginError').classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        function showPDVPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('pdvPanel').classList.remove('hidden');
+            renderAllOrders();
+            updateStats();
+            updateDailySummary();
+        }
+
+        function logout() {
+            localStorage.removeItem('mh_admin_session');
+            location.reload();
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('pt-BR');
+        }
+
+        function showOrderTab(tabName) {
+            document.querySelectorAll('.order-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.order-tab').forEach(el => {
+                el.classList.remove('status-novo');
+                el.classList.add('glass-card', 'hover:border-[#00ffff]');
+            });
+            
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            activeBtn.classList.add('status-novo');
+            activeBtn.classList.remove('glass-card', 'hover:border-[#00ffff]');
+        }
+
+        function renderAllOrders() {
+            renderDeliveryOrders();
+            renderTableOrders();
+            updateStats();
+        }
+
+        function renderDeliveryOrders() {
+            const container = document.getElementById('deliveryOrders');
+            const deliveryOrders = orders.filter(o => o.tipo === 'delivery' && o.status !== 'finalizado');
+            
+            if (deliveryOrders.length === 0) {
+                container.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-12">Nenhum pedido de delivery no momento</p>';
+                return;
+            }
+
+            container.innerHTML = deliveryOrders.map(order => `
+                <div onclick="openOrderModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-102 transition-transform ${order.status === 'novo' ? 'pulse-alert border-2 border-[#ff00ff]' : ''}">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="font-mono text-sm">${order.id}</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold status-${order.status}">${order.status.toUpperCase()}</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-1">${order.cliente.nome}</h4>
+                    <p class="text-sm text-gray-400 mb-2">${order.cliente.endereco}</p>
+                    <div class="border-t border-gray-700 pt-2 mt-2">
+                        ${order.itens.slice(0, 3).map(item => `
+                            <p class="text-sm">${item.quantidade}x ${item.nome}</p>
+                        `).join('')}
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                        <span class="text-sm">${order.pagamento}</span>
+                        <span class="font-bold neon-cyan">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTableOrders() {
+            const container = document.getElementById('tableOrders');
+            
+            if (tableOrders.length === 0) {
+                container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-12">Nenhuma comanda aberta</p>';
+                return;
+            }
+
+            container.innerHTML = tableOrders.map(order => {
+                const total = order.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+                return `
+                    <div onclick="openTableModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-105 transition-transform border-2 ${order.status === 'aberta' ? 'border-[#00ffff]' : 'border-gray-600'}">
+                        <div class="text-center mb-3">
+                            <span class="text-3xl font-bold neon-cyan">MESA ${order.mesa}</span>
+                        </div>
+                        <p class="text-center text-gray-400 mb-2">${order.itens.length} itens</p>
+                        <p class="text-center font-bold text-xl neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openOrderModal(orderId) {
+            currentOrder = orders.find(o => o.id === orderId);
+            if (!currentOrder) return;
+
+            document.getElementById('modalOrderId').textContent = currentOrder.id;
+            
+            const content = `
+                <div class="space-y-4">
+                    <div class="glass-card p-4 rounded-xl">
+                        <h4 class="font-bold mb-2 neon-cyan">Dados do Cliente</h4>
+                        <p><strong>Nome:</strong> ${currentOrder.cliente.nome}</p>
+                        <p><strong>Telefone:</strong> ${currentOrder.cliente.telefone}</p>
+                        <p><strong>Endereço:</strong> ${currentOrder.cliente.endereco}</p>
+                        <p><strong>Pagamento:</strong> ${currentOrder.pagamento}</p>
+                    </div>
+                    
+                    <div class="glass-card p-4 rounded-xl">
+                        <h4 class="font-bold mb-2 neon-cyan">Itens do Pedido</h4>
+                        ${currentOrder.itens.map(item => `
+                            <div class="flex justify-between py-2 border-b border-gray-700">
+                                <span>${item.quantidade}x ${item.nome}</span>
+                                <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                        `).join('')}
+                        <div class="flex justify-between pt-3 font-bold text-lg">
+                            <span>Total</span>
+                            <span class="neon-pink">R$ ${currentOrder.total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+            currentOrder = null;
+        }
+
+        function updateStatus(newStatus) {
+            if (!currentOrder) return;
+            
+            currentOrder.status = newStatus;
+            
+            if (window.firebaseDB && window.firebaseDB.set) {
+                window.firebaseDB.set(
+                    window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id),
+                    currentOrder
+                );
+            }
+            
+            renderAllOrders();
+            updateStats();
+            updateDailySummary();
+            closeOrderModal();
+        }
+
+        function updateStats() {
+            const deliveryOrders = orders.filter(o => o.tipo === 'delivery');
+            document.getElementById('countNovos').textContent = deliveryOrders.filter(o => o.status === 'novo').length;
+            document.getElementById('countProducao').textContent = deliveryOrders.filter(o => o.status === 'producao').length;
+            document.getElementById('countProntos').textContent = deliveryOrders.filter(o => o.status === 'pronto').length;
+            
+            const total = orders.filter(o => o.status === 'pago' || o.status === 'finalizado')
+                .reduce((sum, o) => sum + o.total, 0);
+            document.getElementById('totalHoje').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+        }
+
+        function refreshOrders() {
+            renderAllOrders();
+            updateStats();
+        }
+
+        function playAlertSound() {
+            const audio = document.getElementById('alertSound');
+            audio.play().catch(() => {});
+        }
+
+        function newTableOrder() {
+            const mesaNum = prompt('Número da mesa:');
+            if (!mesaNum) return;
+            
+            const newOrder = {
+                id: 'MESA_' + Date.now(),
+                mesa: parseInt(mesaNum),
+                itens: [],
+                status: 'aberta',
+                data: new Date().toISOString()
+            };
+            
+            tableOrders.push(newOrder);
+            renderTableOrders();
+            openTableModal(newOrder.id);
+        }
+
+        function openTableModal(orderId) {
+            currentTableOrder = tableOrders.find(o => o.id === orderId);
+            if (!currentTableOrder) return;
+
+            document.getElementById('tableModalTitle').textContent = `MESA ${currentTableOrder.mesa}`;
+            
+            const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            
+            const content = `
+                <div class="space-y-4">
+                    <div class="glass-card p-4 rounded-xl">
+                        <h4 class="font-bold mb-3 neon-cyan">Adicionar Item</h4>
+                        <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                            ${quickProducts.map(p => `
+                                <button onclick="addItemToTable(${p.id})" class="p-2 glass rounded-lg text-center hover:border-[#00ffff] transition-colors">
+                                    <span class="text-2xl">${p.imagem}</span>
+                                    <p class="text-xs">${p.nome}</p>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-4 rounded-xl">
+                        <h4 class="font-bold mb-3 neon-cyan">Itens da Comanda</h4>
+                        ${currentTableOrder.itens.length === 0 ? 
+                            '<p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>' :
+                            currentTableOrder.itens.map((item, idx) => `
+                                <div class="flex justify-between items-center py-2 border-b border-gray-700">
+                                    <span>${item.quantidade}x ${item.nome}</span>
+                                    <div class="flex items-center gap-3">
+                                        <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+                                        <button onclick="removeTableItem(${idx})" class="text-red-500 hover:text-red-400">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                        <div class="flex justify-between pt-4 font-bold text-xl">
+                            <span>Total</span>
+                            <span class="neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="closeTableModal()" class="flex-1 py-3 glass rounded-xl font-semibold hover:border-[#ff00ff]">
+                            Voltar
+                        </button>
+                        <button onclick="closeTableOrder()" class="flex-1 py-3 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-semibold text-black">
+                            Fechar Conta
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tableModalContent').innerHTML = content;
+            document.getElementById('tableModal').classList.remove('hidden');
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModal').classList.add('hidden');
+            currentTableOrder = null;
+        }
+
+        function addItemToTable(prodId) {
+            const prod = quickProducts.find(p => p.id === prodId);
+            if (!prod || !currentTableOrder) return;
+            
+            const existing = currentTableOrder.itens.find(i => i.nome === prod.nome);
+            if (existing) {
+                existing.quantidade++;
+            } else {
+                currentTableOrder.itens.push({
+                    nome: prod.nome,
+                    preco: prod.preco,
+                    quantidade: 1
+                });
+            }
+            
+            openTableModal(currentTableOrder.id);
+            renderTableOrders();
+        }
+
+        function removeTableItem(idx) {
+            if (!currentTableOrder) return;
+            currentTableOrder.itens.splice(idx, 1);
+            openTableModal(currentTableOrder.id);
+            renderTableOrders();
+        }
+
+        function closeTableOrder() {
+            if (!currentTableOrder) return;
+            
+            const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            
+            orders.push({
+                id: currentTableOrder.id,
+                tipo: 'mesa',
+                mesa: currentTableOrder.mesa,
+                cliente: { nome: `Mesa ${currentTableOrder.mesa}`, telefone: '-', endereco: '-' },
+                itens: [...currentTableOrder.itens],
+                pagamento: 'presencial',
+                total: total,
+                status: 'pago',
+                data: new Date().toISOString()
+            });
+            
+            tableOrders = tableOrders.filter(o => o.id !== currentTableOrder.id);
+            
+            renderAllOrders();
+            updateDailySummary();
+            closeTableModal();
+        }
+
+        // Quick Sale (Balcão) Functions
+        function filterQuickProducts(categoria) {
+            currentQuickCategory = categoria;
+            document.querySelectorAll('.quick-cat-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]');
+                btn.classList.add('glass-card', 'hover:border-[#ff00ff]');
+            });
+            event.target.classList.add('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]');
+            event.target.classList.remove('glass-card', 'hover:border-[#ff00ff]');
+            renderQuickProducts();
+        }
+
+        function renderQuickProducts() {
+            const container = document.getElementById('quickProducts');
+            const filtered = currentQuickCategory === 'Todos' 
+                ? quickProducts 
+                : quickProducts.filter(p => p.categoria === currentQuickCategory);
+            
+            container.innerHTML = filtered.map(p => `
+                <button onclick="addQuickItem(${p.id})" class="p-3 glass rounded-xl text-center hover:scale-105 transition-transform hover:border-[#00ffff]">
+                    <span class="text-3xl block">${p.imagem}</span>
+                    <p class="text-sm font-semibold truncate">${p.nome}</p>
+                    <p class="text-xs neon-pink">R$ ${p.preco.toFixed(2).replace('.', ',')}</p>
+                </button>
+            `).join('');
+        }
+
+        function addQuickItem(prodId) {
+            const prod = quickProducts.find(p => p.id === prodId);
+            if (!prod) return;
+            
+            const existing = quickSaleItems.find(i => i.nome === prod.nome);
+            if (existing) {
+                existing.quantidade++;
+            } else {
+                quickSaleItems.push({
+                    nome: prod.nome,
+                    preco: prod.preco,
+                    quantidade: 1
+                });
+            }
+            
+            renderQuickSaleItems();
+        }
+
+        function renderQuickSaleItems() {
+            const container = document.getElementById('quickSaleItems');
+            
+            if (quickSaleItems.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>';
+                document.getElementById('quickSaleTotal').textContent = 'R$ 0,00';
+                return;
+            }
+            
+            container.innerHTML = quickSaleItems.map((item, idx) => {
+                const subtotal = item.preco * item.quantidade;
+                return `
+                    <div class="flex justify-between items-center p-2 bg-black/20 rounded-lg">
+                        <span>${item.quantidade}x ${item.nome}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-semibold">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
+                            <button onclick="removeQuickItem(${idx})" class="text-red-500 hover:text-red-400">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            document.getElementById('quickSaleTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+        }
+
+        function removeQuickItem(idx) {
+            quickSaleItems.splice(idx, 1);
+            renderQuickSaleItems();
+        }
+
+        function clearQuickSale() {
+            quickSaleItems = [];
+            renderQuickSaleItems();
+        }
+
+        function finishQuickSale() {
+            if (quickSaleItems.length === 0) {
+                alert('Adicione pelo menos um item!');
+                return;
+            }
+            
+            const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            
+            orders.push({
+                id: 'BALCAO_' + Date.now(),
+                tipo: 'balcao',
+                cliente: { nome: 'Balcão', telefone: '-', endereco: '-' },
+                itens: [...quickSaleItems],
+                pagamento: 'presencial',
+                total: total,
+                status: 'pago',
+                data: new Date().toISOString()
+            });
+            
+            quickSaleItems = [];
+            renderQuickSaleItems();
+            renderAllOrders();
+            updateDailySummary();
+            
+            alert('Venda finalizada com sucesso!');
+        }
+
+        function updateDailySummary() {
+            const pedidosDelivery = orders.filter(o => o.tipo === 'delivery' && (o.status === 'pago' || o.status === 'finalizado'));
+            const pedidosMesa = orders.filter(o => o.tipo === 'mesa' && (o.status === 'pago' || o.status === 'finalizado'));
+            const pedidosBalcao = orders.filter(o => o.tipo === 'balcao' && (o.status === 'pago' || o.status === 'finalizado'));
+            
+            document.getElementById('resumoDelivery').textContent = pedidosDelivery.length;
+            document.getElementById('resumoMesa').textContent = pedidosMesa.length;
+            document.getElementById('resumoBalcao').textContent = pedidosBalcao.length;
+            
+            const allPaid = [...pedidosDelivery, ...pedidosMesa, ...pedidosBalcao];
+            
+            const pix = allPaid.filter(o => o.pagamento === 'pix').reduce((sum, o) => sum + o.total, 0);
+            const dinheiro = allPaid.filter(o => o.pagamento === 'dinheiro' || o.pagamento === 'presencial').reduce((sum, o) => sum + o.total, 0);
+            const cartao = allPaid.filter(o => o.pagamento === 'cartao').reduce((sum, o) => sum + o.total, 0);
+            const total = pix + dinheiro + cartao;
+            
+            document.getElementById('resumoPix').textContent = 'R$ ' + pix.toFixed(2).replace('.', ',');
+            document.getElementById('resumoDinheiro').textContent = 'R$ ' + dinheiro.toFixed(2).replace('.', ',');
+            document.getElementById('resumoCartao').textContent = 'R$ ' + cartao.toFixed(2).replace('.', ',');
+            document.getElementById('resumoTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+        }
+
+        function printReport() {
+            if (!currentOrder) return;
+            
+            const printContent = `
+                <html>
+                    <head>
+                        <title>Comanda - ${currentOrder.id}</title>
+                        <style>
+                            body { font-family: monospace; font-size: 12px; width: 58mm; margin: 0; padding: 5px; }
+                            .center { text-align: center; }
+                            .right { text-align: right; }
+                            .border { border-top: 1px dashed #000; margin: 5px 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="center">
+                            <h2>MH LANCHES</h2>
+                            <p>COMANDA</p>
+                        </div>
+                        <div class="border"></div>
+                        <p><strong>Pedido:</strong> ${currentOrder.id}</p>
+                        <p><strong>Cliente:</strong> ${currentOrder.cliente.nome}</p>
+                        <p><strong>Data:</strong> ${new Date(currentOrder.data).toLocaleString('pt-BR')}</p>
+                        <div class="border"></div>
+                        <p><strong>ITENS:</strong></p>
+                        ${currentOrder.itens.map(i => `
+                            <p>${i.quantidade}x ${i.nome} - R$ ${(i.preco * i.quantidade).toFixed(2)}</p>
+                        `).join('')}
+                        <div class="border"></div>
+                        <p class="right"><strong>TOTAL: R$ ${currentOrder.total.toFixed(2)}</strong></p>
+                        <div class="border"></div>
+                        <div class="center">
+                            <p>Obrigado pela preferência!</p>
+                            <p>${new Date().toLocaleString('pt-BR')}</p>
+                        </div>
+                    </body>
+                </html>
+            `;
+            
+            const printWin = window.open('', '_blank');
+            printWin.document.write(printContent);
+            printWin.document.close();
+            printWin.print();
+        }
+
+        function printDailyReport() {
+            const total = document.getElementById('resumoTotal').textContent;
+            const printContent = `
+                <html>
+                    <head>
+                        <title>Resumo Diário - MH Lanches</title>
+                        <style>
+                            body { font-family: monospace; font-size: 12px; width: 58mm; margin: 0; padding: 5px; }
+                            .center { text-align: center; }
+                            .right { text-align: right; }
+                            .border { border-top: 1px dashed #000; margin: 5px 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="center">
+                            <h2>MH LANCHES</h2>
+                            <p>RESUMO DIÁRIO</p>
+                            <p>${new Date().toLocaleDateString('pt-BR')}</p>
+                        </div>
+                        <div class="border"></div>
+                        <p>Delivery: ${document.getElementById('resumoDelivery').textContent}</p>
+                        <p>Mesas: ${document.getElementById('resumoMesa').textContent}</p>
+                        <p>Balcão: ${document.getElementById('resumoBalcao').textContent}</p>
+                        <div class="border"></div>
+                        <p>Pix: ${document.getElementById('resumoPix').textContent}</p>
+                        <p>Dinheiro: ${document.getElementById('resumoDinheiro').textContent}</p>
+                        <p>Cartão: ${document.getElementById('resumoCartao').textContent}</p>
+                        <div class="border"></div>
+                        <p class="right"><strong>TOTAL: ${total}</strong></p>
+                        <div class="border"></div>
+                        <div class="center">
+                            <p>${new Date().toLocaleString('pt-BR')}</p>
+                        </div>
+                    </body>
+                </html>
+            `;
+            
+            const printWin = window.open('', '_blank');
+            printWin.document.write(printContent);
+            printWin.document.close();
+            printWin.print();
+        }
+    </script>
 </body>
 </html>
