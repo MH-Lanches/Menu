@@ -110,6 +110,37 @@
         .carousel-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: opacity 0.3s; }
         .carousel-img.active { opacity: 1; }
         .carousel-img:not(.active) { opacity: 0; }
+        /* Light mode */
+        body.light-mode { background: linear-gradient(135deg,#f0f0f5,#e0e0f0,#f5f5ff) !important; color: #1a1a2e; }
+        body.light-mode .glass { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.1); }
+        body.light-mode .glass-card { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.08); }
+        body.light-mode .product-card-new { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.08); }
+        body.light-mode h3, body.light-mode .text-white { color: #1a1a2e !important; }
+        body.light-mode .text-gray-400, body.light-mode .text-gray-500 { color: #555 !important; }
+        body.light-mode #categoriesSection { background: linear-gradient(to bottom, #f0f0f5, #f0f0f5 95%, transparent) !important; }
+        body.light-mode ::-webkit-scrollbar-track { background: #e0e0e0; }
+        /* Ratings */
+        .star-rating { display: inline-flex; gap: 2px; }
+        .star-rating .star { cursor: pointer; color: #555; font-size: 1.1rem; transition: all 0.15s; }
+        .star-rating .star.filled { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.5); }
+        .star-rating .star:hover { transform: scale(1.2); }
+        /* Search */
+        .search-highlight { background: rgba(255,0,255,0.2); border-radius: 2px; padding: 0 1px; }
+        /* Schedule badge */
+        .schedule-badge { background: rgba(99,102,241,0.15); color: #818cf8; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(99,102,241,0.25); }
+        /* Delivery time badge */
+        .delivery-time-badge { background: rgba(34,197,94,0.15); color: #4ade80; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(34,197,94,0.25); }
+        /* Drink suggestion */
+        .drink-suggestion { background: rgba(0,255,255,0.05); border: 1px dashed rgba(0,255,255,0.3); border-radius: 12px; padding: 12px; }
+        /* Theme toggle */
+        .theme-toggle { transition: transform 0.3s; }
+        .theme-toggle:hover { transform: rotate(180deg); }
+        /* Search autocomplete */
+        .search-dropdown { max-height: 300px; overflow-y: auto; }
+        .search-dropdown-item:hover { background: rgba(255,0,255,0.1); }
+        /* Order history */
+        .order-history-item { border-left: 3px solid #ff00ff; }
+        .order-history-item:hover { border-left-color: #00ffff; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
@@ -152,9 +183,25 @@
             <button id="trackingBtn" onclick="openSavedTracking()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Status da entrega">
                 <i class="fas fa-motorcycle neon-pink text-base"></i>
             </button>
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform theme-toggle" title="Modo Claro/Escuro">
+                <i class="fas fa-sun text-yellow-400 text-base" id="themeIcon"></i>
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Search Bar -->
+<section class="px-4 mb-4">
+    <div class="max-w-2xl mx-auto relative">
+        <div class="glass rounded-xl flex items-center px-4 py-2 border border-[#00ffff]/20">
+            <i class="fas fa-search neon-cyan mr-3"></i>
+            <input type="text" id="searchInput" oninput="handleSearch(this.value)" onfocus="showSearchDropdown()" placeholder="Buscar no cardápio..."
+                class="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 text-sm">
+            <button onclick="clearSearch()" class="text-gray-400 hover:text-white ml-2"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="searchDropdown" class="search-dropdown hidden glass rounded-xl mt-1 max-h-[300px] overflow-y-auto border border-[#ff00ff]/30"></div>
+    </div>
+</section>
 
 <!-- Back to Top -->
 <button id="backToTop" onclick="scrollToTop()" class="fixed bottom-6 right-4 z-50 glass p-3 rounded-full hover:scale-110 transition-transform opacity-0 invisible">
@@ -237,7 +284,15 @@
                     </div>
                     <p id="couponMessage" class="text-xs text-gray-400">1 cupom por pedido.</p>
                 </div>
-                <button onclick="openCheckout()" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">Finalizar Pedido</button>
+                <!-- Drink suggestions -->
+                <div id="drinkSuggestions" class="hidden"></div>
+
+                <div class="flex gap-2">
+                    <button onclick="openSchedule()" class="flex-1 py-3 bg-gradient-to-r from-[#6366f1] to-[#818cf8] rounded-xl font-bold hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        <i class="fas fa-calendar-alt"></i> Agendar
+                    </button>
+                    <button onclick="openCheckout()" class="flex-[2] py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">Finalizar Pedido</button>
+                </div>
             </div>
         </div>
     </div>
@@ -257,16 +312,43 @@
                 <div><label class="block text-sm font-semibold mb-1">Telefone</label><input type="tel" id="clientPhone" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none" placeholder="(00) 00000-0000"></div>
                 <div><label class="block text-sm font-semibold mb-1">Endereço</label><input type="text" id="clientAddress" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none"></div>
                 <div><label class="block text-sm font-semibold mb-1">Complemento</label><input type="text" id="clientComplement" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none"></div>
+                <div id="scheduleDisplay" class="hidden glass-card p-3 rounded-xl border border-[#6366f1]/40">
+                    <p class="text-sm font-semibold text-[#818cf8]"><i class="fas fa-calendar-alt mr-2"></i>Pedido Agendado</p>
+                    <p id="scheduleDisplayText" class="text-xs text-gray-400 mt-1"></p>
+                </div>
                 <div>
                     <label class="block text-sm font-semibold mb-1">Pagamento</label>
-                    <select id="paymentMethod" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
-                        <option value="">Selecione</option>
-                        <option value="dinheiro">Dinheiro</option>
-                        <option value="pix">Pix</option>
-                        <option value="cartao">Cartão</option>
-                    </select>
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <button type="button" onclick="selectPayment('pix')" class="pay-btn glass-card p-3 rounded-xl text-center hover:border-[#00ffff] transition-all" data-pay="pix">
+                            <i class="fas fa-qrcode text-2xl text-[#00ffff] mb-1"></i><p class="text-xs">Pix</p>
+                        </button>
+                        <button type="button" onclick="selectPayment('cartao')" class="pay-btn glass-card p-3 rounded-xl text-center hover:border-[#ff00ff] transition-all" data-pay="cartao">
+                            <i class="fas fa-credit-card text-2xl text-[#ff00ff] mb-1"></i><p class="text-xs">Cartão</p>
+                        </button>
+                        <button type="button" onclick="selectPayment('dinheiro')" class="pay-btn glass-card p-3 rounded-xl text-center hover:border-green-400 transition-all" data-pay="dinheiro">
+                            <i class="fas fa-money-bill text-2xl text-green-400 mb-1"></i><p class="text-xs">Dinheiro</p>
+                        </button>
+                    </div>
+                    <input type="hidden" id="paymentMethod" required>
+                    <div id="pixSection" class="hidden glass-card p-3 rounded-xl mt-2">
+                        <p class="text-sm font-semibold text-[#00ffff] mb-2"><i class="fas fa-qrcode mr-2"></i>Chave Pix:</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="pixKey" value="cardapiomhlanches@gmail.com" readonly class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300">
+                            <button onclick="copyPix()" class="px-3 py-2 bg-[#00ffff] text-black rounded-lg text-xs font-bold hover:scale-105">Copiar</button>
+                        </div>
+                    </div>
                 </div>
-                <div id="changeSection" class="hidden"><label class="block text-sm font-semibold mb-1">Troco</label><input type="text" id="changeFor" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none" placeholder="R$ 0,00"></div>
+                <div id="changeSection" class="hidden"><label class="block text-sm font-semibold mb-1">Troco para quanto?</label><input type="text" id="changeFor" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none" placeholder="Ex: R$ 50,00"></div>
+
+                <!-- Delivery time estimate -->
+                <div class="glass-card p-3 rounded-xl">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-clock text-[#4ade80]"></i>
+                        <span class="text-sm font-semibold text-[#4ade80]">Tempo estimado:</span>
+                        <span id="deliveryTimeEst" class="text-sm font-bold text-white">30-45 min</span>
+                    </div>
+                </div>
+
                 <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#25D366] to-[#128C7E] rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"><i class="fab fa-whatsapp text-2xl"></i> Enviar pelo WhatsApp</button>
             </form>
         </div>
@@ -315,11 +397,99 @@
     </div>
 </div>
 
+<!-- Modal Histórico de Pedidos -->
+<div id="orderHistoryModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70" onclick="closeOrderHistory()"></div>
+    <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto glass rounded-2xl p-6 slide-enter max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-orbitron text-xl font-bold neon-pink">📋 Meus Pedidos</h2>
+            <button onclick="closeOrderHistory()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="orderHistoryList" class="space-y-3"></div>
+    </div>
+</div>
+
+<!-- Modal QR Code Mesa -->
+<div id="qrModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70" onclick="closeQR()"></div>
+    <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto glass rounded-2xl p-6 slide-enter">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-orbitron text-lg font-bold neon-cyan">📷 QR Code Mesa</h2>
+            <button onclick="closeQR()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+        </div>
+        <p class="text-sm text-gray-400 mb-4 text-center">Escaneie o QR code da mesa ou digite o número</p>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="tableNumber" placeholder="Nº da Mesa" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-neon-pink focus:outline-none text-center text-xl font-bold">
+            <button onclick="setTableNumber()" class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold">Entrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agendamento -->
+<div id="scheduleModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70" onclick="closeSchedule()"></div>
+    <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto glass rounded-2xl p-6 slide-enter">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-orbitron text-lg font-bold neon-cyan">📅 Agendar Pedido</h2>
+            <button onclick="closeSchedule()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-1">Data</label>
+                <input type="date" id="scheduleDate" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-neon-pink focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold mb-1">Horário</label>
+                <input type="time" id="scheduleTime" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-neon-pink focus:outline-none">
+            </div>
+            <button onclick="confirmSchedule()" class="w-full py-3 bg-gradient-to-r from-[#6366f1] to-[#818cf8] rounded-xl font-bold">Confirmar Agendamento</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Notificações -->
+<div id="notifModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70" onclick="closeNotif()"></div>
+    <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto glass rounded-2xl p-6 slide-enter max-h-[70vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-orbitron text-lg font-bold neon-cyan">🔔 Notificações</h2>
+            <button onclick="closeNotif()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="notifList" class="space-y-2"></div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastNotif" class="fixed top-16 right-4 z-[60] hidden max-w-sm">
+    <div class="glass rounded-xl p-4 border border-[#00ffff]/40 shadow-2xl shadow-[#00ffff]/20 slide-enter">
+        <div class="flex items-start gap-3">
+            <i class="fas fa-bell neon-cyan text-xl mt-0.5"></i>
+            <div class="flex-1">
+                <p id="toastTitle" class="font-semibold text-sm"></p>
+                <p id="toastBody" class="text-xs text-gray-300 mt-0.5"></p>
+            </div>
+            <button onclick="document.getElementById('toastNotif').classList.add('hidden')" class="text-gray-400"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="glass py-8 px-4 mt-12">
     <div class="max-w-7xl mx-auto text-center">
         <h3 id="footerBrand" class="font-orbitron text-2xl font-bold neon-pink mb-4">MH LANCHES</h3>
         <div id="footerSocialLinks" class="flex justify-center gap-6 mb-6"></div>
+        <!-- Quick access buttons -->
+        <div class="flex justify-center gap-4 mb-6 flex-wrap">
+            <button onclick="openOrderHistory()" class="glass-card px-4 py-2 rounded-xl text-sm hover:border-[#ff00ff] transition-colors">
+                <i class="fas fa-receipt neon-pink mr-2"></i>Meus Pedidos
+            </button>
+            <button onclick="openQR()" class="glass-card px-4 py-2 rounded-xl text-sm hover:border-[#00ffff] transition-colors">
+                <i class="fas fa-qrcode neon-cyan mr-2"></i>Mesa QR Code
+            </button>
+            <button onclick="requestNotifPermission()" class="glass-card px-4 py-2 rounded-xl text-sm hover:border-green-400 transition-colors">
+                <i class="fas fa-bell text-green-400 mr-2"></i>Notificações
+            </button>
+        </div>
         <p class="text-gray-400 text-sm"><span id="footerCopyright">© 2024 MH Lanches. Todos os direitos reservados.</span><br><span class="neon-cyan">Delivery:</span> <span id="footerContact">(00) 00000-0000</span></p>
     </div>
 </footer>
@@ -483,7 +653,7 @@ function renderProducts() {
         const imgs = prod.imagens || [];
 
         return `
-        <div class="glass-card product-card-new ${isPausado ? 'product-unavailable' : ''}" onclick="${isCustomizable ? `openCustomize('${prod.id}')` : ''}">
+        <div class="glass-card product-card-new ${isPausado ? 'product-unavailable' : ''}" data-prod-id="${prod.id}" onclick="${isCustomizable ? `openCustomize('${prod.id}')` : ''}">
             ${isPausado ? `<div class="absolute inset-0 bg-black/70 z-30 flex items-center justify-center rounded-2xl"><span class="bg-red-600 text-white font-black px-8 py-3 rounded-xl text-2xl tracking-widest shadow-2xl transform -rotate-12 border-2 border-red-400">INDISPONÍVEL</span></div>` : ''}
 
             <div class="flex flex-row h-full">
@@ -501,9 +671,14 @@ function renderProducts() {
 
                         <h3 class="text-xl font-extrabold text-white leading-tight mb-2 line-clamp-1">${prod.nome}</h3>
 
+                        ${renderStars(prod.id)}
+
                         <p class="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-3">${prod.descricao}</p>
 
-                        ${isPizza && prod.tempoPreparo > 0 ? `<p class="text-gray-500 text-xs mb-2"><i class="fas fa-clock text-[#ff00ff] mr-1.5"></i>Preparo em ~${prod.tempoPreparo} min</p>` : ''}
+                        <div class="flex gap-1.5 flex-wrap mb-2">
+                            ${isPizza && prod.tempoPreparo > 0 ? `<span class="text-gray-500 text-xs"><i class="fas fa-clock text-[#ff00ff] mr-1"></i>~${prod.tempoPreparo} min</span>` : ''}
+                            ${getDeliveryTimeBadge()}
+                        </div>
                     </div>
 
                     <!-- Bottom: Price -->
@@ -605,23 +780,45 @@ function addToCartSimple(id) {
     if (!prod) return;
     const n = norm(prod);
     const existing = carrinho.find(c => c.id === prod.id);
-    if (existing) { existing.qtd++; } else { carrinho.push({ id: prod.id, nome: n.nome, preco: n.preco, qtd: 1, observacao: '' }); }
+    if (existing) { existing.qtd++; } else { carrinho.push({ id: prod.id, produtoId: prod.id, nome: n.nome, preco: n.preco, qtd: 1, observacao: '' }); }
     updateCartUI();
-    animateCartAdd();
+    animateCartAdd(id);
 }
 
-function animateCartAdd() {
+function animateCartAdd(prodId) {
     const btn = document.getElementById('topCartBtn');
     if (!btn) return;
     btn.classList.remove('cart-bump');
     void btn.offsetWidth;
     btn.classList.add('cart-bump');
     setTimeout(() => btn.classList.remove('cart-bump'), 500);
+
+    // Fly item animation
+    if (prodId) {
+        const card = document.querySelector(`[data-prod-id="${prodId}"]`);
+        if (!card) return;
+        const cardRect = card.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        const fly = document.createElement('div');
+        fly.className = 'fly-item';
+        fly.innerHTML = '🛒';
+        fly.style.left = (cardRect.right - 30) + 'px';
+        fly.style.top = (cardRect.top + cardRect.height / 2) + 'px';
+        document.body.appendChild(fly);
+        requestAnimationFrame(() => {
+            fly.style.left = (btnRect.left + btnRect.width / 2 - 10) + 'px';
+            fly.style.top = (btnRect.top + btnRect.height / 2 - 10) + 'px';
+            fly.style.opacity = '0.3';
+            fly.style.transform = 'scale(0.4)';
+        });
+        setTimeout(() => fly.remove(), 700);
+    }
 }
 
 function openCart() {
     document.getElementById('cartModal').classList.remove('hidden');
     renderCartItems();
+    updateDrinkSuggestions();
 }
 
 function closeCart() { document.getElementById('cartModal').classList.add('hidden'); }
@@ -1123,6 +1320,382 @@ window.addEventListener('scroll', () => {
     else { btn.classList.add('opacity-0','invisible'); btn.classList.remove('opacity-100','visible'); }
 });
 
+// ============ RATINGS ============
+function getRatings() {
+    return JSON.parse(localStorage.getItem('mh_ratings') || '{}');
+}
+function saveRating(prodId, rating) {
+    const ratings = getRatings();
+    if (!ratings[prodId]) ratings[prodId] = { total: 0, count: 0 };
+    ratings[prodId].total += rating;
+    ratings[prodId].count++;
+    localStorage.setItem('mh_ratings', JSON.stringify(ratings));
+    renderProducts();
+}
+function renderStars(prodId) {
+    const ratings = getRatings();
+    const r = ratings[prodId];
+    const avg = r && r.count > 0 ? (r.total / r.count) : 0;
+    const count = r ? r.count : 0;
+    let html = '<div class="star-rating" onclick="event.stopPropagation()">';
+    for (let i = 1; i <= 5; i++) {
+        html += `<span class="star ${i <= Math.round(avg) ? 'filled' : ''}" onclick="saveRating('${prodId}',${i})">★</span>`;
+    }
+    html += `</div><span class="text-xs text-gray-500 ml-1">${count > 0 ? `(${count})` : ''}</span>`;
+    return html;
+}
+function getDeliveryTimeBadge() {
+    const orders = JSON.parse(localStorage.getItem('mh_active_orders') || '[]');
+    const base = orders.length > 3 ? '45-60' : orders.length > 1 ? '30-45' : '20-35';
+    return `<span class="delivery-time-badge">🕐 ${base} min</span>`;
+}
+
+// ============ SEARCH ============
+function handleSearch(query) {
+    const dropdown = document.getElementById('searchDropdown');
+    if (!query || query.length < 2) { dropdown.classList.add('hidden'); renderProducts(); return; }
+    const q = query.toLowerCase();
+    const normProds = produtos.map(norm).filter(p => p.ativo !== false);
+    const results = normProds.filter(p =>
+        p.nome.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q)
+    ).slice(0, 8);
+
+    dropdown.innerHTML = results.length === 0
+        ? '<p class="p-4 text-gray-400 text-sm text-center">Nenhum produto encontrado</p>'
+        : results.map(p => `
+            <div class="search-dropdown-item flex items-center gap-3 p-3 cursor-pointer border-b border-white/5" onclick="scrollToProduct('${p.id}')">
+                <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                    ${p.imagens.length > 0 ? `<img src="${p.imagens[0]}" class="w-full h-full object-cover">` : `<img src="${DEFAULT_IMAGE}" class="w-full h-full object-cover">`}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">${p.nome}</p>
+                    <p class="text-xs text-gray-400">${p.categoria}</p>
+                </div>
+                <span class="text-[#ff00ff] font-bold text-sm">R$ ${p.preco.toFixed(2).replace('.',',')}</span>
+            </div>
+        `).join('');
+    dropdown.classList.remove('hidden');
+}
+function showSearchDropdown() {
+    const q = document.getElementById('searchInput').value;
+    if (q.length >= 2) handleSearch(q);
+}
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchDropdown').classList.add('hidden');
+    renderProducts();
+}
+function scrollToProduct(id) {
+    document.getElementById('searchDropdown').classList.add('hidden');
+    document.getElementById('searchInput').value = '';
+    const el = document.querySelector(`[data-prod-id="${id}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#searchInput') && !e.target.closest('#searchDropdown')) {
+        document.getElementById('searchDropdown')?.classList.add('hidden');
+    }
+});
+
+// ============ THEME ============
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('mh_theme', isLight ? 'light' : 'dark');
+    const icon = document.getElementById('themeIcon');
+    icon.className = isLight ? 'fas fa-moon text-indigo-400 text-base' : 'fas fa-sun text-yellow-400 text-base';
+}
+function applyTheme() {
+    const theme = localStorage.getItem('mh_theme') || 'dark';
+    if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('themeIcon').className = 'fas fa-moon text-indigo-400 text-base';
+    }
+}
+
+// ============ ORDER HISTORY ============
+function getOrderHistory() {
+    return JSON.parse(localStorage.getItem('mh_order_history') || '[]');
+}
+function saveOrderToHistory(order) {
+    const history = getOrderHistory();
+    history.unshift(order);
+    if (history.length > 50) history.pop();
+    localStorage.setItem('mh_order_history', JSON.stringify(history));
+}
+function openOrderHistory() {
+    const history = getOrderHistory();
+    const list = document.getElementById('orderHistoryList');
+    if (history.length === 0) {
+        list.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fas fa-receipt text-4xl mb-3 opacity-30"></i><p>Nenhum pedido ainda</p></div>';
+    } else {
+        list.innerHTML = history.map(o => `
+            <div class="order-history-item glass-card p-4 rounded-xl">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-bold text-sm">Pedido #${o.id || ''}</p>
+                        <p class="text-xs text-gray-400">${new Date(o.data).toLocaleDateString('pt-BR')} ${new Date(o.data).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</p>
+                    </div>
+                    <span class="text-[#ff00ff] font-bold text-sm">R$ ${(o.total || 0).toFixed(2).replace('.',',')}</span>
+                </div>
+                <p class="text-xs text-gray-400 mb-2">${(o.itens || []).map(i => `${i.qtd}x ${i.nome}`).join(', ')}</p>
+                <div class="flex gap-2">
+                    <button onclick="reorder('${o.id}')" class="text-xs px-3 py-1 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">Pedir de Novo</button>
+                    <span class="text-xs px-3 py-1 bg-gray-700 rounded-lg">${o.status || 'Finalizado'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+    document.getElementById('orderHistoryModal').classList.remove('hidden');
+}
+function closeOrderHistory() { document.getElementById('orderHistoryModal').classList.add('hidden'); }
+function reorder(orderId) {
+    const history = getOrderHistory();
+    const order = history.find(o => o.id === orderId);
+    if (order && order.itens) {
+        carrinho = [...order.itens.map(i => ({...i, id: i.produtoId || i.id + '_' + Date.now()}))];
+        updateCartUI();
+        closeOrderHistory();
+        openCart();
+    }
+}
+
+// ============ QR CODE MESA ============
+function openQR() { document.getElementById('qrModal').classList.remove('hidden'); }
+function closeQR() { document.getElementById('qrModal').classList.add('hidden'); }
+function setTableNumber() {
+    const table = document.getElementById('tableNumber').value.trim();
+    if (!table) return;
+    localStorage.setItem('mh_table', table);
+    closeQR();
+    showToastNotif('Mesa ' + table, 'Pedido associado à mesa ' + table);
+}
+
+// ============ SCHEDULE ============
+let scheduledOrder = null;
+function openSchedule() {
+    if (carrinho.length === 0) { showToastNotif('Carrinho vazio', 'Adicione itens antes de agendar'); return; }
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('scheduleDate').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('scheduleTime').value = '19:00';
+    document.getElementById('scheduleModal').classList.remove('hidden');
+}
+function closeSchedule() { document.getElementById('scheduleModal').classList.add('hidden'); }
+function confirmSchedule() {
+    const date = document.getElementById('scheduleDate').value;
+    const time = document.getElementById('scheduleTime').value;
+    if (!date || !time) { showToastNotif('Erro', 'Preencha data e horário'); return; }
+    scheduledOrder = { date, time };
+    closeSchedule();
+    document.getElementById('scheduleDisplay').classList.remove('hidden');
+    document.getElementById('scheduleDisplayText').textContent = `${date.split('-').reverse().join('/')} às ${time}`;
+    showToastNotif('Agendado!', `Pedido para ${date.split('-').reverse().join('/')} às ${time}`);
+}
+
+// ============ PAYMENT ============
+function selectPayment(method) {
+    document.getElementById('paymentMethod').value = method;
+    document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.classList.toggle('border-[#ff00ff]', btn.dataset.pay === method);
+        btn.classList.toggle('border-2', btn.dataset.pay === method);
+    });
+    document.getElementById('changeSection').classList.toggle('hidden', method !== 'dinheiro');
+    document.getElementById('pixSection').classList.toggle('hidden', method !== 'pix');
+}
+function copyPix() {
+    const key = document.getElementById('pixKey').value;
+    navigator.clipboard.writeText(key).then(() => showToastNotif('Pix copiado!', 'Chave copiada para a área de transferência'));
+}
+
+// ============ DRINK SUGGESTIONS ============
+function updateDrinkSuggestions() {
+    const container = document.getElementById('drinkSuggestions');
+    if (!container) return;
+    const hasBurger = carrinho.some(item => {
+        const prod = produtos.find(p => (p.id + '') === (item.produtoId + '') || (p.id + '') === (item.id + '').split('_')[0]);
+        return prod && (prod.categoria || '').toLowerCase().includes('hamb');
+    });
+    if (!hasBurger) { container.classList.add('hidden'); return; }
+    const normProds = produtos.map(norm).filter(p => p.categoria.toLowerCase().includes('bebida') && p.ativo !== false);
+    if (normProds.length === 0) { container.classList.add('hidden'); return; }
+    container.classList.remove('hidden');
+    container.innerHTML = `
+        <div class="drink-suggestion">
+            <p class="text-sm font-semibold text-[#00ffff] mb-2"><i class="fas fa-glass-cheers mr-2"></i>Que tal uma bebida?</p>
+            <div class="flex gap-2 overflow-x-auto pb-1">
+                ${normProds.slice(0, 4).map(p => `
+                    <button onclick="addDrinkToCart('${p.id}')" class="flex-shrink-0 glass-card p-2 rounded-lg text-center hover:border-[#00ffff] transition-all min-w-[100px]">
+                        <p class="text-xs font-semibold truncate">${p.nome}</p>
+                        <p class="text-[#ff00ff] text-xs font-bold">R$ ${p.preco.toFixed(2).replace('.',',')}</p>
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+function addDrinkToCart(id) {
+    const prod = produtos.find(p => (p.id + '') === (id + ''));
+    if (!prod) return;
+    const n = norm(prod);
+    carrinho.push({ id: prod.id + '_' + Date.now(), produtoId: prod.id, nome: n.nome, preco: n.preco, qtd: 1, observacao: '' });
+    updateCartUI();
+    renderCartItems();
+    updateDrinkSuggestions();
+    animateCartAdd();
+}
+
+// ============ NOTIFICATIONS ============
+function requestNotifPermission() {
+    if (!('Notification' in window)) { showToastNotif('Indisponível', 'Seu navegador não suporta notificações'); return; }
+    Notification.requestPermission().then(perm => {
+        if (perm === 'granted') showToastNotif('Ativado!', 'Você receberá notificações do seu pedido');
+        else showToastNotif('Negado', 'Habilite notificações nas configurações do navegador');
+    });
+}
+function showToastNotification(title, body) {
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastBody').textContent = body;
+    document.getElementById('toastNotif').classList.remove('hidden');
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('MH Lanches: ' + title, { body, icon: 'https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572' });
+    }
+    setTimeout(() => document.getElementById('toastNotif').classList.add('hidden'), 5000);
+}
+function openNotif() {
+    document.getElementById('notifModal').classList.remove('hidden');
+    const notifs = JSON.parse(localStorage.getItem('mh_notifs') || '[]');
+    document.getElementById('notifList').innerHTML = notifs.length === 0
+        ? '<p class="text-gray-400 text-center py-8">Nenhuma notificação</p>'
+        : notifs.map(n => `<div class="glass-card p-3 rounded-xl"><p class="font-semibold text-sm">${n.title}</p><p class="text-xs text-gray-400">${n.body}</p><p class="text-[10px] text-gray-500 mt-1">${new Date(n.time).toLocaleString('pt-BR')}</p></div>`).join('');
+}
+function closeNotif() { document.getElementById('notifModal').classList.add('hidden'); }
+function addNotif(title, body) {
+    const notifs = JSON.parse(localStorage.getItem('mh_notifs') || '[]');
+    notifs.unshift({ title, body, time: new Date().toISOString() });
+    if (notifs.length > 20) notifs.pop();
+    localStorage.setItem('mh_notifs', JSON.stringify(notifs));
+}
+
+// ============ ENHANCED CHECKOUT ============
+document.getElementById('checkoutForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nome = document.getElementById('clientName').value;
+    const telefone = document.getElementById('clientPhone').value;
+    const endereco = document.getElementById('clientAddress').value;
+    const complemento = document.getElementById('clientComplement').value;
+    const pagamento = document.getElementById('paymentMethod').value;
+    const troco = document.getElementById('changeFor').value;
+    const table = localStorage.getItem('mh_table') || '';
+
+    if (!pagamento) { showToastNotif('Erro', 'Selecione a forma de pagamento'); return; }
+
+    localStorage.setItem('mh_client_data', JSON.stringify({ nome, telefone, endereco, complemento }));
+
+    const subtotal = carrinho.reduce((s, i) => s + (i.preco || 0) * i.qtd, 0);
+    const taxa = siteConfig.taxaEntrega || 5;
+    let desconto = 0;
+    if (appliedCoupon) {
+        const cupom = cupons.find(c => c.codigo === appliedCoupon);
+        if (cupom) {
+            if (cupom.tipo === 'percentual') desconto = subtotal * (cupom.valor / 100);
+            else if (cupom.tipo === 'fixo') desconto = cupom.valor;
+            else if (cupom.tipo === 'frete') desconto = taxa;
+        }
+    }
+    const total = Math.max(0, subtotal - desconto + taxa);
+
+    const itensTexto = carrinho.map(i => {
+        let txt = `• ${i.qtd}x ${i.nome}`;
+        if (i.observacao) txt += `\\n  Obs: ${i.observacao}`;
+        if (i.adicionais && i.adicionais.length > 0) txt += `\\n  + ${i.adicionais.map(a => a.nome).join(', ')}`;
+        txt += ` = R$ ${(i.preco * i.qtd).toFixed(2).replace('.',',')}`;
+        return txt;
+    }).join('\\n');
+
+    let scheduleText = '';
+    if (scheduledOrder) {
+        scheduleText = `\\n📅 *AGENDADO:* ${scheduledOrder.date.split('-').reverse().join('/')} às ${scheduledOrder.time}`;
+    }
+
+    const msg = `🍔 *NOVO PEDIDO - MH LANCHES*\\n\\n👤 *Cliente:* ${nome}\\n📱 *Telefone:* ${telefone}\\n📍 *Endereço:* ${endereco}${complemento ? '\\n🏠 ' + complemento : ''}${table ? '\\n🪑 *Mesa:* ' + table : ''}${scheduleText}\\n\\n📋 *ITENS:*\\n${itensTexto}\\n\\n💰 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.',',')}${desconto > 0 ? `\\n🎫 *Desconto:* -R$ ${desconto.toFixed(2).replace('.',',')}` : ''}\\n🛵 *Taxa Entrega:* R$ ${taxa.toFixed(2).replace('.',',')}\\n\\n💵 *TOTAL: R$ ${total.toFixed(2).replace('.',',')}*\\n\\n💳 *Pagamento:* ${pagamento.toUpperCase()}${troco ? `\\n💰 *Troco:* ${troco}` : ''}`;
+
+    const pedidoId = 'PED' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+    localStorage.setItem('mh_pedidoId', pedidoId);
+
+    if (window.firebaseDB) {
+        try {
+            const { db, ref, push } = window.firebaseDB;
+            await push(ref(db, 'pedidos'), {
+                id: pedidoId, tipo: table ? 'mesa' : 'delivery', cliente: nome, telefone, endereco, complemento, mesa: table,
+                itens: carrinho, pagamento, troco, subtotal, desconto, taxa, total,
+                status: 'novo', data: new Date().toISOString(),
+                agendado: scheduledOrder || null
+            });
+            // Save to customer history
+            saveOrderToHistory({ id: pedidoId, itens: carrinho, total, status: 'Enviado', data: new Date().toISOString() });
+            addNotif('Pedido Enviado!', `Pedido #${pedidoId} - Total: R$ ${total.toFixed(2)}`);
+        } catch(e) { console.error('Firebase error:', e); }
+    }
+
+    // Increment coupon
+    if (appliedCoupon && window.firebaseDB) {
+        try {
+            const cupom = cupons.find(c => c.codigo === appliedCoupon);
+            if (cupom) {
+                const cupRef = window.firebaseDB.ref(window.firebaseDB.db, 'cupons');
+                const snap = await window.firebaseDB.get(cupRef);
+                if (snap.exists()) {
+                    Object.entries(snap.val()).forEach(([key, val]) => {
+                        if (val.codigo === appliedCoupon) {
+                            window.firebaseDB.set(window.firebaseDB.ref(window.firebaseDB.db, 'cupons/' + key + '/usos'), (val.usos || 0) + 1);
+                        }
+                    });
+                }
+            }
+        } catch(e) {}
+    }
+
+    carrinho = []; appliedCoupon = null; scheduledOrder = null;
+    localStorage.removeItem('mh_applied_coupon');
+    document.getElementById('scheduleDisplay')?.classList.add('hidden');
+    updateCartUI(); closeCheckout();
+
+    const phone = (siteConfig.whatsapp || '').replace(/[^0-9]/g, '');
+    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) { window.location.href = url; }
+    else { const win = window.open(url, '_blank'); if (!win) window.location.href = url; }
+    setTimeout(() => {
+        document.getElementById('whatsappFallbackLink').href = url;
+        document.getElementById('whatsappFallbackToast').classList.remove('hidden');
+    }, 3000);
+});
+
+// ============ FIREBASE ORDER TRACKING WITH NOTIFICATIONS ============
+function initOrderTracking() {
+    if (!window.firebaseDB) return;
+    const pedidoId = localStorage.getItem('mh_pedidoId');
+    if (!pedidoId) return;
+    const { db, ref, onValue } = window.firebaseDB;
+    let lastStatus = '';
+    onValue(ref(db, 'pedidos/' + pedidoId), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.val();
+        if (data.status && data.status !== lastStatus) {
+            lastStatus = data.status;
+            const statusLabels = {
+                'novo': 'Pedido Recebido!',
+                'producao': 'Em Preparo 🔥',
+                'pronto': 'Saiu para Entrega! 🏍️',
+                'saiu-entrega': 'Saiu para Entrega! 🏍️',
+                'entregue': 'Pedido Entregue! ✅'
+            };
+            const label = statusLabels[data.status] || data.status;
+            showToastNotification('📦 ' + label, `Seu pedido #${pedidoId.substring(0,8)}... está ${label.toLowerCase()}`);
+            addNotif(label, `Pedido #${pedidoId.substring(0,8)}`);
+        }
+    });
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
     banners = siteConfig.anuncios || [];
@@ -1131,6 +1704,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartUI();
     checkOpenStatus();
     setInterval(checkOpenStatus, 60000);
+    applyTheme();
+    initOrderTracking();
 });
 </script>
 </body>
