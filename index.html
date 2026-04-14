@@ -732,30 +732,72 @@
                 ? produtos 
                 : produtos.filter(p => p.categoria === categoriaAtiva);
 
-            container.innerHTML = filtrados.map(prod => `
-                <div class="glass-card rounded-2xl p-4 hover:scale-105 transition-transform">
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="text-5xl">${prod.imagem}</span>
-                        <button onclick="toggleFavorite(${prod.id})" class="text-2xl hover:scale-125 transition-transform">
-                            <i class="fas fa-heart ${favoritos.includes(prod.id) ? 'text-red-500 heart-animation' : 'text-gray-500'}"></i>
-                        </button>
-                    </div>
-                    <h3 class="text-xl font-bold neon-cyan mb-2">${prod.nome}</h3>
-                    <p class="text-gray-400 text-sm mb-3">${prod.descricao}</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-2xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
-                        <button onclick="handleAddToCart(${prod.id}, null, event)" 
-                            class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    ${(prod.meiaMeia || prod.multiSabor) ? `
-                        <button onclick="openCustomize(${prod.id}, event)" class="w-full mt-2 py-2 glass rounded-lg text-sm neon-pink hover:bg-neon-pink/20 transition-colors">
-                            <i class="fas fa-sliders-h mr-1"></i> Personalizar
-                        </button>
+            container.innerHTML = filtrados.map(prod => {
+                const isPausado = prod.pausado;
+                const isPersonalizavel = prod.tipo === 'pizza' || prod.tipo === 'pastel' || prod.meiaMeia || prod.multiSabor || (prod.opcionais && prod.opcionais.length > 0);
+                
+                // Tratar galeria
+                const imagens = Array.isArray(prod.galeria) && prod.galeria.length > 0 
+                    ? prod.galeria 
+                    : [prod.imagem || '🍔'];
+
+                const isEmoji = (str) => str && str.length <= 4 && !str.startsWith('http') && !str.startsWith('data:');
+
+                return `
+                <div class="glass-card rounded-2xl p-4 transition-all duration-300 ${isPausado ? 'opacity-60 grayscale relative' : 'hover:scale-105'} flex flex-col justify-between">
+                    ${isPausado ? `
+                        <div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center rounded-2xl">
+                            <span class="bg-red-600 text-white font-black px-4 py-2 rounded-lg text-xl tracking-wider shadow-lg transform -rotate-12 border-2 border-white">
+                                EM FALTA!
+                            </span>
+                        </div>
                     ` : ''}
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-24 h-24 rounded-xl overflow-hidden flex items-center justify-center bg-gray-800 border border-gray-700/50">
+                                ${isEmoji(imagens[0]) 
+                                    ? `<span class="text-5xl">${imagens[0]}</span>` 
+                                    : `<img src="${imagens[0]}" class="w-full h-full object-cover">`
+                                }
+                            </div>
+                            <button onclick="toggleFavorite(${prod.id})" class="text-2xl hover:scale-125 transition-transform z-10">
+                                <i class="fas fa-heart ${favoritos.includes(prod.id) ? 'text-red-500 heart-animation' : 'text-gray-500'}"></i>
+                            </button>
+                        </div>
+                        <h3 class="text-xl font-bold neon-cyan mb-2">${prod.nome}</h3>
+                        <p class="text-gray-400 text-sm mb-3">${prod.descricao || ''}</p>
+                        
+                        ${imagens.length > 1 ? `
+                            <div class="flex gap-1 overflow-x-auto py-1 mb-2 max-w-[180px]">
+                                ${imagens.map(img => `
+                                    <div class="flex-shrink-0 w-8 h-8 rounded bg-gray-800 overflow-hidden flex items-center justify-center">
+                                        ${isEmoji(img) ? `<span class="text-xs">${img}</span>` : `<img src="${img}" class="w-full h-full object-cover">`}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-2xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
+                            ${!isPersonalizavel ? `
+                                <button onclick="handleAddToCart(${prod.id}, null, event)" ${isPausado ? 'disabled' : ''}
+                                    class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        ${isPersonalizavel ? `
+                            <button onclick="openCustomize(${prod.id}, event)" ${isPausado ? 'disabled' : ''} class="w-full py-2 glass rounded-lg text-sm neon-pink hover:bg-neon-pink/20 transition-colors font-bold tracking-wide">
+                                <i class="fas fa-sliders-h mr-1"></i> PERSONALIZAR
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderBanner() {
@@ -1373,6 +1415,28 @@
             document.getElementById('trackingModal').classList.add('hidden');
         }
 
+        function updateCustomizeTotal() {
+            if (!customizingProduct) return;
+            let subtotal = customizingProduct.preco;
+            
+            // Adicionais selecionados
+            const opcInputs = document.querySelectorAll('.addon-checkbox:checked');
+            let extrasPreco = 0;
+            const limit = customizingProduct.gratisLimit || 0;
+            
+            opcInputs.forEach((input, index) => {
+                if (index >= limit) {
+                    extrasPreco += parseFloat(input.dataset.preco) || 0;
+                }
+            });
+            
+            const totalFinal = subtotal + extrasPreco;
+            const btn = document.getElementById('btnConfirmCustom');
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Adicionar (R$ ${totalFinal.toFixed(2).replace('.', ',')})`;
+            }
+        }
+
         function openCustomize(id, evt) {
             const produto = produtos.find(p => p.id === id);
             customizingProduct = produto;
@@ -1380,72 +1444,148 @@
             document.getElementById('customizeTitle').textContent = `Personalizar ${produto.nome}`;
             
             let content = '';
+            const isPizza = produto.tipo === 'pizza' || produto.meiaMeia;
+            const isPastel = produto.tipo === 'pastel' || produto.multiSabor;
             
-            if (produto.meiaMeia) {
-                const pizzas = produtos.filter(p => p.categoria === 'Pizzas');
-                content = `
-                    <div class="space-y-4">
-                        <p class="text-gray-400 mb-4">Escolha até 2 sabores para sua pizza (meia-meia):</p>
+            // Sabores (se aplicável)
+            if (isPizza) {
+                const pizzas = produtos.filter(p => p.categoria === 'Pizzas' || p.tipo === 'pizza');
+                content += `
+                    <div class="space-y-4 mb-6">
+                        <p class="text-gray-300 font-bold mb-2">🍕 Sabores da Pizza (Meia a Meia):</p>
                         <div>
-                            <label class="block font-semibold mb-2">🍕 Sabor 1:</label>
-                            <select id="sabor1" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
-                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome} (+ R$ 0,00)</option>`).join('')}
+                            <label class="block text-sm font-semibold mb-1">Metade 1 (Obrigatório):</label>
+                            <select id="sabor1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
+                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <label class="block font-semibold mb-2">🍕 Sabor 2 (opcional):</label>
-                            <select id="sabor2" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
-                                <option value="">Pizza Inteira</option>
-                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome} (+ R$ 0,00)</option>`).join('')}
+                            <label class="block text-sm font-semibold mb-1">Metade 2 (Opcional - Inteira se vazio):</label>
+                            <select id="sabor2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
+                                <option value="">--- Pizza Inteira ---</option>
+                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
                             </select>
                         </div>
                     </div>
                 `;
-            } else if (produto.multiSabor) {
-                const pasteis = produtos.filter(p => p.categoria === 'Pastéis');
-                content = `
-                    <div class="space-y-4">
-                        <p class="text-gray-400 mb-4">Escolha até 5 sabores de pastéis:</p>
+            } else if (isPastel) {
+                const pasteis = produtos.filter(p => p.categoria === 'Pastéis' || p.tipo === 'pastel');
+                content += `
+                    <div class="space-y-4 mb-6">
+                        <p class="text-gray-300 font-bold mb-2">🥟 Escolha até 5 sabores para seu Pastel Especial:</p>
                         <div class="grid grid-cols-2 gap-2">
                             ${pasteis.map(p => `
-                                <label class="glass-card p-3 rounded-lg cursor-pointer hover:border-neon-pink transition-colors">
-                                    <input type="checkbox" value="${p.nome}" class="pastel-sabor mr-2">
-                                    ${p.nome}
+                                <label class="glass-card p-3 rounded-lg cursor-pointer hover:border-neon-pink transition-colors flex items-center gap-2">
+                                    <input type="checkbox" value="${p.nome}" class="pastel-sabor accent-[#ff00ff]">
+                                    <span class="text-sm">${p.nome}</span>
                                 </label>
                             `).join('')}
                         </div>
-                        <p class="text-sm text-gray-500">Selecione até 5 sabores</p>
                     </div>
                 `;
             }
+
+            // Opcionais/Adicionais
+            if (produto.opcionais && produto.opcionais.length > 0) {
+                const limite = produto.gratisLimit || 0;
+                content += `
+                    <div class="mb-6">
+                        <p class="text-gray-300 font-bold mb-1">➕ Adicionais / Opcionais:</p>
+                        <p class="text-xs text-neon-cyan mb-3">Você tem direito a até ${limite} adicionais grátis/inclusos!</p>
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                            ${produto.opcionais.map(op => {
+                                if (op.pausado) {
+                                    return `
+                                        <div class="flex justify-between items-center bg-gray-800/40 p-3 rounded-lg opacity-50 cursor-not-allowed">
+                                            <span class="text-sm line-through">${op.nome}</span>
+                                            <span class="text-xs text-red-500 font-bold">Pausado/Falta</span>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <label class="flex justify-between items-center bg-gray-800 p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" data-preco="${op.preco}" value="${op.nome}" onchange="updateCustomizeTotal()" class="addon-checkbox accent-[#ff00ff] w-4 h-4">
+                                            <span class="text-sm">${op.nome}</span>
+                                        </div>
+                                        <span class="text-xs font-bold text-neon-pink">+ R$ ${op.preco.toFixed(2).replace('.', ',')}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Observações
+            content += `
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-2">📝 Observações / Retirar Ingrediente</label>
+                    <textarea id="customObs" placeholder="Ex: Sem cebola, borda recheada..." rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:border-neon-pink focus:outline-none"></textarea>
+                </div>
+            `;
             
             content += `
-                <button onclick="confirmCustomize(event)" class="w-full mt-6 py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
-                    Adicionar ao Carrinho
+                <button id="btnConfirmCustom" onclick="confirmCustomize(event)" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-shopping-cart"></i> Adicionar (R$ ${produto.preco.toFixed(2).replace('.', ',')})
                 </button>
             `;
             
             document.getElementById('customizeContent').innerHTML = content;
             document.getElementById('customizeModal').classList.remove('hidden');
+            updateCustomizeTotal();
         }
 
         function confirmCustomize(evt) {
             let customizacao = '';
             
-            if (customizingProduct.meiaMeia) {
+            // Tratar sabores
+            if (customizingProduct.tipo === 'pizza' || customizingProduct.meiaMeia) {
                 const sabor1 = document.getElementById('sabor1').value;
                 const sabor2 = document.getElementById('sabor2').value;
-                customizacao = sabor2 ? `${sabor1} / ${sabor2}` : sabor1;
-            } else if (customizingProduct.multiSabor) {
+                customizacao += `[Pizza] ${sabor2 ? `${sabor1} e ${sabor2}` : sabor1}. `;
+            } else if (customizingProduct.tipo === 'pastel' || customizingProduct.multiSabor) {
                 const sabores = Array.from(document.querySelectorAll('.pastel-sabor:checked')).map(cb => cb.value);
                 if (sabores.length === 0) {
                     alert('Selecione pelo menos um sabor!');
                     return;
                 }
-                customizacao = sabores.join(', ');
+                customizacao += `[Sabores] ${sabores.join(', ')}. `;
             }
-            
-            handleAddToCart(customizingProduct.id, customizacao, evt);
+
+            // Tratar adicionais
+            const opcs = Array.from(document.querySelectorAll('.addon-checkbox:checked'));
+            if (opcs.length > 0) {
+                customizacao += `[Opcionais] ${opcs.map(i => i.value).join(', ')}. `;
+            }
+
+            // Tratar observação
+            const obs = document.getElementById('customObs').value.trim();
+            if (obs) {
+                customizacao += `[Obs: ${obs}]`;
+            }
+
+            // Calcular preço final
+            let total = customizingProduct.preco;
+            const limit = customizingProduct.gratisLimit || 0;
+            opcs.forEach((item, idx) => {
+                if (idx >= limit) {
+                    total += parseFloat(item.dataset.preco) || 0;
+                }
+            });
+
+            // Criar item especial pro carrinho com o preço alterado
+            const carrinhoItem = {
+                id: customizingProduct.id + '_' + Date.now(),
+                nome: customizingProduct.nome,
+                preco: total,
+                detalhes: customizacao,
+                quantidade: 1
+            };
+
+            carrinho.push(carrinhoItem);
+            salvarCarrinho();
+            renderCarrinho();
             closeCustomize();
         }
 

@@ -674,28 +674,52 @@
     </div>
 
     <!-- Product Modal -->
-    <div id="productModal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/70" onclick="closeProductModal()"></div>
-        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto glass rounded-2xl p-6">
+    <!-- New Extended Product Modal -->
+    <div id="productModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="absolute inset-0 bg-black/70 min-h-screen" onclick="closeProductModal()"></div>
+        <div class="relative max-w-2xl mx-auto my-8 glass rounded-2xl p-6 z-10 border border-[#ff00ff]/30 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="productModalTitle" class="text-2xl font-bold neon-pink">Novo Produto</h2>
-                <button onclick="closeProductModal()" class="text-2xl hover:text-red-500">
+                <h2 id="productModalTitle" class="text-2xl font-bold neon-pink flex items-center gap-2">
+                    <i class="fas fa-box-open"></i> Novo Produto / Personalização
+                </h2>
+                <button onclick="closeProductModal()" class="text-2xl hover:text-red-500 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="productForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-2">Nome</label>
-                    <input type="text" id="prodNome" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+            <form id="productForm" class="space-y-5">
+                <!-- Tipo de Produto -->
+                <div class="p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <label class="block text-sm font-bold neon-cyan mb-3"><i class="fas fa-tags"></i> Tipo do Produto</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="simples" checked onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span class="text-sm">Simples</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="pizza" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span class="text-sm">Pizza (Meio a Meio)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="pastel" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span class="text-sm">Pastel (Especial)</span>
+                        </label>
+                    </div>
                 </div>
+
+                <!-- Basic Fields -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Nome do Produto</label>
+                    <input type="text" id="prodNome" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Preço (R$)</label>
-                        <input type="number" id="prodPreco" step="0.50" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                        <label class="block text-sm font-semibold mb-2">Preço Base (R$)</label>
+                        <input type="number" id="prodPreco" step="0.50" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-2">Categoria</label>
-                        <select id="prodCategoria" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                        <select id="prodCategoria" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
                             <option>Hambúrgueres</option>
                             <option>Pizzas</option>
                             <option>Pastéis</option>
@@ -705,16 +729,64 @@
                         </select>
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-sm font-semibold mb-2">Descrição</label>
-                    <textarea id="prodDesc" rows="2" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></textarea>
+                    <label class="block text-sm font-semibold mb-2">Descrição / Detalhes</label>
+                    <textarea id="prodDesc" rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-2">Emoji/URL Imagem</label>
-                    <input type="text" id="prodImg" value="🍔" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+
+                <!-- Multiple Images Upload (DataURL / Gallery) -->
+                <div class="p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <label class="block text-sm font-bold neon-cyan mb-2">📸 Galeria de Imagens</label>
+                    <p class="text-xs text-gray-400 mb-3">Envie uma ou várias fotos do produto para o carrossel (PNG, JPG)</p>
+                    
+                    <input type="file" id="prodGaleriaUpload" accept="image/*" multiple onchange="handleProdGalleryUpload(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('prodGaleriaUpload').click()" 
+                        class="w-full py-3 border-2 border-dashed border-[#ff00ff] rounded-lg text-[#ff00ff] hover:bg-[#ff00ff]/10 transition-colors font-semibold flex justify-center items-center gap-2 mb-3">
+                        <i class="fas fa-cloud-upload-alt"></i> Clique para enviar imagem do seu dispositivo
+                    </button>
+                    
+                    <!-- Fallback / URL manual -->
+                    <label class="block text-xs text-gray-400 mt-2 mb-1">Ou insira URL de imagem / Emoji:</label>
+                    <input type="text" id="prodImg" value="🍔" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+
+                    <!-- Preview da Galeria -->
+                    <div id="galleryPreviewContainer" class="flex flex-wrap gap-2 mt-3"></div>
                 </div>
-                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
-                    Salvar Produto
+
+                <!-- Status e Estoque / Pausar -->
+                <div class="p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <label class="block text-sm font-bold neon-pink mb-2">🚦 Controle de Estoque</label>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="prodPausado" class="w-5 h-5 accent-red-500">
+                            <span class="text-sm font-semibold text-red-400">Pausar Produto (Indisponível / Em Falta)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Sistema de Opcionais / Adicionais -->
+                <div id="addonsSection" class="p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold neon-cyan">➕ Opcionais / Adicionais</label>
+                        <button type="button" onclick="addOpcionalRow()" class="px-3 py-1 bg-[#ff00ff]/20 text-[#ff00ff] rounded-lg text-xs font-semibold hover:bg-[#ff00ff]/40">
+                            + Adicionar Item
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Qtd Inclusa / Grátis</label>
+                            <input type="number" id="prodGratisLimit" value="0" min="0" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Lista de adicionais dinâmicos -->
+                    <div id="opcionaisList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform flex justify-center items-center gap-2">
+                    <i class="fas fa-check"></i> Salvar Produto
                 </button>
             </form>
         </div>
@@ -1533,9 +1605,77 @@
             `).join('');
         }
 
+        let editingProductId = null;
+        let currentGaleria = [];
+        let currentAddons = [];
+
+        function toggleProdTypeFields() {
+            const tipo = document.querySelector('input[name="prodTipo"]:checked').value;
+            // Mostra ou esconde seções com base no tipo
+            if (tipo === 'simples') {
+                document.getElementById('addonsSection').classList.add('hidden');
+            } else {
+                document.getElementById('addonsSection').classList.remove('hidden');
+            }
+        }
+
+        function handleProdGalleryUpload(event) {
+            const files = event.target.files;
+            if (!files) return;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentGaleria.push(e.target.result);
+                    renderGalleryPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderGalleryPreview() {
+            const container = document.getElementById('galleryPreviewContainer');
+            container.innerHTML = currentGaleria.map((img, index) => `
+                <div class="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-600">
+                    <img src="${img}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeGaleriaImg(${index})" class="absolute top-0 right-0 bg-red-600 text-white p-0.5 rounded-bl">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeGaleriaImg(index) {
+            currentGaleria.splice(index, 1);
+            renderGalleryPreview();
+        }
+
+        function addOpcionalRow(nome = '', preco = 0, pausado = false) {
+            const container = document.getElementById('opcionaisList');
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-2 bg-gray-800 p-2 rounded-lg';
+            row.innerHTML = `
+                <input type="text" placeholder="Nome do opcional" value="${nome}" class="addon-nome w-1/2 bg-gray-700 border-none rounded px-2 py-1 text-sm focus:outline-none">
+                <input type="number" step="0.50" placeholder="R$" value="${preco}" class="addon-preco w-1/4 bg-gray-700 border-none rounded px-2 py-1 text-sm focus:outline-none">
+                <label class="flex items-center gap-1 text-xs text-gray-400 cursor-pointer">
+                    <input type="checkbox" ${pausado ? 'checked' : ''} class="addon-pausado accent-red-500"> Pausado
+                </label>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-400">
+                    <i class="fas fa-trash text-sm"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
         function openProductModal() {
+            editingProductId = null;
             document.getElementById('productModalTitle').textContent = 'Novo Produto';
             document.getElementById('productForm').reset();
+            document.querySelector('input[name="prodTipo"][value="simples"]').checked = true;
+            currentGaleria = [];
+            currentAddons = [];
+            document.getElementById('galleryPreviewContainer').innerHTML = '';
+            document.getElementById('opcionaisList').innerHTML = '';
+            toggleProdTypeFields();
             document.getElementById('productModal').classList.remove('hidden');
         }
 
@@ -1546,16 +1686,37 @@
         function saveProduct(e) {
             e.preventDefault();
             
+            const tipo = document.querySelector('input[name="prodTipo"]:checked').value;
+            
+            // Coletar opcionais
+            const opcRows = document.querySelectorAll('#opcionaisList > div');
+            const listaOpcionais = Array.from(opcRows).map(row => ({
+                nome: row.querySelector('.addon-nome').value,
+                preco: parseFloat(row.querySelector('.addon-preco').value) || 0,
+                pausado: row.querySelector('.addon-pausado').checked
+            })).filter(o => o.nome.trim() !== '');
+
             const newProd = {
-                id: Date.now(),
+                id: editingProductId || Date.now(),
+                tipo: tipo,
                 nome: document.getElementById('prodNome').value,
                 preco: parseFloat(document.getElementById('prodPreco').value),
                 categoria: document.getElementById('prodCategoria').value,
                 descricao: document.getElementById('prodDesc').value,
-                imagem: document.getElementById('prodImg').value
+                imagem: document.getElementById('prodImg').value,
+                galeria: currentGaleria.length ? [...currentGaleria] : [document.getElementById('prodImg').value],
+                pausado: document.getElementById('prodPausado').checked,
+                gratisLimit: parseInt(document.getElementById('prodGratisLimit').value) || 0,
+                opcionais: listaOpcionais
             };
             
-            produtos.push(newProd);
+            if (editingProductId) {
+                const idx = produtos.findIndex(p => p.id === editingProductId);
+                if (idx !== -1) produtos[idx] = newProd;
+            } else {
+                produtos.push(newProd);
+            }
+
             renderProductsTable();
             renderCategories();
             closeProductModal();
@@ -1565,12 +1726,29 @@
         function editProduct(id) {
             const prod = produtos.find(p => p.id === id);
             if (prod) {
+                editingProductId = id;
                 document.getElementById('productModalTitle').textContent = 'Editar Produto';
-                document.getElementById('prodNome').value = prod.nome;
-                document.getElementById('prodPreco').value = prod.preco;
-                document.getElementById('prodCategoria').value = prod.categoria;
-                document.getElementById('prodDesc').value = prod.descricao;
-                document.getElementById('prodImg').value = prod.imagem;
+                document.getElementById('prodNome').value = prod.nome || '';
+                document.getElementById('prodPreco').value = prod.preco || 0;
+                document.getElementById('prodCategoria').value = prod.categoria || '';
+                document.getElementById('prodDesc').value = prod.descricao || '';
+                document.getElementById('prodImg').value = prod.imagem || '';
+                document.getElementById('prodPausado').checked = !!prod.pausado;
+                
+                const tipoRadio = document.querySelector(`input[name="prodTipo"][value="${prod.tipo || 'simples'}"]`);
+                if (tipoRadio) tipoRadio.checked = true;
+
+                currentGaleria = Array.isArray(prod.galeria) ? [...prod.galeria] : [prod.imagem || ''];
+                renderGalleryPreview();
+
+                document.getElementById('prodGratisLimit').value = prod.gratisLimit || 0;
+                
+                document.getElementById('opcionaisList').innerHTML = '';
+                if (Array.isArray(prod.opcionais)) {
+                    prod.opcionais.forEach(op => addOpcionalRow(op.nome, op.preco, op.pausado));
+                }
+
+                toggleProdTypeFields();
                 document.getElementById('productModal').classList.remove('hidden');
             }
         }
