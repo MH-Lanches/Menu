@@ -125,25 +125,28 @@
 
     <!-- Status Bar -->
     <div id="statusBar" class="fixed top-0 left-0 right-0 z-50 glass py-2 px-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex justify-between items-center gap-3">
             <div class="flex items-center gap-2">
                 <span id="openStatus" class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
                 <span id="statusText" class="text-sm font-semibold">ABERTO</span>
             </div>
-            <div class="text-sm neon-cyan">
-                <i class="fas fa-clock mr-1"></i>
-                <span id="currentTime"></span>
+            <div class="flex items-center gap-2">
+                <button id="musicBtn" onclick="toggleMusic()" class="glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Jingle">
+                    <i class="fas fa-music neon-pink text-base"></i>
+                </button>
+                <button id="topCartBtn" onclick="openCart()" class="relative glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Carrinho">
+                    <i class="fas fa-shopping-cart neon-cyan text-base"></i>
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <button id="trackingBtn" onclick="openSavedTracking()" class="glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Status da entrega">
+                    <i class="fas fa-motorcycle neon-pink text-base"></i>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Music Player -->
-    <button id="musicBtn" onclick="toggleMusic()" class="fixed top-14 right-4 z-50 glass p-3 rounded-full neon-border hover:scale-110 transition-transform">
-        <i class="fas fa-music neon-pink text-xl"></i>
-    </button>
-
     <!-- Back to Top -->
-    <button id="backToTop" onclick="scrollToTop()" class="fixed bottom-24 right-4 z-50 glass p-3 rounded-full neon-border hover:scale-110 transition-transform opacity-0 invisible">
+    <button id="backToTop" onclick="scrollToTop()" class="fixed bottom-6 right-4 z-50 glass p-3 rounded-full neon-border hover:scale-110 transition-transform opacity-0 invisible">
         <i class="fas fa-arrow-up neon-cyan text-xl"></i>
     </button>
 
@@ -209,12 +212,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Carrinho Flutuante -->
-    <button id="cartBtn" onclick="openCart()" class="fixed bottom-6 right-4 z-50 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] p-4 rounded-full neon-border hover:scale-110 transition-transform">
-        <i class="fas fa-shopping-cart text-2xl text-white"></i>
-        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">0</span>
-    </button>
 
     <!-- Modal Carrinho -->
     <div id="cartModal" class="fixed inset-0 z-50 hidden">
@@ -484,11 +481,9 @@
             renderCategories();
             renderProducts();
             renderBanner();
-            updateTime();
             checkOpenStatus();
             loadSavedData();
             setupCartCounter();
-            setInterval(updateTime, 1000);
             setInterval(() => {
                 currentBanner = (currentBanner + 1) % banners.length;
                 renderBanner();
@@ -676,11 +671,6 @@
         function setBanner(index) {
             currentBanner = index;
             renderBanner();
-        }
-
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         }
 
         function checkOpenStatus() {
@@ -990,6 +980,16 @@
 
         function openTracking() {
             document.getElementById('trackingModal').classList.remove('hidden');
+        }
+
+        function openSavedTracking() {
+            const pedidoId = localStorage.getItem('mh_pedidoId');
+            if (!pedidoId) {
+                alert('Voce ainda nao possui um pedido ativo para acompanhamento.');
+                return;
+            }
+            setupOrderTracking(pedidoId);
+            openTracking();
         }
 
         function closeTracking() {
