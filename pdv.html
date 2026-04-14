@@ -377,7 +377,7 @@
         let currentQuickCategory = 'Todos';
 
         // Mock Products for quick sale
-        const quickProducts = [
+        let quickProducts = [
             { id: 101, nome: "MH Classic", preco: 29.90, categoria: "Hambúrgueres", imagem: "🍔" },
             { id: 102, nome: "Bacon Burger", preco: 34.90, categoria: "Hambúrgueres", imagem: "🍔" },
             { id: 103, nome: "Cheese Burger", preco: 32.90, categoria: "Hambúrgueres", imagem: "🍔" },
@@ -486,6 +486,15 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
+            const savedProds = localStorage.getItem('mh_json_produtos');
+            if (savedProds) {
+                try {
+                    const parsed = JSON.parse(savedProds);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        quickProducts = parsed;
+                    }
+                } catch(e) {}
+            }
             checkSession();
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             updateTime();
