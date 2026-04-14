@@ -541,24 +541,39 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
-            const savedProds = localStorage.getItem('mh_json_produtos');
-            if (savedProds) {
-                try {
-                    const parsed = JSON.parse(savedProds);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        produtos = parsed;
-                    }
-                } catch(e) {
-                    console.error("Erro ao carregar produtos do localStorage:", e);
-                }
-            } else {
-                localStorage.setItem('mh_json_produtos', JSON.stringify(produtos));
-            }
             await loadSiteConfig();
             await loadCupons();
             applySiteConfig();
-            renderCategories();
-            renderProducts();
+            
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            if (dbMode !== 'local' && window.firebaseDB) {
+                const { db, ref, onValue } = window.firebaseDB;
+                
+                // Categorias
+                onValue(ref(db, 'categorias'), (snap) => {
+                    if (snap.exists()) {
+                        categorias = ['Todos', ...Object.values(snap.val())];
+                        renderCategories();
+                    }
+                });
+                
+                // Produtos
+                onValue(ref(db, 'produtos'), (snap) => {
+                    if (snap.exists()) {
+                        produtos = Object.values(snap.val());
+                        renderProducts();
+                    }
+                });
+            } else {
+                const savedProds = localStorage.getItem('mh_json_produtos');
+                if (savedProds) produtos = JSON.parse(savedProds);
+                const savedCats = localStorage.getItem('mh_json_categorias');
+                if (savedCats) {
+                    try { categorias = ['Todos', ...JSON.parse(savedCats)]; } catch(e) {}
+                }
+                renderCategories();
+                renderProducts();
+            }
             renderBanner();
             checkOpenStatus();
             loadSavedData();

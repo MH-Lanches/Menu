@@ -834,7 +834,7 @@
         let produtos = [];
         let pedidos = [];
         let cupons = [];
-        let categorias = ["Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
+        let categorias = [];
         let useLocalDB = localStorage.getItem('mh_db_mode') === 'local';
         const LOCAL_CONFIG_KEY = 'mh_json_config';
         const LOCAL_CUPONS_KEY = 'mh_json_cupons';
@@ -952,6 +952,47 @@
             { id: 'PED_003', cliente: { nome: 'Pedro Santos' }, data: '2024-01-15T20:00:00', total: 55.00, status: 'rota' },
         ];
 
+        async function loadDataFromFirebase() {
+            if (useLocalDB) return;
+            const firebase = await waitForFirebase();
+            if (!firebase) return;
+            const { db, ref, onValue, set, get } = firebase;
+            
+            // Sync Produtos
+            onValue(ref(db, 'produtos'), async (snap) => {
+                if (snap.exists()) {
+                    produtos = Object.values(snap.val());
+                } else {
+                    // Popular com mock
+                    produtos = [...mockProdutos];
+                    for(let p of produtos) await set(ref(db, 'produtos/' + p.id), p);
+                }
+                renderProductsTable();
+            });
+
+            // Sync Categorias
+            onValue(ref(db, 'categorias'), async (snap) => {
+                if (snap.exists()) {
+                    categorias = Object.values(snap.val());
+                } else {
+                    categorias = ["Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
+                    await set(ref(db, 'categorias'), categorias);
+                }
+                renderCategories();
+            });
+
+            // Sync Pedidos
+            onValue(ref(db, 'pedidos'), (snap) => {
+                if (snap.exists()) {
+                    pedidos = Object.values(snap.val()).sort((a,b) => new Date(b.data) - new Date(a.data));
+                } else {
+                    pedidos = [];
+                }
+                loadDashboard();
+                renderOrders();
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             await loadConfigFromDatabase();
             checkSession();
@@ -964,14 +1005,7 @@
             document.getElementById('dbMode').textContent = useLocalDB ? 'Local (JSON)' : 'Firebase (Nuvem)';
             updateCupomValueFieldState();
             
-            const savedProd = localStorage.getItem('mh_json_produtos');
-            if (savedProd) {
-                try { produtos = JSON.parse(savedProd); } catch(e) { produtos = [...mockProdutos]; }
-            } else {
-                produtos = [...mockProdutos];
-                localStorage.setItem('mh_json_produtos', JSON.stringify(produtos));
-            }
-            pedidos = [...mockPedidos];
+            await loadDataFromFirebase();
         });
 
         async function loadConfigFromDatabase() {
@@ -1716,18 +1750,26 @@
                 opcionais: listaOpcionais
             };
             
-            if (editingProductId) {
-                const idx = produtos.findIndex(p => p.id === editingProductId);
-                if (idx !== -1) produtos[idx] = newProd;
-            } else {
-                produtos.push(newProd);
-            }
-
-            localStorage.setItem('mh_json_produtos', JSON.stringify(produtos));
-            renderProductsTable();
-            renderCategories();
-            closeProductModal();
-            showToast("Produto salvo com sucesso!");
+            (async () => {
+                if (useLocalDB) {
+                    if (editingProductId) {
+                        const idx = produtos.findIndex(p => p.id === editingProductId);
+                        if (idx !== -1) produtos[idx] = newProd;
+                    } else {
+                        produtos.push(newProd);
+                    }
+                    localStorage.setItem('mh_json_produtos', JSON.stringify(produtos));
+                } else {
+                    const firebase = await waitForFirebase();
+                    if (firebase) {
+                        const { db, ref, set } = firebase;
+                        await set(ref(db, 'produtos/' + newProd.id), newProd);
+                    }
+                }
+                renderProductsTable();
+                closeProductModal();
+                showToast("Produto salvo com sucesso!");
+            })();
         }
 
         function editProduct(id) {
@@ -1760,11 +1802,19 @@
             }
         }
 
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                produtos = produtos.filter(p => p.id !== id);
+                if (useLocalDB) {
+                    produtos = produtos.filter(p => p.id !== id);
+                    localStorage.setItem('mh_json_produtos', JSON.stringify(produtos));
+                } else {
+                    const firebase = await waitForFirebase();
+                    if (firebase) {
+                        const { db, ref, remove } = firebase;
+                        await remove(ref(db, 'produtos/' + id));
+                    }
+                }
                 renderProductsTable();
-                renderCategories();
                 showToast("Produto excluído!");
             }
         }
@@ -1778,21 +1828,38 @@
             document.getElementById('categoryModal').classList.add('hidden');
         }
 
-        function saveCategory(e) {
+        async function saveCategory(e) {
             e.preventDefault();
             const nome = document.getElementById('catNome').value;
             if (!categorias.includes(nome)) {
-                categorias.push(nome);
-                renderCategories();
+                if (useLocalDB) {
+                    categorias.push(nome);
+                    localStorage.setItem('mh_json_categorias', JSON.stringify(categorias));
+                } else {
+                    categorias.push(nome);
+                    const firebase = await waitForFirebase();
+                    if (firebase) {
+                        const { db, ref, set } = firebase;
+                        await set(ref(db, 'categorias'), categorias);
+                    }
+                }
                 showToast("Categoria adicionada!");
             }
             closeCategoryModal();
         }
 
-        function deleteCategory(nome) {
+        async function deleteCategory(nome) {
             if (confirm(`Tem certeza que deseja excluir a categoria \"${nome}\"?`)) {
                 categorias = categorias.filter(c => c !== nome);
-                renderCategories();
+                if (useLocalDB) {
+                    localStorage.setItem('mh_json_categorias', JSON.stringify(categorias));
+                } else {
+                    const firebase = await waitForFirebase();
+                    if (firebase) {
+                        const { db, ref, set } = firebase;
+                        await set(ref(db, 'categorias'), categorias);
+                    }
+                }
                 showToast("Categoria excluída!");
             }
         }

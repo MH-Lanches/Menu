@@ -486,21 +486,28 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            const savedProds = localStorage.getItem('mh_json_produtos');
-            if (savedProds) {
-                try {
-                    const parsed = JSON.parse(savedProds);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        quickProducts = parsed;
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            if (dbMode !== 'local' && window.firebaseDB) {
+                const { db, ref, onValue } = window.firebaseDB;
+                onValue(ref(db, 'produtos'), (snap) => {
+                    if (snap.exists()) {
+                        quickProducts = Object.values(snap.val());
+                        renderQuickProducts();
                     }
-                } catch(e) {}
+                });
+            } else {
+                const savedProds = localStorage.getItem('mh_json_produtos');
+                if (savedProds) {
+                    try { quickProducts = JSON.parse(savedProds); } catch(e) {}
+                }
+                renderQuickProducts();
             }
+
             checkSession();
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             updateTime();
             setInterval(updateTime, 1000);
             setInterval(refreshOrders, 10000);
-            renderQuickProducts();
             
             // Listen for Firebase orders
             if (window.firebaseDB) {
