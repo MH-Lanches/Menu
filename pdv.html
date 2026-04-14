@@ -515,17 +515,21 @@
                     if (window.firebaseDB.onValue) {
                         window.firebaseDB.onValue(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos'), (snapshot) => {
                             const data = snapshot.val() || {};
-                            const firebaseOrders = Object.entries(data).map(([key, value]) => ({
+                            const allOrders = Object.entries(data).map(([key, value]) => ({
                                 ...(value || {}),
                                 id: (value && value.id) ? value.id : key,
                                 tipo: 'delivery'
                             }));
+
+                            // FILTRAR: pedidos finalizados NAO aparecem na lista
+                            const firebaseOrders = allOrders.filter(o => o.status !== 'finalizado');
 
                             const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
                             if (hasNewOrder) {
                                 playAlertSound();
                             }
 
+                            // Manter pedidos locais (mesa/balcao) que nao sao do Firebase
                             const localOrders = orders.filter(o => o.tipo !== 'delivery' || !o.fromFirebase);
                             const normalizedFirebaseOrders = firebaseOrders.map(o => ({ ...o, fromFirebase: true }));
                             orders = [...localOrders, ...normalizedFirebaseOrders];
