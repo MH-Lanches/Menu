@@ -1,0 +1,88 @@
+[
+  {
+    "id": "p1",
+    "nome": "X-Burguer Neon",
+    "preco": 25.90,
+    "descricao": "Hambúrguer artesanal 160g, queijo cheddar derretido, maionese verde e pão brioche.",
+    "imagem": "https://picsum.photos/seed/burger1/400/400",
+    "categoria": "Hambúrgueres",
+    "disponibilidade": ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+  },
+  {
+    "id": "p2",
+    "nome": "Pizza Cyber Pepperoni",
+    "preco": 45.00,
+    "descricao": "Molho de tomate especial, muçarela, pepperoni crocante e orégano.",
+    "imagem": "https://picsum.photos/seed/pizza1/400/400",
+    "categoria": "Pizzas",
+    "tipo": "pizza",
+    "sabores": [
+      {"nome": "Pepperoni"},
+      {"nome": "Muçarela"},
+      {"nome": "Calabresa"},
+      {"nome": "Frango com Catupiry"}
+    ],
+    "disponibilidade": ["sex", "sab", "dom"]
+  },
+  {
+    "id": "p3",
+    "nome": "Pastel Futurista",
+    "preco": 12.00,
+    "descricao": "Pastel crocante com recheio generoso à sua escolha.",
+    "imagem": "https://picsum.photos/seed/pastel1/400/400",
+    "categoria": "Pastéis",
+    "tipo": "pastel",
+    "sabores": [
+      {"nome": "Carne"},
+      {"nome": "Queijo"},
+      {"nome": "Frango"},
+      {"nome": "Pizza"},
+      {"nome": "Palmito"}
+    ],
+    "disponibilidade": ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+  },
+  {
+    "id": "p4",
+    "nome": "Coke Neon 350ml",
+    "preco": 6.50,
+    "descricao": "Refrigerante lata 350ml gelado.",
+    "imagem": "https://picsum.photos/seed/soda1/400/400",
+    "categoria": "Bebidas",
+    "disponibilidade": ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+  },
+  {
+    "id": "p5",
+    "nome": "Batata Frita Laser",
+    "preco": 18.00,
+    "descricao": "Porção de batatas fritas crocantes com sal de ervas.",
+    "imagem": "https://picsum.photos/seed/fries1/400/400",
+    "categoria": "Acompanhamentos",
+    "disponibilidade": ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
+  },
+  {
+    "id": "p6",
+    "nome": "X-Salada Glitch",
+    "preco": 22.00,
+    "descricao": "Hambúrguer, alface, tomate, milho, ervilha e maionese.",
+    "imagem": "https://picsum.photos/seed/burger2/400/400",
+    "categoria": "Hambúrgueres"
+  },
+  {
+    "id": "p7",
+    "nome": "Pizza Matrix Marguerita",
+    "preco": 42.00,
+    "descricao": "Muçarela, manjericão fresco e rodelas de tomate.",
+    "imagem": "https://picsum.photos/seed/pizza2/400/400",
+    "categoria": "Pizzas",
+    "tipo": "pizza",
+    "sabores": [{"nome": "Marguerita"}, {"nome": "Muçarela"}]
+  },
+  {
+    "id": "p8",
+    "nome": "Suco de Laranja Digital",
+    "preco": 10.00,
+    "descricao": "Suco natural de laranja 500ml.",
+    "imagem": "https://picsum.photos/seed/juice1/400/400",
+    "categoria": "Bebidas"
+  }
+]
