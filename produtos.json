@@ -1,9 +1,0 @@
-COMO PUBLICAR NO GITHUB:
-
-1. Baixe o ZIP do projeto (Menu de configurações -> Export to ZIP).
-2. Abra o ZIP e entre na pasta 'PARA_O_GITHUB'.
-3. Copie TODOS os arquivos que estão DENTRO dessa pasta (index.html, assets, config.json, etc).
-4. Cole esses arquivos diretamente na raiz do seu repositório no GitHub.
-5. NÃO coloque a pasta 'PARA_O_GITHUB' inteira lá, coloque apenas o que está DENTRO dela.
-
-Se você ver apenas um texto estranho (JSON), certifique-se de que está acessando o link principal do seu site e não o arquivo config.json diretamente.
