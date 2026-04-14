@@ -314,6 +314,20 @@
                                         <input type="file" id="config_faviconUpload" accept="image/*" class="w-full text-sm text-gray-300">
                                         <p class="text-xs text-gray-500 mt-1">Ícone que aparece na aba do navegador</p>
                                     </div>
+                                    <!-- JINGLE / MÚSICA DO SITE -->
+                                    <div class="p-4 bg-gray-900/70 rounded-xl border border-gray-700">
+                                        <label class="block text-sm font-semibold mb-3 neon-pink">
+                                            <i class="fas fa-music mr-2"></i> Jingle / Música do Site
+                                        </label>
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <button onclick="openJingleModal()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:scale-105 transition-transform shadow-lg shadow-purple-500/30">
+                                                <i class="fas fa-cloud-upload-alt mr-2"></i> Trocar Jingle (MP3)
+                                            </button>
+                                            <span id="jingleStatus" class="text-sm text-gray-400"></span>
+                                        </div>
+                                        <audio id="jinglePreview" controls class="w-full max-w-md"></audio>
+                                        <p class="text-xs text-gray-500 mt-2">A música toca automaticamente ao entrar no site (controlável pelo ícone 🔊 do topo)</p>
+                                    </div>
                                     <div>
                                         <label class="block text-sm font-semibold mb-2">Cor Primária</label>
                                         <input type="color" id="config_corPrimaria" class="w-full h-12 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer">
@@ -720,12 +734,7 @@
                     <div>
                         <label class="block text-sm font-semibold mb-2">Categoria</label>
                         <select id="prodCategoria" required class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
-                            <option>Hambúrgueres</option>
-                            <option>Pizzas</option>
-                            <option>Pastéis</option>
-                            <option>Porções</option>
-                            <option>Bebidas</option>
-                            <option>Sobremesas</option>
+                            <!-- Categorias carregadas dinamicamente -->
                         </select>
                     </div>
                 </div>
@@ -815,6 +824,33 @@
                     Salvar Categoria
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Jingle -->
+    <div id="jingleModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-card rounded-3xl p-8 max-w-md w-full mx-4 relative">
+            <button onclick="closeJingleModal()" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-6 neon-pink">
+                <i class="fas fa-music mr-2"></i> Trocar Jingle
+            </h3>
+            <div class="space-y-4">
+                <div class="p-6 border-2 border-dashed border-gray-600 rounded-2xl text-center hover:border-[#ff00ff] transition-colors cursor-pointer" onclick="document.getElementById('jingleFileInput').click()">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-300 font-semibold">Clique para selecionar o arquivo MP3</p>
+                    <p class="text-xs text-gray-500 mt-2">Formato: MP3 | Máx: 5MB</p>
+                    <input type="file" id="jingleFileInput" accept="audio/mp3,audio/mpeg,audio/*" class="hidden" onchange="handleJingleUpload(event)">
+                </div>
+                <div id="jinglePreviewArea" class="hidden">
+                    <p class="text-sm text-gray-400 mb-2">Pré-visualização:</p>
+                    <audio id="jinglePreviewModal" controls class="w-full"></audio>
+                    <button onclick="saveJingleToStorage()" class="w-full mt-4 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold hover:scale-105 transition-transform">
+                        <i class="fas fa-save mr-2"></i> Salvar Jingle
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -979,6 +1015,7 @@
                     await set(ref(db, 'categorias'), categorias);
                 }
                 renderCategories();
+                populateProductCategories();
             });
 
             // Sync Pedidos
@@ -1129,6 +1166,76 @@
                 reader.onload = (event) => resolve(event.target.result);
                 reader.readAsDataURL(file);
             });
+        }
+
+        // ============ JINGLE FUNCTIONS ============
+        let pendingJingleData = null;
+
+        function openJingleModal() {
+            document.getElementById('jingleModal').classList.remove('hidden');
+            // Load current jingle preview
+            const currentJingle = localStorage.getItem('mh_jingle_data');
+            const preview = document.getElementById('jinglePreview');
+            if (currentJingle) {
+                preview.src = currentJingle;
+                document.getElementById('jingleStatus').textContent = 'Jingle atual carregado';
+            } else {
+                preview.src = '';
+                document.getElementById('jingleStatus').textContent = 'Nenhum jingle configurado';
+            }
+        }
+
+        function closeJingleModal() {
+            document.getElementById('jingleModal').classList.add('hidden');
+            pendingJingleData = null;
+        }
+
+        function handleJingleUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            // Validate type
+            if (!file.type.startsWith('audio/')) {
+                showToast('Selecione um arquivo de áudio válido (MP3)');
+                return;
+            }
+            // Validate size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Arquivo muito grande! Máximo 5MB');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pendingJingleData = e.target.result;
+                document.getElementById('jinglePreviewArea').classList.remove('hidden');
+                document.getElementById('jinglePreviewModal').src = pendingJingleData;
+                showToast('Jingle carregado! Clique em Salvar para confirmar.');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveJingleToStorage() {
+            if (!pendingJingleData) {
+                showToast('Nenhum jingle selecionado!');
+                return;
+            }
+            localStorage.setItem('mh_jingle_data', pendingJingleData);
+            // Also save to Firebase
+            if (!useLocalDB && window.firebaseDB) {
+                try {
+                    const firebase = await waitForFirebase();
+                    if (firebase) {
+                        const { db, ref, set } = firebase;
+                        await set(ref(db, 'config/jingle'), pendingJingleData);
+                    }
+                } catch(e) {
+                    console.log('Falha ao salvar jingle no Firebase, salvo apenas localmente');
+                }
+            }
+            // Update preview
+            document.getElementById('jinglePreview').src = pendingJingleData;
+            document.getElementById('jingleStatus').textContent = 'Jingle atualizado com sucesso! ✅';
+            closeJingleModal();
+            showToast('Jingle salvo e atualizado no site! 🎵');
         }
 
         function populateConfigFields() {
@@ -1605,20 +1712,36 @@
         }
 
         function renderCategories() {
-            document.getElementById('categoriasGrid').innerHTML = categorias.map(cat => `
+            document.getElementById('categoriasGrid').innerHTML = categorias.map(cat => {
+                const catStr = typeof cat === 'string' ? cat : (cat.nome || cat.name || 'Sem nome');
+                return `
                 <div class="glass-card rounded-2xl p-6 text-center hover:scale-105 transition-transform relative">
-                    <button onclick="deleteCategory('${cat}')" class="absolute top-2 right-2 text-red-500 hover:text-red-400">
+                    <button onclick="deleteCategory('${catStr}')" class="absolute top-2 right-2 text-red-500 hover:text-red-400">
                         <i class="fas fa-times"></i>
                     </button>
                     <div class="text-4xl mb-3">
-                        ${cat === 'Hambúrgueres' ? '🍔' : cat === 'Pizzas' ? '🍕' : cat === 'Pastéis' ? '🥟' : cat === 'Porções' ? '🍟' : cat === 'Bebidas' ? '🥤' : '🍰'}
+                        ${catStr === 'Hambúrgueres' ? '🍔' : catStr === 'Pizzas' ? '🍕' : catStr === 'Pastéis' ? '🥟' : catStr === 'Porções' ? '🍟' : catStr === 'Bebidas' ? '🥤' : '🍰'}
                     </div>
-                    <h4 class="font-bold mb-2">${cat}</h4>
+                    <h4 class="font-bold mb-2">${catStr}</h4>
                     <p class="text-gray-400 text-sm">
-                        ${produtos.filter(p => p.categoria === cat).length + 8} produtos
+                        ${produtos.filter(p => p.categoria === catStr).length} produtos
                     </p>
                 </div>
-            `).join('');
+            `}).join('');
+        }
+
+        // POPULAR DROPDOWN DE CATEGORIAS NO FORMULÁRIO DE PRODUTO
+        function populateProductCategories() {
+            const sel = document.getElementById('prodCategoria');
+            if (!sel) return;
+            const currentVal = sel.value;
+            // Normalizar categorias para strings
+            const cats = categorias.map(c => typeof c === 'string' ? c : (c.nome || c.name || '')).filter(c => c);
+            // Adicionar padrão se vazio
+            const defaults = ['Hambúrgueres', 'Pizzas', 'Pastéis', 'Porções', 'Bebidas', 'Sobremesas'];
+            const allCats = [...new Set([...defaults, ...cats])];
+            sel.innerHTML = '<option value="">Selecione a categoria</option>' + 
+                allCats.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
         }
 
         function renderOrders() {
@@ -1846,11 +1969,16 @@
                 showToast("Categoria adicionada!");
             }
             closeCategoryModal();
+            populateProductCategories();
+            renderCategories();
         }
 
         async function deleteCategory(nome) {
             if (confirm(`Tem certeza que deseja excluir a categoria \"${nome}\"?`)) {
-                categorias = categorias.filter(c => c !== nome);
+                categorias = categorias.filter(c => {
+                    const s = typeof c === 'string' ? c : (c.nome || c.name || '');
+                    return s !== nome;
+                });
                 if (useLocalDB) {
                     localStorage.setItem('mh_json_categorias', JSON.stringify(categorias));
                 } else {
@@ -1861,6 +1989,8 @@
                     }
                 }
                 showToast("Categoria excluída!");
+                populateProductCategories();
+                renderCategories();
             }
         }
 

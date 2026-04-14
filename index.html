@@ -581,14 +581,19 @@ function initFirebaseSync() {
         onValue(ref(db, 'categorias'), (snap) => {
             if (snap.exists()) {
                 const data = snap.val();
+                let catArray = [];
                 if (Array.isArray(data)) {
-                    categorias = ['Todos', ...data];
+                    catArray = data;
                 } else if (typeof data === 'object') {
-                    categorias = ['Todos', ...Object.values(data)];
+                    catArray = Object.values(data);
                 }
-                renderCategories();
-            } else {
-                categorias = ['Todos', 'Hambúrgueres', 'Pizzas', 'Pastéis', 'Porções', 'Bebidas', 'Sobremesas'];
+                categorias = ['Todos', ...catArray.map(c => {
+                    if (typeof c === 'string') return c;
+                    if (typeof c === 'object' && c !== null) return c.nome || c.name || c.label || c.id || 'Categoria';
+                    return String(c);
+                }).filter(c => c && c !== 'undefined' && c !== 'null')];
+                // Remover duplicatas
+                categorias = [...new Set(categorias)];
                 renderCategories();
             }
         });
@@ -596,9 +601,16 @@ function initFirebaseSync() {
         onValue(ref(db, 'produtos'), (snap) => {
             if (snap.exists()) {
                 const data = snap.val();
-                produtos = Object.values(data);
+                if (Array.isArray(data)) {
+                    produtos = data;
+                } else if (typeof data === 'object') {
+                    produtos = Object.values(data);
+                } else {
+                    produtos = [];
+                }
                 renderProducts();
             } else {
+                // Firebase sem produtos — mostra mensagem amigável
                 produtos = [];
                 renderProducts();
             }
@@ -613,12 +625,24 @@ function initFirebaseSync() {
         onValue(ref(db, 'anuncios'), (snap) => {
             if (snap.exists()) {
                 banners = Object.values(snap.val()).filter(a => a.ativo !== false);
-                renderBanner();
+            }
+            if (banners.length === 0) {
+                banners = siteConfig.anuncios.filter(a => a.ativo !== false);
+            }
+            renderBanner();
+        });
+
+        onValue(ref(db, 'cupons'), (snap) => {
+            if (snap.exists()) {
+                cupons = Object.values(snap.val());
             }
         });
     } else {
+        categorias = ['Todos', 'Hambúrgueres', 'Pizzas', 'Pastéis', 'Porções', 'Bebidas', 'Sobremesas'];
+        banners = siteConfig.anuncios.filter(a => a.ativo !== false);
         renderCategories();
         renderProducts();
+        renderBanner();
     }
 }
 
@@ -626,12 +650,14 @@ function initFirebaseSync() {
 function renderCategories() {
     const container = document.getElementById('categoriesNav');
     if (!container) return;
-    container.innerHTML = categorias.map(cat => `
-        <button onclick="filterCategory('${cat}')"
-            class="px-6 py-2 rounded-full font-semibold whitespace-nowrap transition-all text-sm ${categoriaAtiva === cat ? 'category-active' : 'glass-card hover:border-[#ff00ff]'}">
-            ${cat}
-        </button>
-    `).join('');
+    container.innerHTML = categorias.map(cat => {
+        const catStr = typeof cat === 'string' ? cat : (cat.nome || cat.name || 'Categoria');
+        const catKey = catStr.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<button onclick="filterCategory('${catKey}')"
+            class="px-6 py-2 rounded-full font-semibold whitespace-nowrap transition-all text-sm ${categoriaAtiva === catStr ? 'category-active' : 'glass-card hover:border-[#ff00ff]'}">
+            ${catStr}
+        </button>`;
+    }).join('');
 }
 
 function renderProducts() {
@@ -1698,8 +1724,10 @@ function initOrderTracking() {
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
-    banners = siteConfig.anuncios || [];
+    banners = siteConfig.anuncios.filter(a => a.ativo !== false);
+    categorias = ['Todos', 'Hambúrgueres', 'Pizzas', 'Pastéis', 'Porções', 'Bebidas', 'Sobremesas'];
     renderBanner();
+    renderCategories();
     initFirebaseSync();
     updateCartUI();
     checkOpenStatus();

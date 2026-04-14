@@ -522,7 +522,10 @@
                             }));
 
                             // FILTRAR: pedidos finalizados NAO aparecem na lista
-                            const firebaseOrders = allOrders.filter(o => o.status !== 'finalizado');
+                            const firebaseOrders = allOrders.filter(o => {
+                                const s = (o.status || '').toLowerCase();
+                                return s !== 'finalizado' && s !== 'finalized';
+                            });
 
                             const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
                             if (hasNewOrder) {
@@ -760,6 +763,10 @@
             if (!currentOrder) return;
 
             if (newStatus === 'finalizado') {
+                // CONFIRMAÇÃO antes de finalizar
+                if (!confirm(`⚠️ Tem certeza que deseja FINALIZAR este pedido?\n\nPedido: ${currentOrder.id}\nCliente: ${currentOrder.cliente?.nome || 'N/A'}\nTotal: R$ ${(currentOrder.total || 0).toFixed(2).replace('.', ',')}\n\nEsta ação não pode ser desfeita.`)) {
+                    return;
+                }
                 await finalizeDeliveryOrder(currentOrder);
                 return;
             }
@@ -909,23 +916,40 @@
             renderTableOrders();
         }
 
-        function closeTableOrder() {
+        async function closeTableOrder() {
             if (!currentTableOrder) return;
             
             const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             
-            orders.push({
-                id: currentTableOrder.id,
+            // Perguntar confirmação
+            if (!confirm(`⚠️ Finalizar a comanda da Mesa ${currentTableOrder.mesa}?\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}`)) {
+                return;
+            }
+            
+            const venda = {
+                id: 'mesa_' + currentTableOrder.id,
                 tipo: 'mesa',
                 mesa: currentTableOrder.mesa,
                 cliente: { nome: `Mesa ${currentTableOrder.mesa}`, telefone: '-', endereco: '-' },
                 itens: [...currentTableOrder.itens],
                 pagamento: 'presencial',
                 total: total,
-                status: 'pago',
+                status: 'finalizado',
+                dataFinalizacao: new Date().toISOString(),
                 data: new Date().toISOString()
-            });
+            };
             
+            // Salvar no histórico de vendas
+            if (window.firebaseDB?.push) {
+                try {
+                    await window.firebaseDB.push(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
+                        venda
+                    );
+                } catch(e) { console.error('Erro ao salvar venda mesa:', e); }
+            }
+            
+            // REMOVER da lista de comandas abertas
             tableOrders = tableOrders.filter(o => o.id !== currentTableOrder.id);
             
             renderAllOrders();
@@ -1016,7 +1040,7 @@
             renderQuickSaleItems();
         }
 
-        function finishQuickSale() {
+        async function finishQuickSale() {
             if (quickSaleItems.length === 0) {
                 alert('Adicione pelo menos um item!');
                 return;
@@ -1024,23 +1048,39 @@
             
             const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             
-            orders.push({
+            // CONFIRMAÇÃO para evitar clique acidental
+            if (!confirm(`⚠️ Finalizar venda de balcão?\n\n${quickSaleItems.length} item(ns)\nTotal: R$ ${total.toFixed(2).replace('.', ',')}`)) {
+                return;
+            }
+            
+            // Salvar no histórico de vendas (Firebase)
+            const venda = {
                 id: 'BALCAO_' + Date.now(),
                 tipo: 'balcao',
                 cliente: { nome: 'Balcão', telefone: '-', endereco: '-' },
                 itens: [...quickSaleItems],
                 pagamento: 'presencial',
                 total: total,
-                status: 'pago',
+                status: 'finalizado',
+                dataFinalizacao: new Date().toISOString(),
                 data: new Date().toISOString()
-            });
+            };
             
+            if (window.firebaseDB?.push) {
+                try {
+                    await window.firebaseDB.push(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
+                        venda
+                    );
+                } catch(e) { console.error('Erro ao salvar venda balcão:', e); }
+            }
+            
+            // NÃO adiciona na lista de pedidos abertos
             quickSaleItems = [];
             renderQuickSaleItems();
-            renderAllOrders();
             updateDailySummary();
             
-            alert('Venda finalizada com sucesso!');
+            alert('✅ Venda de balcão finalizada com sucesso!');
         }
 
         function updateDailySummary() {
