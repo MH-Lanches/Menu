@@ -46,7 +46,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push, remove } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
@@ -60,7 +60,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        window.firebaseDB = { db, ref, set, push, onValue };
+        window.firebaseDB = { db, ref, set, push, onValue, remove };
     </script>
 
     <!-- Login Screen -->
@@ -498,17 +498,24 @@
                 setTimeout(() => {
                     if (window.firebaseDB.onValue) {
                         window.firebaseDB.onValue(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos'), (snapshot) => {
-                            const data = snapshot.val();
-                            if (data) {
-                                const newOrders = Object.values(data);
-                                const hasNewOrder = newOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
-                                if (hasNewOrder) {
-                                    playAlertSound();
-                                }
-                                orders = [...orders, ...newOrders.filter(o => !orders.find(existing => existing.id === o.id))];
-                                renderAllOrders();
-                                updateStats();
+                            const data = snapshot.val() || {};
+                            const firebaseOrders = Object.entries(data).map(([key, value]) => ({
+                                ...(value || {}),
+                                id: (value && value.id) ? value.id : key,
+                                tipo: 'delivery'
+                            }));
+
+                            const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
+                            if (hasNewOrder) {
+                                playAlertSound();
                             }
+
+                            const localOrders = orders.filter(o => o.tipo !== 'delivery' || !o.fromFirebase);
+                            const normalizedFirebaseOrders = firebaseOrders.map(o => ({ ...o, fromFirebase: true }));
+                            orders = [...localOrders, ...normalizedFirebaseOrders];
+
+                            renderAllOrders();
+                            updateStats();
                         });
                     }
                 }, 2000);
@@ -690,13 +697,57 @@
             currentOrder = null;
         }
 
-        function updateStatus(newStatus) {
+        async function finalizeDeliveryOrder(order) {
+            if (!order) return;
+
+            const finalizedSale = {
+                id: order.id,
+                tipo: order.tipo || 'delivery',
+                cliente: order.cliente,
+                itens: order.itens,
+                pagamento: order.pagamento,
+                total: order.total,
+                statusFinal: 'finalizado',
+                dataPedido: order.data,
+                dataFinalizacao: new Date().toISOString()
+            };
+
+            if (window.firebaseDB?.push && window.firebaseDB?.remove) {
+                try {
+                    await window.firebaseDB.push(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
+                        finalizedSale
+                    );
+
+                    await window.firebaseDB.remove(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + order.id)
+                    );
+                } catch (error) {
+                    console.error('Falha ao finalizar pedido no Firebase:', error);
+                    alert('Nao foi possivel finalizar no banco agora. Tente novamente.');
+                    return;
+                }
+            }
+
+            orders = orders.filter(o => o.id !== order.id);
+            closeOrderModal();
+            renderAllOrders();
+            updateStats();
+            updateDailySummary();
+        }
+
+        async function updateStatus(newStatus) {
             if (!currentOrder) return;
+
+            if (newStatus === 'finalizado') {
+                await finalizeDeliveryOrder(currentOrder);
+                return;
+            }
             
             currentOrder.status = newStatus;
             
             if (window.firebaseDB && window.firebaseDB.set) {
-                window.firebaseDB.set(
+                await window.firebaseDB.set(
                     window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id),
                     currentOrder
                 );

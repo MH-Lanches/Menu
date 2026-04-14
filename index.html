@@ -100,6 +100,29 @@
             animation: logoFloatSwing 7s ease-in-out infinite;
             transform-origin: center;
         }
+        .top-icon-btn {
+            border: 1px solid rgba(120, 120, 160, 0.5);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.12);
+        }
+        .top-icon-btn:hover {
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+        }
+        @keyframes cartBump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.18); }
+            100% { transform: scale(1); }
+        }
+        .cart-bump {
+            animation: cartBump 0.45s ease-out;
+        }
+        .fly-item {
+            position: fixed;
+            z-index: 60;
+            pointer-events: none;
+            font-size: 1.4rem;
+            opacity: 0.95;
+            transition: transform 650ms cubic-bezier(0.25, 0.9, 0.2, 1), opacity 650ms ease;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
@@ -131,14 +154,17 @@
                 <span id="statusText" class="text-sm font-semibold">ABERTO</span>
             </div>
             <div class="flex items-center gap-2">
-                <button id="musicBtn" onclick="toggleMusic()" class="glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Jingle">
+                <button id="musicBtn" onclick="toggleMusic()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Jingle">
                     <i class="fas fa-music neon-pink text-base"></i>
                 </button>
-                <button id="topCartBtn" onclick="openCart()" class="relative glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Carrinho">
+                <button onclick="scrollToMenu()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Cardapio">
+                    <i class="fas fa-utensils neon-cyan text-base"></i>
+                </button>
+                <button id="topCartBtn" onclick="openCart()" class="relative glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Carrinho">
                     <i class="fas fa-shopping-cart neon-cyan text-base"></i>
                     <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                 </button>
-                <button id="trackingBtn" onclick="openSavedTracking()" class="glass px-3 py-2 rounded-xl neon-border hover:scale-105 transition-transform" title="Status da entrega">
+                <button id="trackingBtn" onclick="openSavedTracking()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Status da entrega">
                     <i class="fas fa-motorcycle neon-pink text-base"></i>
                 </button>
             </div>
@@ -157,7 +183,7 @@
                  alt="MH Lanches Logo" 
                  class="hero-logo-animate mx-auto mb-4 w-64 h-auto md:w-80"
                  style="border: none;">
-            <h1 id="heroTitle" class="font-orbitron text-4xl md:text-6xl font-black neon-text neon-pink mb-2">MH LANCHES</h1>
+            <h1 id="heroTitle" class="font-orbitron text-3xl md:text-5xl font-black neon-text neon-pink mb-2">MH LANCHES</h1>
             <p id="heroSubtitle" class="text-gray-400 text-lg">Seu delivery favorito, sempre aberto para você!</p>
         </div>
     </header>
@@ -173,7 +199,7 @@
     </section>
 
     <!-- Categorias -->
-    <section class="px-4 mb-6 sticky top-12 z-40 py-4 bg-gradient-to-b from-[#0a0a1a] via-[#0a0a1a] to-transparent">
+    <section id="categoriesSection" class="px-4 mb-6 sticky top-12 z-40 py-4 bg-gradient-to-b from-[#0a0a1a] via-[#0a0a1a] to-transparent">
         <div class="max-w-7xl mx-auto">
             <div id="categoriesNav" class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             </div>
@@ -235,6 +261,10 @@
                             <span>Subtotal</span>
                             <span id="subtotal">R$ 0,00</span>
                         </div>
+                        <div class="flex justify-between mb-2 text-green-400 hidden" id="discountRow">
+                            <span>Desconto</span>
+                            <span id="discountValue">-R$ 0,00</span>
+                        </div>
                         <div class="flex justify-between mb-2">
                             <span>Taxa de Entrega</span>
                             <span id="deliveryFee">R$ 5,00</span>
@@ -243,6 +273,14 @@
                             <span>Total</span>
                             <span id="total">R$ 0,00</span>
                         </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <label class="block text-sm font-semibold">Tem cupom de desconto?</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="couponCodeInput" placeholder="Digite o código" class="flex-1 uppercase bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-neon-pink focus:outline-none transition-colors">
+                            <button onclick="applyCoupon()" class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">Aplicar</button>
+                        </div>
+                        <p id="couponMessage" class="text-xs text-gray-400">Apenas 1 cupom por pedido.</p>
                     </div>
                     <button onclick="openCheckout()" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
                         Finalizar Pedido
@@ -306,7 +344,12 @@
     <div id="trackingModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/70" onclick="closeTracking()"></div>
         <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto glass rounded-2xl p-6 slide-enter">
-            <h2 class="font-orbitron text-2xl font-bold neon-pink mb-6 text-center">Status do Pedido</h2>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-orbitron text-2xl font-bold neon-pink">Status do Pedido</h2>
+                <button onclick="closeTracking()" class="text-2xl hover:text-red-500 transition-colors" aria-label="Fechar status do pedido">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <div id="trackingSteps" class="space-y-4">
             </div>
         </div>
@@ -323,6 +366,25 @@
                 </button>
             </div>
             <div id="customizeContent"></div>
+        </div>
+    </div>
+
+    <!-- Fallback de abertura do WhatsApp -->
+    <div id="whatsappFallbackToast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] hidden w-[92%] max-w-md">
+        <div class="glass rounded-xl p-4 border border-[#25D366]/40">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="font-semibold text-sm text-white">Nao abriu o WhatsApp?</p>
+                    <p class="text-xs text-gray-300 mt-1">Use o botao abaixo para abrir manualmente.</p>
+                </div>
+                <button type="button" onclick="hideWhatsAppFallback()" class="text-gray-400 hover:text-white" aria-label="Fechar aviso">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <a id="whatsappFallbackLink" href="#" target="_blank" rel="noopener noreferrer" onclick="hideWhatsAppFallback()" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#25D366] to-[#128C7E] font-semibold text-sm">
+                <i class="fab fa-whatsapp"></i>
+                Abrir WhatsApp Manualmente
+            </a>
         </div>
     </div>
 
@@ -422,6 +484,7 @@
 
         const categorias = ["Todos", "Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
         const LOCAL_CONFIG_KEY = 'mh_json_config';
+        const LOCAL_CUPONS_KEY = 'mh_json_cupons';
 
         let siteConfig = {
             logoUrl: "https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572",
@@ -465,10 +528,12 @@
         };
 
         let banners = siteConfig.anuncios;
+        let cupons = [];
 
         // Estado do App
         let carrinho = JSON.parse(localStorage.getItem('mh_carrinho') || '[]');
         let favoritos = JSON.parse(localStorage.getItem('mh_favoritos') || '[]');
+        let appliedCoupon = JSON.parse(localStorage.getItem('mh_applied_coupon') || 'null');
         let categoriaAtiva = "Todos";
         let currentBanner = 0;
         let musicPlaying = false;
@@ -477,6 +542,7 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
             await loadSiteConfig();
+            await loadCupons();
             applySiteConfig();
             renderCategories();
             renderProducts();
@@ -528,6 +594,9 @@
             if (activePedidoId) {
                 setupOrderTracking(activePedidoId);
             }
+
+            // Keeps a manual shortcut if WhatsApp did not open.
+            restoreWhatsAppFallback();
         });
 
         async function loadSiteConfig() {
@@ -560,6 +629,46 @@
             if (!Array.isArray(siteConfig.anuncios)) siteConfig.anuncios = [];
             banners = siteConfig.anuncios.filter((a) => a.ativo !== false && (a.titulo || a.texto));
             if (!banners.length) banners = [{ titulo: 'MH LANCHES', texto: 'Bem-vindo ao nosso delivery', link: '', ativo: true }];
+        }
+
+        async function loadCupons() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            try {
+                if (dbMode === 'local') {
+                    const localCupons = localStorage.getItem(LOCAL_CUPONS_KEY);
+                    cupons = localCupons ? JSON.parse(localCupons) : [];
+                } else if (window.firebaseDB) {
+                    const { db, ref, get, onValue } = window.firebaseDB;
+                    const snapshot = await get(ref(db, 'cupons'));
+                    cupons = snapshot.exists() ? Object.values(snapshot.val()) : [];
+                    onValue(ref(db, 'cupons'), (snap) => {
+                        cupons = snap.exists() ? Object.values(snap.val()) : [];
+                        if (appliedCoupon) {
+                            const atualizado = cupons.find((c) => c.codigo === appliedCoupon.codigo);
+                            if (atualizado) appliedCoupon = atualizado;
+                            renderCart();
+                        }
+                    });
+                }
+            } catch (error) {
+                const fallback = localStorage.getItem(LOCAL_CUPONS_KEY);
+                cupons = fallback ? JSON.parse(fallback) : [];
+            }
+
+            if (!Array.isArray(cupons)) cupons = [];
+            cupons = cupons.map((cupom) => ({
+                id: cupom.id || `CUP_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                codigo: (cupom.codigo || '').toUpperCase().trim(),
+                tipo: cupom.tipo || 'percentual',
+                valor: Number(cupom.valor || 0),
+                quantidadeTotal: Number(cupom.quantidadeTotal || 1),
+                minimoCompra: Number(cupom.minimoCompra || 0),
+                validade: cupom.validade || '',
+                usos: Number(cupom.usos || 0),
+                ativo: cupom.ativo !== false
+            })).filter((cupom) => cupom.codigo);
+
+            localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
         }
 
         function applySiteConfig() {
@@ -635,13 +744,13 @@
                     <p class="text-gray-400 text-sm mb-3">${prod.descricao}</p>
                     <div class="flex justify-between items-center">
                         <span class="text-2xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
-                        <button onclick="handleAddToCart(${prod.id})" 
+                        <button onclick="handleAddToCart(${prod.id}, null, event)" 
                             class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
                     ${(prod.meiaMeia || prod.multiSabor) ? `
-                        <button onclick="openCustomize(${prod.id})" class="w-full mt-2 py-2 glass rounded-lg text-sm neon-pink hover:bg-neon-pink/20 transition-colors">
+                        <button onclick="openCustomize(${prod.id}, event)" class="w-full mt-2 py-2 glass rounded-lg text-sm neon-pink hover:bg-neon-pink/20 transition-colors">
                             <i class="fas fa-sliders-h mr-1"></i> Personalizar
                         </button>
                     ` : ''}
@@ -725,9 +834,10 @@
             renderProducts();
         }
 
-        function handleAddToCart(id, customizacao = null) {
+        function handleAddToCart(id, customizacao = null, evt = null) {
             const produto = produtos.find(p => p.id === id);
             const itemExistente = carrinho.find(item => item.id === id && JSON.stringify(item.customizacao) === JSON.stringify(customizacao));
+            const btn = evt?.currentTarget || evt?.target || null;
             
             if (itemExistente) {
                 itemExistente.quantidade++;
@@ -743,12 +853,14 @@
             
             saveCart();
             setupCartCounter();
+            animateProductToCart(btn, produto);
             
-            const btn = event.target.closest('button');
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-plus"></i>';
-            }, 1000);
+            if (btn && btn.innerHTML.includes('fa-plus')) {
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                }, 1000);
+            }
         }
 
         function saveCart() {
@@ -758,6 +870,148 @@
         function setupCartCounter() {
             const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
             document.getElementById('cartCount').textContent = totalItens;
+        }
+
+        function getCartTotals() {
+            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+            const entregaOriginal = Number(siteConfig.taxaEntrega || 0);
+            let entrega = entregaOriginal;
+            let desconto = 0;
+
+            if (appliedCoupon && validateCoupon(appliedCoupon, subtotal).valid) {
+                if (appliedCoupon.tipo === 'percentual') {
+                    desconto = subtotal * (Number(appliedCoupon.valor || 0) / 100);
+                } else if (appliedCoupon.tipo === 'fixo') {
+                    desconto = Number(appliedCoupon.valor || 0);
+                } else if (appliedCoupon.tipo === 'frete_gratis') {
+                    entrega = 0;
+                }
+            }
+
+            desconto = Math.min(desconto, subtotal);
+            const total = Math.max(0, (subtotal - desconto) + entrega);
+            return { subtotal, entrega, entregaOriginal, desconto, total };
+        }
+
+        function validateCoupon(cupom, subtotal) {
+            if (!cupom) return { valid: false, reason: 'Cupom inexistente.' };
+            if (cupom.ativo === false) return { valid: false, reason: 'Cupom desativado.' };
+            if ((cupom.usos || 0) >= (cupom.quantidadeTotal || 0)) return { valid: false, reason: 'Cupom sem usos disponíveis.' };
+            if (cupom.validade) {
+                const fimValidade = new Date(`${cupom.validade}T23:59:59`);
+                if (new Date() > fimValidade) return { valid: false, reason: 'Cupom expirado.' };
+            }
+            if (subtotal < Number(cupom.minimoCompra || 0)) {
+                return { valid: false, reason: `Pedido mínimo para o cupom: R$ ${Number(cupom.minimoCompra).toFixed(2).replace('.', ',')}.` };
+            }
+            return { valid: true, reason: '' };
+        }
+
+        function applyCoupon() {
+            const input = document.getElementById('couponCodeInput');
+            const msg = document.getElementById('couponMessage');
+            if (!input || !msg) return;
+
+            const codigo = input.value.trim().toUpperCase();
+            if (!codigo) {
+                msg.className = 'text-xs text-red-400';
+                msg.textContent = 'Digite um código para aplicar.';
+                return;
+            }
+
+            const cupom = cupons.find((item) => item.codigo === codigo);
+            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+            const result = validateCoupon(cupom, subtotal);
+
+            if (!result.valid) {
+                appliedCoupon = null;
+                localStorage.removeItem('mh_applied_coupon');
+                msg.className = 'text-xs text-red-400';
+                msg.textContent = result.reason;
+                renderCart();
+                return;
+            }
+
+            appliedCoupon = cupom;
+            localStorage.setItem('mh_applied_coupon', JSON.stringify(appliedCoupon));
+            msg.className = 'text-xs text-green-400';
+            msg.textContent = `Cupom ${cupom.codigo} aplicado com sucesso.`;
+            renderCart();
+        }
+
+        function clearCoupon() {
+            appliedCoupon = null;
+            localStorage.removeItem('mh_applied_coupon');
+            const msg = document.getElementById('couponMessage');
+            const input = document.getElementById('couponCodeInput');
+            if (input) input.value = '';
+            if (msg) {
+                msg.className = 'text-xs text-gray-400';
+                msg.textContent = 'Apenas 1 cupom por pedido.';
+            }
+        }
+
+        async function persistCupons() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            if (dbMode === 'local') {
+                localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+                return;
+            }
+
+            if (window.firebaseDB) {
+                const { db, ref, set } = window.firebaseDB;
+                const cuponsMap = cupons.reduce((acc, cupom) => {
+                    acc[cupom.id] = cupom;
+                    return acc;
+                }, {});
+                await set(ref(db, 'cupons'), cuponsMap);
+                localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+            }
+        }
+
+        async function registerCouponUsage(codigo) {
+            if (!codigo) return;
+            const idx = cupons.findIndex((cupom) => cupom.codigo === codigo);
+            if (idx === -1) return;
+            cupons[idx].usos = Number(cupons[idx].usos || 0) + 1;
+            await persistCupons();
+        }
+
+        function animateProductToCart(sourceBtn, produto) {
+            const cartBtn = document.getElementById('topCartBtn');
+            if (!cartBtn) return;
+
+            const startRect = sourceBtn?.getBoundingClientRect?.();
+            const endRect = cartBtn.getBoundingClientRect();
+
+            if (!startRect) {
+                cartBtn.classList.remove('cart-bump');
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add('cart-bump');
+                return;
+            }
+
+            const fly = document.createElement('div');
+            fly.className = 'fly-item';
+            fly.textContent = produto?.imagem || '•';
+            fly.style.left = `${startRect.left + startRect.width / 2}px`;
+            fly.style.top = `${startRect.top + startRect.height / 2}px`;
+            document.body.appendChild(fly);
+
+            const deltaX = endRect.left + endRect.width / 2 - (startRect.left + startRect.width / 2);
+            const deltaY = endRect.top + endRect.height / 2 - (startRect.top + startRect.height / 2);
+
+            requestAnimationFrame(() => {
+                fly.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.35)`;
+                fly.style.opacity = '0.15';
+            });
+
+            setTimeout(() => {
+                fly.remove();
+                cartBtn.classList.remove('cart-bump');
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add('cart-bump');
+            }, 680);
         }
 
         function openCart() {
@@ -773,11 +1027,16 @@
             const container = document.getElementById('cartItems');
             const emptyEl = document.getElementById('cartEmpty');
             const summaryEl = document.getElementById('cartSummary');
+            const discountRow = document.getElementById('discountRow');
+            const discountValue = document.getElementById('discountValue');
+            const couponInput = document.getElementById('couponCodeInput');
+            const couponMessage = document.getElementById('couponMessage');
             
             if (carrinho.length === 0) {
                 container.innerHTML = '';
                 emptyEl.classList.remove('hidden');
                 summaryEl.classList.add('hidden');
+                clearCoupon();
                 return;
             }
             
@@ -805,14 +1064,31 @@
                     </button>
                 </div>
             `).join('');
-            
-            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            const entrega = Number(siteConfig.taxaEntrega || 0);
-            const total = subtotal + entrega;
-            
-            document.getElementById('subtotal').textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
-            document.getElementById('deliveryFee').textContent = 'R$ ' + entrega.toFixed(2).replace('.', ',');
-            document.getElementById('total').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+
+            const totals = getCartTotals();
+            document.getElementById('subtotal').textContent = 'R$ ' + totals.subtotal.toFixed(2).replace('.', ',');
+            document.getElementById('deliveryFee').textContent = 'R$ ' + totals.entrega.toFixed(2).replace('.', ',');
+            document.getElementById('total').textContent = 'R$ ' + totals.total.toFixed(2).replace('.', ',');
+
+            if (totals.desconto > 0) {
+                discountRow.classList.remove('hidden');
+                discountValue.textContent = '-R$ ' + totals.desconto.toFixed(2).replace('.', ',');
+            } else {
+                discountRow.classList.add('hidden');
+                discountValue.textContent = '-R$ 0,00';
+            }
+
+            if (appliedCoupon) {
+                const validation = validateCoupon(appliedCoupon, totals.subtotal);
+                couponInput.value = appliedCoupon.codigo;
+                if (validation.valid) {
+                    couponMessage.className = 'text-xs text-green-400';
+                    couponMessage.textContent = `Cupom ${appliedCoupon.codigo} aplicado.`;
+                } else {
+                    couponMessage.className = 'text-xs text-yellow-400';
+                    couponMessage.textContent = `Cupom salvo, mas não aplicado agora: ${validation.reason}`;
+                }
+            }
         }
 
         function updateQuantity(index, delta) {
@@ -851,6 +1127,77 @@
             if (savedAddress) document.getElementById('clientAddress').value = savedAddress;
         }
 
+        function getWhatsAppPhoneNumber(rawValue) {
+            const source = decodeURIComponent(String(rawValue || ''));
+            const phoneParamMatch = source.match(/phone=(\d{10,15})/i);
+            if (phoneParamMatch) return phoneParamMatch[1];
+
+            const digits = source.replace(/\D/g, '');
+            if (!digits) return '5500000000000';
+            if (digits.startsWith('55')) return digits;
+            if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+            return digits;
+        }
+
+        function buildWhatsAppUrl(message) {
+            const phone = getWhatsAppPhoneNumber(siteConfig.whatsapp);
+            return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        }
+
+        function showWhatsAppFallback(whatsappUrl) {
+            const toast = document.getElementById('whatsappFallbackToast');
+            const link = document.getElementById('whatsappFallbackLink');
+            if (!toast || !link) return;
+
+            link.href = whatsappUrl;
+            toast.classList.remove('hidden');
+            localStorage.setItem('mh_whatsapp_fallback', JSON.stringify({ url: whatsappUrl, ts: Date.now() }));
+        }
+
+        function hideWhatsAppFallback() {
+            const toast = document.getElementById('whatsappFallbackToast');
+            if (toast) toast.classList.add('hidden');
+            localStorage.removeItem('mh_whatsapp_fallback');
+        }
+
+        function restoreWhatsAppFallback() {
+            try {
+                const raw = localStorage.getItem('mh_whatsapp_fallback');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                const hasValidTs = Number.isFinite(Number(data?.ts));
+                const isFresh = hasValidTs && (Date.now() - Number(data.ts) < 15 * 60 * 1000);
+                if (!isFresh || !data?.url) {
+                    localStorage.removeItem('mh_whatsapp_fallback');
+                    return;
+                }
+
+                const toast = document.getElementById('whatsappFallbackToast');
+                const link = document.getElementById('whatsappFallbackLink');
+                if (toast && link) {
+                    link.href = data.url;
+                    toast.classList.remove('hidden');
+                }
+            } catch (_) {
+                localStorage.removeItem('mh_whatsapp_fallback');
+            }
+        }
+
+        function openWhatsAppSafely(whatsappUrl) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            // iOS Safari is strict with popups; prefer same-tab navigation when needed.
+            if (isIOS) {
+                window.location.href = whatsappUrl;
+                return;
+            }
+
+            const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            if (!popup) {
+                window.location.href = whatsappUrl;
+            }
+        }
+
         async function handleCheckout(e) {
             e.preventDefault();
             
@@ -867,9 +1214,19 @@
             localStorage.setItem('mh_clientAddress', endereco);
             
             // Calculate totals
-            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            const entrega = Number(siteConfig.taxaEntrega || 0);
-            const total = subtotal + entrega;
+            const totals = getCartTotals();
+            const subtotal = totals.subtotal;
+            const entrega = totals.entrega;
+            const desconto = totals.desconto;
+            const total = totals.total;
+
+            let cupomAplicadoNoPedido = null;
+            if (appliedCoupon) {
+                const couponCheck = validateCoupon(appliedCoupon, subtotal);
+                if (couponCheck.valid) {
+                    cupomAplicadoNoPedido = appliedCoupon;
+                }
+            }
 
             if (total < Number(siteConfig.valorMinimo || 0)) {
                 alert(`Pedido minimo de R$ ${Number(siteConfig.valorMinimo).toFixed(2).replace('.', ',')}`);
@@ -893,27 +1250,46 @@
             });
             
             mensagem += `\n💰 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+            if (desconto > 0) {
+                mensagem += `🎟️ *Desconto:* -R$ ${desconto.toFixed(2).replace('.', ',')}`;
+                if (cupomAplicadoNoPedido) mensagem += ` (Cupom ${cupomAplicadoNoPedido.codigo})`;
+                mensagem += `\n`;
+            }
             mensagem += `🚚 *Entrega:* R$ ${entrega.toFixed(2).replace('.', ',')}\n`;
             mensagem += `✨ *TOTAL:* R$ ${total.toFixed(2).replace('.', ',')}`;
             
             // Generate order ID
             const pedidoId = 'PED_' + Date.now();
             localStorage.setItem('mh_pedidoId', pedidoId);
+
+            // Open WhatsApp immediately after the user click to avoid iOS popup blocking.
+            const whatsappUrl = buildWhatsAppUrl(mensagem);
+            showWhatsAppFallback(whatsappUrl);
+            openWhatsAppSafely(whatsappUrl);
             
             // Save to Firebase if available
             if (window.firebaseDB) {
                 try {
                     const { db, ref, set } = window.firebaseDB;
-                    await set(ref(db, 'pedidos/' + pedidoId), {
+                    set(ref(db, 'pedidos/' + pedidoId), {
                         id: pedidoId,
                         cliente: { nome, telefone, endereco, complemento },
                         itens: carrinho,
                         pagamento,
                         trocoPara,
                         total,
+                        subtotal,
+                        desconto,
+                        cupom: cupomAplicadoNoPedido ? {
+                            codigo: cupomAplicadoNoPedido.codigo,
+                            tipo: cupomAplicadoNoPedido.tipo,
+                            valor: cupomAplicadoNoPedido.valor
+                        } : null,
                         status: 'novo',
                         data: new Date().toISOString(),
                         tipo: 'delivery'
+                    }).catch((err) => {
+                        console.log('Firebase save error:', err);
                     });
                 } catch (err) {
                     console.log('Firebase save error:', err);
@@ -922,17 +1298,18 @@
             
             // Setup tracking
             setupOrderTracking(pedidoId);
-            
-            // Open WhatsApp
-            const texto = encodeURIComponent(mensagem);
-            const whatsappBase = siteConfig.whatsapp || 'https://wa.me/5500000000000';
-            const whatsappUrl = `${whatsappBase}${whatsappBase.includes('?') ? '&' : '?'}text=${texto}`;
-            window.open(whatsappUrl, '_blank');
+
+            if (cupomAplicadoNoPedido) {
+                registerCouponUsage(cupomAplicadoNoPedido.codigo).catch((error) => {
+                    console.log('Erro ao registrar uso de cupom:', error);
+                });
+            }
             
             // Clear cart
             carrinho = [];
             saveCart();
             setupCartCounter();
+            clearCoupon();
             closeCheckout();
             
             // Show tracking
@@ -996,7 +1373,7 @@
             document.getElementById('trackingModal').classList.add('hidden');
         }
 
-        function openCustomize(id) {
+        function openCustomize(id, evt) {
             const produto = produtos.find(p => p.id === id);
             customizingProduct = produto;
             
@@ -1043,7 +1420,7 @@
             }
             
             content += `
-                <button onclick="confirmCustomize()" class="w-full mt-6 py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                <button onclick="confirmCustomize(event)" class="w-full mt-6 py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
                     Adicionar ao Carrinho
                 </button>
             `;
@@ -1052,7 +1429,7 @@
             document.getElementById('customizeModal').classList.remove('hidden');
         }
 
-        function confirmCustomize() {
+        function confirmCustomize(evt) {
             let customizacao = '';
             
             if (customizingProduct.meiaMeia) {
@@ -1068,8 +1445,15 @@
                 customizacao = sabores.join(', ');
             }
             
-            handleAddToCart(customizingProduct.id, customizacao);
+            handleAddToCart(customizingProduct.id, customizacao, evt);
             closeCustomize();
+        }
+
+        function scrollToMenu() {
+            const el = document.getElementById('categoriesSection');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function closeCustomize() {

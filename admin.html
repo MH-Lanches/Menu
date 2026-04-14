@@ -282,6 +282,9 @@
                         <button onclick="showConfigSubtab('anuncios')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="anuncios">
                             <i class="fas fa-bullhorn mr-2"></i> Anúncios
                         </button>
+                        <button onclick="showConfigSubtab('cupons')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="cupons">
+                            <i class="fas fa-ticket-alt mr-2"></i> Cupons
+                        </button>
                         <button onclick="showConfigSubtab('banco')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="banco">
                             <i class="fas fa-database mr-2"></i> Banco de Dados
                         </button>
@@ -555,6 +558,70 @@
                         </div>
                     </div>
 
+                    <!-- CUPONS -->
+                    <div id="config-cupons" class="config-content hidden">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-pink">
+                                    <i class="fas fa-ticket-alt mr-2"></i> Criar / Editar Cupom
+                                </h3>
+                                <form id="cupomForm" class="space-y-4">
+                                    <input type="hidden" id="cupomEditId">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Código</label>
+                                        <input type="text" id="cupomCodigo" required maxlength="24" placeholder="Ex: NATAL10" class="w-full uppercase bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Tipo de Desconto</label>
+                                        <select id="cupomTipo" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                            <option value="percentual">Porcentagem (%)</option>
+                                            <option value="fixo">Valor Fixo (R$)</option>
+                                            <option value="frete_gratis">Frete Grátis</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Valor do Desconto</label>
+                                        <input type="number" id="cupomValor" min="0" step="0.01" value="0" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-semibold mb-2">Quantidade Total</label>
+                                            <input type="number" id="cupomQuantidade" min="1" value="10" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold mb-2">Mínimo de Compra (R$)</label>
+                                            <input type="number" id="cupomMinimo" min="0" step="0.01" value="0" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Validade</label>
+                                        <input type="date" id="cupomValidade" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <button type="submit" class="py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                                            <i class="fas fa-save mr-2"></i> Salvar Cupom
+                                        </button>
+                                        <button type="button" onclick="resetCupomForm()" class="py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold transition-colors">
+                                            <i class="fas fa-eraser mr-2"></i> Limpar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="glass-card rounded-2xl p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-xl font-bold neon-cyan">
+                                        <i class="fas fa-list mr-2"></i> Cupons Cadastrados
+                                    </h3>
+                                    <button onclick="saveCuponsToDatabase('Cupons salvos com sucesso.')" class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-semibold transition-colors">
+                                        <i class="fas fa-cloud-upload-alt mr-1"></i> Salvar Tudo
+                                    </button>
+                                </div>
+                                <div id="listaCupons" class="space-y-3 max-h-[560px] overflow-y-auto pr-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- BANCO DE DADOS -->
                     <div id="config-banco" class="config-content hidden">
                         <div class="glass-card rounded-2xl p-6 max-w-2xl">
@@ -694,9 +761,11 @@
         let currentUser = null;
         let produtos = [];
         let pedidos = [];
+        let cupons = [];
         let categorias = ["Hambúrgueres", "Pizzas", "Pastéis", "Porções", "Bebidas", "Sobremesas"];
         let useLocalDB = localStorage.getItem('mh_db_mode') === 'local';
         const LOCAL_CONFIG_KEY = 'mh_json_config';
+        const LOCAL_CUPONS_KEY = 'mh_json_cupons';
 
         // Configurações padrão - COMPLETA
         let siteConfig = {
@@ -782,6 +851,20 @@
             }));
         }
 
+        function normalizeCupom(cupom = {}) {
+            return {
+                id: cupom.id || `CUP_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                codigo: (cupom.codigo || '').toUpperCase().trim(),
+                tipo: cupom.tipo || 'percentual',
+                valor: Number(cupom.valor || 0),
+                quantidadeTotal: Number(cupom.quantidadeTotal || 1),
+                minimoCompra: Number(cupom.minimoCompra || 0),
+                validade: cupom.validade || '',
+                usos: Number(cupom.usos || 0),
+                ativo: cupom.ativo !== false
+            };
+        }
+
         // Dados mockados
         const mockProdutos = [
             { id: 1, nome: "MH Classic", preco: 29.90, descricao: "Pão brioche, hambúrguer 180g, queijo cheddar", categoria: "Hambúrgueres", imagem: "🍔" },
@@ -803,8 +886,11 @@
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('productForm').addEventListener('submit', saveProduct);
             document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+            document.getElementById('cupomForm').addEventListener('submit', saveCupom);
+            document.getElementById('cupomTipo').addEventListener('change', updateCupomValueFieldState);
             bindUploadInputs();
             document.getElementById('dbMode').textContent = useLocalDB ? 'Local (JSON)' : 'Firebase (Nuvem)';
+            updateCupomValueFieldState();
             
             produtos = [...mockProdutos];
             pedidos = [...mockPedidos];
@@ -828,11 +914,35 @@
                 showToast('Erro ao carregar configuração. Usando padrão local.');
             }
 
+            await loadCuponsFromDatabase();
+
             normalizeConfig();
             localStorage.setItem('mh_site_config', JSON.stringify(siteConfig));
             populateConfigFields();
             renderHorarios();
             renderAnuncios();
+            renderCupons();
+        }
+
+        async function loadCuponsFromDatabase() {
+            try {
+                if (useLocalDB) {
+                    const savedCupons = localStorage.getItem(LOCAL_CUPONS_KEY);
+                    cupons = savedCupons ? JSON.parse(savedCupons) : [];
+                } else {
+                    const firebase = await waitForFirebase();
+                    if (!firebase) throw new Error('Firebase indisponível');
+                    const { db, ref, get } = firebase;
+                    const snapshot = await get(ref(db, 'cupons'));
+                    cupons = snapshot.exists() ? Object.values(snapshot.val()) : [];
+                }
+            } catch (error) {
+                cupons = [];
+                showToast('Não foi possível carregar cupons.');
+            }
+
+            cupons = cupons.map(normalizeCupom).filter((cupom) => cupom.codigo);
+            localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
         }
 
         async function saveConfigToDatabase(successMessage = 'Configurações salvas com sucesso!') {
@@ -850,6 +960,29 @@
                 showToast(successMessage);
             } catch (error) {
                 showToast('Falha ao salvar no banco de dados.');
+                throw error;
+            }
+        }
+
+        async function saveCuponsToDatabase(successMessage = 'Cupons salvos com sucesso!') {
+            try {
+                if (useLocalDB) {
+                    localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+                } else {
+                    const firebase = await waitForFirebase();
+                    if (!firebase) throw new Error('Firebase indisponível');
+                    const { db, ref, set } = firebase;
+                    const mapCupons = cupons.reduce((acc, cupom) => {
+                        acc[cupom.id] = cupom;
+                        return acc;
+                    }, {});
+                    await set(ref(db, 'cupons'), mapCupons);
+                }
+
+                localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+                if (successMessage) showToast(successMessage);
+            } catch (error) {
+                showToast('Falha ao salvar cupons.');
                 throw error;
             }
         }
@@ -1003,6 +1136,140 @@
             siteConfig.anuncios[index][field] = value;
         }
 
+        function isCupomValido(cupom) {
+            if (!cupom.ativo) return false;
+            const naoExpirou = !cupom.validade || new Date(`${cupom.validade}T23:59:59`) >= new Date();
+            const temSaldo = cupom.usos < cupom.quantidadeTotal;
+            return naoExpirou && temSaldo;
+        }
+
+        function renderCupons() {
+            const container = document.getElementById('listaCupons');
+            if (!cupons.length) {
+                container.innerHTML = '<p class="text-sm text-gray-400">Nenhum cupom cadastrado ainda.</p>';
+                return;
+            }
+
+            container.innerHTML = cupons.map((cupom) => {
+                const status = isCupomValido(cupom) ? 'Ativo' : 'Inválido';
+                const badgeClass = isCupomValido(cupom) ? 'bg-green-600' : 'bg-red-600';
+                const tipoLabel = cupom.tipo === 'percentual'
+                    ? `${cupom.valor}%`
+                    : cupom.tipo === 'fixo'
+                        ? `R$ ${cupom.valor.toFixed(2).replace('.', ',')}`
+                        : 'Frete Grátis';
+
+                return `
+                    <div class="p-4 bg-black/20 rounded-xl border border-gray-700">
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                                <p class="font-bold text-lg neon-cyan">${cupom.codigo}</p>
+                                <p class="text-sm text-gray-400">Desconto: ${tipoLabel}</p>
+                            </div>
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${badgeClass}">${status}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                            <p><span class="text-gray-400">Usos:</span> ${cupom.usos}/${cupom.quantidadeTotal}</p>
+                            <p><span class="text-gray-400">Mínimo:</span> R$ ${Number(cupom.minimoCompra || 0).toFixed(2).replace('.', ',')}</p>
+                            <p class="col-span-2"><span class="text-gray-400">Validade:</span> ${cupom.validade || 'Sem validade'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editCupom('${cupom.id}')" class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold transition-colors">
+                                <i class="fas fa-edit mr-1"></i> Editar
+                            </button>
+                            <button onclick="deleteCupom('${cupom.id}')" class="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold transition-colors">
+                                <i class="fas fa-trash mr-1"></i> Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function resetCupomForm() {
+            document.getElementById('cupomEditId').value = '';
+            document.getElementById('cupomCodigo').value = '';
+            document.getElementById('cupomTipo').value = 'percentual';
+            document.getElementById('cupomValor').value = 0;
+            document.getElementById('cupomQuantidade').value = 10;
+            document.getElementById('cupomMinimo').value = 0;
+            document.getElementById('cupomValidade').value = '';
+            updateCupomValueFieldState();
+        }
+
+        function updateCupomValueFieldState() {
+            const tipo = document.getElementById('cupomTipo').value;
+            const valorInput = document.getElementById('cupomValor');
+            if (tipo === 'frete_gratis') {
+                valorInput.value = 0;
+                valorInput.disabled = true;
+            } else {
+                valorInput.disabled = false;
+            }
+        }
+
+        async function saveCupom(event) {
+            event.preventDefault();
+            const editId = document.getElementById('cupomEditId').value;
+            const codigo = document.getElementById('cupomCodigo').value.toUpperCase().trim();
+            const tipo = document.getElementById('cupomTipo').value;
+            const valor = Number(document.getElementById('cupomValor').value || 0);
+            const quantidadeTotal = Number(document.getElementById('cupomQuantidade').value || 0);
+            const minimoCompra = Number(document.getElementById('cupomMinimo').value || 0);
+            const validade = document.getElementById('cupomValidade').value;
+
+            if (!codigo) return showToast('Informe o código do cupom.');
+            if (quantidadeTotal < 1) return showToast('Quantidade total deve ser pelo menos 1.');
+
+            const duplicado = cupons.find((c) => c.codigo === codigo && c.id !== editId);
+            if (duplicado) return showToast('Já existe um cupom com este código.');
+
+            if (editId) {
+                cupons = cupons.map((cupom) => cupom.id === editId
+                    ? normalizeCupom({ ...cupom, codigo, tipo, valor, quantidadeTotal, minimoCompra, validade })
+                    : cupom
+                );
+            } else {
+                cupons.unshift(normalizeCupom({
+                    codigo,
+                    tipo,
+                    valor,
+                    quantidadeTotal,
+                    minimoCompra,
+                    validade,
+                    usos: 0,
+                    ativo: true
+                }));
+            }
+
+            await saveCuponsToDatabase('Cupom salvo com sucesso.');
+            renderCupons();
+            resetCupomForm();
+        }
+
+        function editCupom(id) {
+            const cupom = cupons.find((item) => item.id === id);
+            if (!cupom) return;
+
+            document.getElementById('cupomEditId').value = cupom.id;
+            document.getElementById('cupomCodigo').value = cupom.codigo;
+            document.getElementById('cupomTipo').value = cupom.tipo;
+            document.getElementById('cupomValor').value = cupom.valor;
+            document.getElementById('cupomQuantidade').value = cupom.quantidadeTotal;
+            document.getElementById('cupomMinimo').value = cupom.minimoCompra;
+            document.getElementById('cupomValidade').value = cupom.validade;
+            updateCupomValueFieldState();
+            showConfigSubtab('cupons');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteCupom(id) {
+            if (!confirm('Excluir este cupom?')) return;
+            cupons = cupons.filter((cupom) => cupom.id !== id);
+            await saveCuponsToDatabase('Cupom excluído com sucesso.');
+            renderCupons();
+        }
+
         async function saveAllInfoConfig() {
             // Identidade Visual
             siteConfig.logoUrl = document.getElementById('config_logoUrl').value;
@@ -1067,6 +1334,9 @@
                 case 'anuncios':
                     // Já atualizado dinamicamente
                     break;
+                case 'cupons':
+                    await saveCuponsToDatabase('Cupons atualizados com sucesso.');
+                    return;
             }
             await saveConfigToDatabase('Configuração atualizada com sucesso.');
         }
@@ -1134,6 +1404,8 @@
                 populateConfigFields();
                 renderHorarios();
                 renderAnuncios();
+                renderCupons();
+                resetCupomForm();
             }, 100);
         }
 
@@ -1160,6 +1432,7 @@
                 populateConfigFields();
                 renderHorarios();
                 renderAnuncios();
+                renderCupons();
             }
         }
 
@@ -1370,6 +1643,7 @@
                 produtos: produtos,
                 pedidos: pedidos,
                 config: siteConfig,
+                cupons: cupons,
                 categorias: categorias,
                 exportadoEm: new Date().toISOString()
             };
@@ -1395,14 +1669,17 @@
                         if (backup.produtos) produtos = backup.produtos;
                         if (backup.pedidos) pedidos = backup.pedidos;
                         if (backup.config) siteConfig = { ...siteConfig, ...backup.config };
+                        if (backup.cupons) cupons = backup.cupons.map(normalizeCupom);
                         if (backup.categorias) categorias = backup.categorias;
                         
                         saveConfigToDatabase('Backup importado e salvo no banco.');
+                        saveCuponsToDatabase('Cupons do backup importados.');
                         loadDashboard();
                         renderProductsTable();
                         renderCategories();
                         renderOrders();
                         populateConfigFields();
+                        renderCupons();
                         showToast("Backup importado com sucesso!");
                     } catch (err) {
                         showToast("Erro ao importar backup!");
