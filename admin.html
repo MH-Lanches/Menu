@@ -31,7 +31,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-storage.js";
 
         const defaultFirebaseConfig = {
@@ -57,7 +57,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
-        window.firebaseDB = { db, storage, ref, set, get, push, remove, onValue, storageRef, uploadBytes, getDownloadURL };
+        window.firebaseDB = { db, storage, ref, set, get, push, remove, update, onValue, storageRef, uploadBytes, getDownloadURL };
         
         // Expor funções globalmente
         window.uploadImageToStorage = async (file, path) => {
@@ -1523,12 +1523,24 @@
             showToast('Categoria salva!');
         }
 
-        function moverCategoria(idx, dir) {
+        async function moverCategoria(idx, dir) {
             const newIdx = idx + dir;
             if (newIdx < 0 || newIdx >= categorias.length) return;
             [categorias[idx], categorias[newIdx]] = [categorias[newIdx], categorias[idx]];
             categorias.forEach((c, i) => c.ordem = i + 1);
+            
+            // Salvar nova ordem no Firebase
+            const firebase = window.firebaseDB;
+            if (firebase && firebase.db) {
+                const updates = {};
+                categorias.forEach((c) => {
+                    updates['categorias/' + c.id + '/ordem'] = c.ordem;
+                });
+                await firebase.update(firebase.db, updates);
+            }
+            
             renderCategorias();
+            showToast('Ordem das categorias atualizada!');
         }
 
         async function deleteCategoria(id) {

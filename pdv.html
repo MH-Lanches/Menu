@@ -38,6 +38,7 @@
         .status-saiu-entrega{background:rgba(168,85,247,0.15);border:1px solid var(--neon-purple);color:var(--neon-purple)}
         .status-entregue{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.5);color:rgba(0,255,136,0.8)}
         .status-pago{background:rgba(0,255,136,0.2);border:1px solid var(--neon-green);color:var(--neon-green)}
+        .status-cancelado{background:rgba(255,68,68,0.2);border:1px solid var(--neon-red);color:var(--neon-red)}
         .cat-btn{padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-secondary);cursor:pointer;transition:all .2s;font-size:13px;white-space:nowrap}
         .cat-btn.active{background:rgba(0,255,136,0.15);border-color:var(--neon-green);color:var(--neon-green)}
         .product-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;cursor:pointer;transition:all .2s}
@@ -144,7 +145,18 @@
             <div id="cartDeliveryStatus" class="p-3 shrink-0 hidden" style="background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(0,212,255,0.1)">
                 <div class="text-xs text-gray-400 mb-2">📦 Status do Pedido</div>
                 <div id="cartStatusBadge" class="badge status-novo mb-2 inline-block">Novo</div>
-                <div id="cartStatusActions" class="flex flex-wrap gap-1"></div>
+                <div class="mt-2">
+                    <label class="text-xs text-gray-400 mb-1 block">Alterar status:</label>
+                    <select id="cartStatusSelect" onchange="updateCartOrderStatus(this.value)" class="w-full text-sm" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:var(--text-primary);border-radius:8px;padding:8px 12px;outline:none;cursor:pointer">
+                        <option value="novo">🆕 Novo</option>
+                        <option value="producao">🔥 Em Produção</option>
+                        <option value="pronto">✅ Pronto</option>
+                        <option value="saiu-entrega">🛵 Saiu para Entrega</option>
+                        <option value="entregue">📦 Entregue</option>
+                        <option value="pago">💰 Pago</option>
+                        <option value="cancelado">❌ Cancelado</option>
+                    </select>
+                </div>
             </div>
             <div id="cartItems" class="flex-1 scroll-area p-3 space-y-1"></div>
             <div class="p-3 shrink-0 space-y-2" style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)">
@@ -164,7 +176,7 @@
 <div id="paymentSidebar" class="sidebar-panel glass-sidebar flex flex-col">
     <div class="p-4 shrink-0 flex items-center" style="border-bottom:1px solid rgba(255,255,255,0.05)">
         <h2 class="text-lg font-bold neon-text flex-1">💰 PAGAMENTO</h2>
-        <span class="text-xs text-gray-500">Finalize a venda para fechar</span>
+        <span class="text-xs text-gray-500">🔒 Fixo — finalize a venda para liberar</span>
     </div>
     <div class="flex-1 scroll-area p-4 space-y-4">
         <!-- Order Info -->
@@ -631,12 +643,12 @@ function renderOrdersList() {
 }
 
 function getStatusClass(status) {
-    const map = { 'novo': 'status-novo', 'producao': 'status-producao', 'pronto': 'status-pronto', 'saiu-entrega': 'status-entrega', 'entregue': 'status-entregue', 'pago': 'status-pago' };
+    const map = { 'novo': 'status-novo', 'producao': 'status-producao', 'pronto': 'status-pronto', 'saiu-entrega': 'status-entrega', 'entregue': 'status-entregue', 'pago': 'status-pago', 'cancelado': 'status-cancelado' };
     return map[status] || 'status-novo';
 }
 
 function getStatusLabel(status) {
-    const map = { 'novo': '🆕 Novo', 'producao': '🔥 Produção', 'pronto': '✅ Pronto', 'saiu-entrega': '🛵 Entrega', 'entregue': '📦 Entregue', 'pago': '💰 Pago' };
+    const map = { 'novo': '🆕 Novo', 'producao': '🔥 Produção', 'pronto': '✅ Pronto', 'saiu-entrega': '🛵 Entrega', 'entregue': '📦 Entregue', 'pago': '💰 Pago', 'cancelado': '❌ Cancelado' };
     return map[status] || status;
 }
 
@@ -675,12 +687,66 @@ function getOrderActions(order) {
     }
     if (status === 'saiu-entrega') actions.push(`<button onclick="event.stopPropagation();updateOrderStatus('${order.id}','entregue')" class="badge status-entregue cursor-pointer">📦 Entregue</button>`);
     if (status === 'entregue') actions.push(`<button onclick="event.stopPropagation();selectOrderForPay('${order.id}')" class="badge status-pago cursor-pointer">💰 Pagar</button>`);
+    // Botão cancelar em qualquer status (exceto já cancelado/pago/finalizado)
+    if (!['cancelado', 'pago', 'finalizado'].includes(status)) {
+        actions.push(`<button onclick="event.stopPropagation();cancelOrderFromList('${order.id}')" class="badge status-cancelado cursor-pointer">❌</button>`);
+    }
     return actions.join('');
 }
 
 window.updateOrderStatus = function(orderId, newStatus) {
     const path = currentTab === 'mesas' ? 'mesas/' + orderId : 'pedidos/' + orderId;
     update(ref(db, path), { status: newStatus });
+};
+
+window.cancelOrderFromList = function(orderId) {
+    if (!confirm('⚠️ CANCELAR este pedido?\n\nID: ' + orderId.substring(0, 12) + '\n\nEsta ação move o pedido para o histórico.')) return;
+    
+    const path = currentTab === 'mesas' ? 'mesas/' + orderId : 'pedidos/' + orderId;
+    
+    // Encontrar o pedido
+    let order = null;
+    if (currentTab === 'delivery') {
+        order = orders.find(o => o.id === orderId);
+    } else if (currentTab === 'mesas') {
+        order = tableOrders.find(o => o.id === orderId);
+    }
+    
+    if (order) {
+        const subtotal = (order.itens || []).reduce((s, i) => s + (i.preco || 0) * (i.qtd || 1), 0);
+        const vendaData = {
+            id: order.id,
+            tipo: order.tipo || currentTab,
+            cliente: order.cliente ? (order.cliente.nome || order.cliente) : (order.mesa || 'N/A'),
+            itens: order.itens || [],
+            subtotal: subtotal,
+            desconto: 0,
+            total: 0,
+            pagamentos: [{ forma: 'cancelado', valor: 0 }],
+            status: 'cancelado',
+            data: new Date().toISOString(),
+            horaCriacao: order.horaCriacao || order.createdAt,
+            operador: document.getElementById('userDisplay')?.textContent || 'N/A'
+        };
+        try {
+            const { push, set: fbSet } = window.firebaseDB;
+            const newRef = push(ref(db, 'vendas'));
+            fbSet(newRef, vendaData);
+        } catch(e) { console.log('Erro ao salvar venda cancelada:', e); }
+    }
+    
+    // Remover do pedidos/mesas
+    try {
+        const { remove } = window.firebaseDB;
+        remove(ref(db, path));
+    } catch(e) { console.log('Erro ao remover pedido:', e); }
+    
+    // Se era o pedido ativo, limpar carrinho
+    if (activeOrder && activeOrder.id === orderId) {
+        clearCart();
+    }
+    
+    alert('❌ Pedido cancelado.');
 };
 
 window.selectOrder = function(orderId) {
@@ -701,7 +767,7 @@ window.selectOrder = function(orderId) {
 function renderCartDeliveryStatus() {
     const panel = document.getElementById('cartDeliveryStatus');
     const badge = document.getElementById('cartStatusBadge');
-    const actions = document.getElementById('cartStatusActions');
+    const select = document.getElementById('cartStatusSelect');
     
     if (!activeOrder || currentTab !== 'delivery') {
         panel.classList.add('hidden');
@@ -717,7 +783,8 @@ function renderCartDeliveryStatus() {
         'pronto': '✅ Pronto',
         'saiu-entrega': '🛵 Saiu p/ Entrega',
         'entregue': '📦 Entregue',
-        'pago': '💰 Pago'
+        'pago': '💰 Pago',
+        'cancelado': '❌ Cancelado'
     };
     const statusClasses = {
         'novo': 'status-novo',
@@ -725,41 +792,67 @@ function renderCartDeliveryStatus() {
         'pronto': 'status-pronto',
         'saiu-entrega': 'status-entrega',
         'entregue': 'status-entregue',
-        'pago': 'status-pago'
+        'pago': 'status-pago',
+        'cancelado': 'status-cancelado'
     };
     
     badge.textContent = statusLabels[status] || status;
     badge.className = 'badge ' + (statusClasses[status] || 'status-novo') + ' mb-2 inline-block';
     
-    // Show action buttons based on current status
-    let btns = [];
-    if (status === 'novo') {
-        btns.push(`<button onclick="updateCartOrderStatus('producao')" class="badge status-producao cursor-pointer hover:opacity-80">🔥 Produção</button>`);
-    }
-    if (status === 'producao') {
-        btns.push(`<button onclick="updateCartOrderStatus('pronto')" class="badge status-pronto cursor-pointer hover:opacity-80">✅ Pronto</button>`);
-    }
-    if (status === 'pronto') {
-        btns.push(`<button onclick="updateCartOrderStatus('saiu-entrega')" class="badge status-entrega cursor-pointer hover:opacity-80">🛵 Entrega</button>`);
-    }
-    if (status === 'saiu-entrega') {
-        btns.push(`<button onclick="updateCartOrderStatus('entregue')" class="badge status-entregue cursor-pointer hover:opacity-80">📦 Entregue</button>`);
-    }
-    if (status === 'entregue') {
-        btns.push(`<button onclick="selectOrderForPay('${activeOrder.id}')" class="badge status-pago cursor-pointer hover:opacity-80">💰 Pagar</button>`);
-    }
-    
-    actions.innerHTML = btns.join('');
+    // Set select to current status
+    select.value = status;
 }
 
 window.updateCartOrderStatus = function(newStatus) {
     if (!activeOrder) return;
+    
+    if (newStatus === 'cancelado') {
+        if (!confirm('⚠️ Tem certeza que deseja CANCELAR este pedido?\n\nEsta ação não pode ser desfeita.')) {
+            document.getElementById('cartStatusSelect').value = activeOrder.status || 'novo';
+            return;
+        }
+    }
+    
     const path = 'pedidos/' + activeOrder.id;
     update(ref(db, path), { status: newStatus });
     activeOrder.status = newStatus;
     document.getElementById('cartInfo').textContent = activeOrder.id.substring(0, 10) + ' | ' + getStatusLabel(newStatus);
     renderCartDeliveryStatus();
     renderOrdersList();
+    
+    // Se cancelado, mover para histórico de vendas
+    if (newStatus === 'cancelado') {
+        const subtotal = (activeOrder.itens || []).reduce((s, i) => s + (i.preco || 0) * (i.qtd || 1), 0);
+        const vendaData = {
+            id: activeOrder.id,
+            tipo: activeOrder.tipo || 'delivery',
+            cliente: activeOrder.cliente ? (activeOrder.cliente.nome || activeOrder.cliente) : 'N/A',
+            itens: activeOrder.itens || [],
+            subtotal: subtotal,
+            desconto: 0,
+            total: 0,
+            pagamentos: [{ forma: 'cancelado', valor: 0 }],
+            status: 'cancelado',
+            data: new Date().toISOString(),
+            horaCriacao: activeOrder.horaCriacao || activeOrder.createdAt,
+            operador: document.getElementById('userDisplay')?.textContent || 'N/A'
+        };
+        try {
+            const { push, set: fbSet } = window.firebaseDB;
+            const newRef = push(ref(db, 'vendas'));
+            fbSet(newRef, vendaData);
+        } catch(e) { console.log('Erro ao salvar venda cancelada:', e); }
+        
+        // Remover do pedidos
+        try {
+            const { remove } = window.firebaseDB;
+            remove(ref(db, path));
+        } catch(e) { console.log('Erro ao remover pedido cancelado:', e); }
+        
+        // Limpar carrinho
+        clearCart();
+        alert('❌ Pedido cancelado e movido para histórico.');
+    }
 };
 
 window.selectOrderForPay = function(orderId) {
@@ -1287,7 +1380,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'F4') { e.preventDefault(); switchTab('balcao'); }
     if (e.key === 'F5') { e.preventDefault(); document.getElementById('searchProduct').focus(); }
     if (e.key === 'F8') { e.preventDefault(); openPaymentPanel(); }
-    if (e.key === 'Escape') { closePaymentPanel(); closeConfirm(); }
+    if (e.key === 'Escape') { closeConfirm(); }
 });
 
 // Make functions global
