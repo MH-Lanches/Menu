@@ -215,25 +215,34 @@
                     <!-- Counter Sale -->
                     <div id="tab-balcao" class="order-content hidden">
                         <div class="glass-card rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-4 neon-cyan">Venda Rápida - Balcão</h3>
+                            <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-cash-register mr-2"></i>Venda Rápida - Balcão</h3>
                             
-                            <!-- Quick Categories -->
-                            <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
-                                <button onclick="filterQuickProducts('Todos')" class="quick-cat-btn px-4 py-2 rounded-lg bg-gradient-to-r from-[#ff00ff] to-[#00ffff] font-semibold whitespace-nowrap">Todos</button>
-                                <button onclick="filterQuickProducts('Hambúrgueres')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Hambúrgueres</button>
-                                <button onclick="filterQuickProducts('Porções')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Porções</button>
-                                <button onclick="filterQuickProducts('Bebidas')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Bebidas</button>
-                                <button onclick="filterQuickProducts('Sobremesas')" class="quick-cat-btn px-4 py-2 rounded-lg glass-card hover:border-[#ff00ff] font-semibold whitespace-nowrap">Sobremesas</button>
+                            <!-- Search + Categories -->
+                            <div class="flex gap-2 mb-4">
+                                <div class="flex-1 relative">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                    <input type="text" id="balcaoSearch" placeholder="Buscar produto..." 
+                                        oninput="filterQuickProducts()" 
+                                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
+                                </div>
+                                <button onclick="openCustomItemModal('balcao')" class="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold whitespace-nowrap text-black hover:scale-105 transition-transform" title="Item Personalizado">
+                                    <i class="fas fa-edit mr-1"></i> Item ✏️
+                                </button>
+                            </div>
+                            
+                            <!-- Dynamic Categories -->
+                            <div id="balcaoCategories" class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                                <!-- Categorias carregadas do Firebase -->
                             </div>
 
                             <!-- Products Grid -->
-                            <div id="quickProducts" class="grid grid-cols-5 gap-2 mb-6 max-h-64 overflow-y-auto">
+                            <div id="quickProductsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6 max-h-72 overflow-y-auto">
                             </div>
 
                             <!-- Current Sale -->
                             <div class="border-t border-gray-700 pt-4">
                                 <div class="flex justify-between items-center mb-4">
-                                    <h4 class="font-bold">Itens da Venda</h4>
+                                    <h4 class="font-bold"><i class="fas fa-receipt mr-2"></i>Itens da Venda</h4>
                                     <button onclick="clearQuickSale()" class="text-red-500 hover:text-red-400">
                                         <i class="fas fa-trash mr-1"></i> Limpar
                                     </button>
@@ -245,8 +254,8 @@
                                     <span class="text-xl font-bold">Total:</span>
                                     <span id="quickSaleTotal" class="text-2xl font-bold neon-cyan">R$ 0,00</span>
                                 </div>
-                                <button onclick="finishQuickSale()" class="w-full mt-4 py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
-                                    <i class="fas fa-cash-register mr-2"></i> Finalizar Venda
+                                <button onclick="openCheckoutModal('balcao')" class="w-full mt-4 py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
+                                    <i class="fas fa-cash-register mr-2"></i> Fechar Conta (Caixa)
                                 </button>
                             </div>
                         </div>
@@ -346,15 +355,131 @@
     <div id="tableModal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/70" onclick="closeTableModal()"></div>
         <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-2xl mx-auto glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-4">
                 <h2 id="tableModalTitle" class="text-2xl font-bold neon-cyan">Mesa 1</h2>
                 <button onclick="closeTableModal()" class="text-2xl hover:text-red-500">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div id="tableModalContent">
+            <!-- Search + Categories inside table modal -->
+            <div class="flex gap-2 mb-3">
+                <div class="flex-1 relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" id="tableSearch" placeholder="Buscar produto..." 
+                        oninput="filterTableProducts()" 
+                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 focus:border-[#00ffff] focus:outline-none text-white text-sm">
+                </div>
+                <button onclick="openCustomItemModal('mesa')" class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold text-black hover:scale-105 transition-transform text-sm" title="Item Personalizado">
+                    <i class="fas fa-edit"></i> Item ✏️
+                </button>
             </div>
+            <div id="tableCategoriesBar" class="flex gap-1.5 mb-3 overflow-x-auto pb-1"></div>
+            
+            <div id="tableProductsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4 max-h-48 overflow-y-auto"></div>
+            
+            <div id="tableModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Custom Item Modal -->
+    <div id="customItemModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCustomItemModal()"></div>
+        <div class="absolute inset-x-4 top-1/3 max-w-md mx-auto glass rounded-2xl p-6">
+            <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-edit mr-2"></i>Item Personalizado</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Nome do Item</label>
+                    <input type="text" id="customItemName" placeholder="Ex: Pastilha, Copo extra..." 
+                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Valor (R$)</label>
+                    <input type="number" id="customItemPrice" placeholder="0.00" step="0.01" min="0"
+                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeCustomItemModal()" class="flex-1 py-3 glass rounded-xl font-semibold">Cancelar</button>
+                    <button onclick="addCustomItem()" class="flex-1 py-3 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-black">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal (Caixa) -->
+    <div id="checkoutModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCheckoutModal()"></div>
+        <div class="absolute inset-x-2 sm:inset-x-8 top-4 bottom-4 mx-auto glass rounded-2xl p-4 sm:p-6 max-w-3xl overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold neon-pink"><i class="fas fa-cash-register mr-2"></i>Fechamento de Caixa</h2>
+                <button onclick="closeCheckoutModal()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Order Info -->
+            <div id="checkoutOrderInfo" class="mb-4 p-3 bg-black/30 rounded-xl"></div>
+
+            <!-- Items -->
+            <div id="checkoutItems" class="mb-4 max-h-40 overflow-y-auto space-y-1"></div>
+
+            <!-- Total -->
+            <div class="flex justify-between items-center p-4 bg-black/40 rounded-xl mb-4">
+                <span class="text-xl font-bold">Total a Pagar:</span>
+                <span id="checkoutTotal" class="text-3xl font-bold neon-cyan">R$ 0,00</span>
+            </div>
+
+            <!-- Payment Methods -->
+            <h4 class="font-bold mb-2 neon-cyan"><i class="fas fa-credit-card mr-2"></i>Forma(s) de Pagamento:</h4>
+            
+            <!-- Payment buttons -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <button onclick="addPayment('pix')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
+                    <i class="fas fa-qrcode mr-1"></i> PIX
+                </button>
+                <button onclick="addPayment('debito')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
+                    <i class="fas fa-credit-card mr-1"></i> Débito
+                </button>
+                <button onclick="addPayment('credito')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
+                    <i class="fas fa-credit-card mr-1"></i> Crédito
+                </button>
+                <button onclick="addPayment('dinheiro')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
+                    <i class="fas fa-money-bill mr-1"></i> Espécie
+                </button>
+            </div>
+
+            <!-- Payment List -->
+            <div id="paymentList" class="space-y-2 mb-4"></div>
+
+            <!-- Cash Change Calculator -->
+            <div id="cashSection" class="hidden mb-4 p-4 bg-black/30 rounded-xl">
+                <label class="block text-sm font-semibold mb-2">💵 Valor Recebido (R$):</label>
+                <input type="number" id="cashReceived" placeholder="0.00" step="0.01" min="0"
+                    oninput="calcChange()"
+                    class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white text-xl font-mono">
+                <div id="changeDisplay" class="mt-2 text-center text-xl font-bold text-green-400"></div>
+            </div>
+
+            <!-- Payment Summary -->
+            <div class="p-3 bg-black/30 rounded-xl mb-4">
+                <div class="flex justify-between text-sm text-gray-400 mb-1">
+                    <span>Total do Pedido:</span>
+                    <span id="chkOrderTotal">R$ 0,00</span>
+                </div>
+                <div class="flex justify-between text-sm text-green-400">
+                    <span>Total Pago:</span>
+                    <span id="chkPaidTotal">R$ 0,00</span>
+                </div>
+                <div id="chkRemaining" class="flex justify-between text-sm text-red-400 mt-1">
+                    <span>Restante:</span>
+                    <span>R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Confirm Button -->
+            <button onclick="confirmCheckout()" id="btnConfirmCheckout" 
+                class="w-full py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                <i class="fas fa-check-circle mr-2"></i> Confirmar Pagamento e Finalizar
+            </button>
         </div>
     </div>
 
@@ -375,28 +500,55 @@
         let currentTableOrder = null;
         let quickSaleItems = [];
         let currentQuickCategory = 'Todos';
+        let currentBalcaoCategory = 'Todos';
+        let currentTableCategory = 'Todos';
+        let currentTableId = null;
+        let customItemTarget = 'balcao';
+        let checkoutData = { type: 'balcao', items: [], total: 0, orderId: null, tableNumber: null };
+        let payments = [];
 
-        // Produtos carregados do Firebase (inicia vazio)
-        let quickProducts = [];
+        // Products loaded from Firebase
+        let allProducts = [];
+        let allCategories = [];
+
         let orders = [];
         let tableOrders = [];
+        let timerIntervals = {};
 
         document.addEventListener('DOMContentLoaded', () => {
-            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
-            if (dbMode !== 'local' && window.firebaseDB) {
+            // Load products and categories from Firebase
+            if (window.firebaseDB) {
                 const { db, ref, onValue } = window.firebaseDB;
+                
+                // Load categories
+                onValue(ref(db, 'categorias'), (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        allCategories = Object.entries(data).map(([id, val]) => ({
+                            id, nome: val.nome || val, ...(typeof val === 'object' && val !== null ? val : {})
+                        })).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+                    } else {
+                        allCategories = [];
+                    }
+                    renderBalcaoCategories();
+                });
+
+                // Load products
                 onValue(ref(db, 'produtos'), (snap) => {
                     if (snap.exists()) {
-                        quickProducts = Object.values(snap.val());
-                        renderQuickProducts();
+                        const data = snap.val();
+                        allProducts = Object.entries(data).map(([id, val]) => ({
+                            id, ...(typeof val === 'object' && val !== null ? val : {}),
+                            nome: val.nome || val.name || 'Produto',
+                            preco: parseFloat(val.preco || val.price || 0),
+                            categoria: val.categoria || val.category || 'Outros',
+                            disponivel: val.disponivel !== false && val.ativo !== false
+                        }));
+                    } else {
+                        allProducts = [];
                     }
+                    renderQuickProductsGrid();
                 });
-            } else {
-                const savedProds = localStorage.getItem('mh_json_produtos');
-                if (savedProds) {
-                    try { quickProducts = JSON.parse(savedProds); } catch(e) {}
-                }
-                renderQuickProducts();
             }
 
             checkSession();
@@ -405,36 +557,61 @@
             setInterval(updateTime, 1000);
             setInterval(refreshOrders, 10000);
             
-            // Listen for Firebase orders
+            // Listen for Firebase orders (delivery)
             if (window.firebaseDB) {
                 setTimeout(() => {
-                    if (window.firebaseDB.onValue) {
-                        window.firebaseDB.onValue(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos'), (snapshot) => {
-                            const data = snapshot.val() || {};
-                            // Filtrar apenas pedidos NÃO finalizados
-                            const firebaseOrders = Object.entries(data)
-                                .filter(([key, value]) => value && value.status !== 'finalizado')
-                                .map(([key, value]) => ({
-                                    ...(value || {}),
-                                    id: (value && value.id) ? value.id : key,
-                                    tipo: 'delivery'
-                                }));
+                    const { onValue, ref, db } = window.firebaseDB;
+                    
+                    // Delivery orders
+                    onValue(ref(db, 'pedidos'), (snapshot) => {
+                        const data = snapshot.val() || {};
+                        const allOrders = Object.entries(data).map(([key, value]) => ({
+                            ...(value || {}),
+                            id: (value && value.id) ? value.id : key,
+                            tipo: 'delivery'
+                        }));
 
-                            const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
-                            if (hasNewOrder) {
-                                playAlertSound();
-                            }
-
-                            // Manter apenas pedidos locais que não são do Firebase
-                            const localOrders = orders.filter(o => o.tipo !== 'delivery' || !o.fromFirebase);
-                            const normalizedFirebaseOrders = firebaseOrders.map(o => ({ ...o, fromFirebase: true }));
-                            orders = [...localOrders, ...normalizedFirebaseOrders];
-
-                            renderAllOrders();
-                            updateStats();
+                        const firebaseOrders = allOrders.filter(o => {
+                            const s = (o.status || '').toLowerCase();
+                            return s === 'novo' || s === 'producao' || s === 'pronto' || s === 'saiu-entrega';
                         });
-                    }
-                }, 2000);
+
+                        const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
+                        if (hasNewOrder) playAlertSound();
+
+                        const currentFirebaseIds = new Set(firebaseOrders.map(o => o.id));
+                        orders.filter(o => o.fromFirebase && !currentFirebaseIds.has(o.id)).forEach(removedOrder => {
+                            if (timerIntervals[removedOrder.id]) {
+                                clearInterval(timerIntervals[removedOrder.id]);
+                                delete timerIntervals[removedOrder.id];
+                            }
+                        });
+
+                        const localOrders = orders.filter(o => o.tipo !== 'delivery' || !o.fromFirebase);
+                        const normalizedFirebaseOrders = firebaseOrders.map(o => ({ ...o, fromFirebase: true }));
+                        orders = [...localOrders, ...normalizedFirebaseOrders];
+
+                        renderAllOrders();
+                        updateStats();
+                    });
+
+                    // Table orders (comandas)
+                    onValue(ref(db, 'comandas'), (snapshot) => {
+                        const data = snapshot.val() || {};
+                        const firebaseTables = Object.entries(data).map(([key, value]) => ({
+                            ...(value || {}),
+                            id: value?.id || key,
+                            tipo: 'mesa'
+                        }));
+
+                        // Only update table orders that come from Firebase
+                        const localTables = tableOrders.filter(o => !o.fromFirebase);
+                        const normalizedTables = firebaseTables.map(o => ({ ...o, fromFirebase: true }));
+                        tableOrders = [...localTables, ...normalizedTables];
+                        
+                        renderTableOrders();
+                    });
+                }, 1000);
             }
         });
 
@@ -512,6 +689,14 @@
             const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
             activeBtn.classList.add('status-novo');
             activeBtn.classList.remove('glass-card', 'hover:border-[#00ffff]');
+            
+            // Refresh data when switching tabs
+            if (tabName === 'balcao') {
+                renderBalcaoCategories();
+                renderQuickProductsGrid();
+            } else if (tabName === 'mesa') {
+                renderTableOrders();
+            }
         }
 
         function renderAllOrders() {
@@ -520,19 +705,54 @@
             updateStats();
         }
 
+        function formatElapsedTime(isoDate) {
+            if (!isoDate) return '--:--';
+            const now = new Date();
+            const created = new Date(isoDate);
+            const diff = Math.floor((now - created) / 1000);
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = diff % 60;
+            if (h > 0) return `${h}h ${m}m ${s}s`;
+            return `${m}m ${s}s`;
+        }
+
+        function getCreatedAt(isoDate) {
+            if (!isoDate) return '--:--';
+            const d = new Date(isoDate);
+            return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
         function renderDeliveryOrders() {
             const container = document.getElementById('deliveryOrders');
-            const deliveryOrders = orders.filter(o => o.tipo === 'delivery' && o.status !== 'finalizado');
+            const deliveryOrders = orders.filter(o => {
+                if (o.tipo !== 'delivery') return false;
+                const s = (o.status || '').toLowerCase();
+                return s !== 'finalizado' && s !== 'finalized';
+            });
             
+            // Clear old timers
+            Object.keys(timerIntervals).forEach(id => {
+                if (!deliveryOrders.find(o => o.id === id)) {
+                    clearInterval(timerIntervals[id]);
+                    delete timerIntervals[id];
+                }
+            });
+
             if (deliveryOrders.length === 0) {
-                container.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-12">Nenhum pedido de delivery no momento</p>';
+                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12"><i class="fas fa-inbox text-5xl mb-4 block opacity-30"></i><p class="text-lg">Nenhum pedido de delivery no momento</p></div>';
                 return;
             }
 
             container.innerHTML = deliveryOrders.map(order => `
                 <div onclick="openOrderModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-102 transition-transform ${order.status === 'novo' ? 'pulse-alert border-2 border-[#ff00ff]' : ''}">
                     <div class="flex justify-between items-start mb-3">
-                        <span class="font-mono text-sm">${order.id}</span>
+                        <div>
+                            <span class="font-mono text-sm text-gray-400">${order.id}</span>
+                            <div class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-clock mr-1"></i>Criado: ${getCreatedAt(order.data)}
+                            </div>
+                        </div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold status-${order.status}">${getStatusName(order.status)}</span>
                     </div>
                     <h4 class="font-bold text-lg mb-1">${order.cliente.nome}</h4>
@@ -544,32 +764,81 @@
                     </div>
                     <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
                         <span class="text-sm">${order.pagamento}</span>
-                        <span class="font-bold neon-cyan">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
+                        <div class="text-right">
+                            <span class="font-bold neon-cyan block">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
+                            <span class="text-xs font-mono text-yellow-400" id="timer-${order.id}">
+                                <i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             `).join('');
+
+            // Start/update timers
+            deliveryOrders.forEach(order => {
+                if (timerIntervals[order.id]) clearInterval(timerIntervals[order.id]);
+                timerIntervals[order.id] = setInterval(() => {
+                    const el = document.getElementById(`timer-${order.id}`);
+                    if (el) el.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}`;
+                }, 1000);
+            });
         }
 
         function renderTableOrders() {
             const container = document.getElementById('tableOrders');
             
+            // Filter out finalized table orders
+            tableOrders = tableOrders.filter(o => {
+                const s = (o.status || '').toLowerCase();
+                return s !== 'finalizado' && s !== 'finalized' && s !== 'fechada';
+            });
+            
+            // Clear old timers
+            Object.keys(timerIntervals).forEach(id => {
+                if (!tableOrders.find(o => o.id === id)) {
+                    clearInterval(timerIntervals[id]);
+                    delete timerIntervals[id];
+                }
+            });
+
             if (tableOrders.length === 0) {
-                container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-12">Nenhuma comanda aberta</p>';
+                container.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-12"><i class="fas fa-chair text-5xl mb-4 block opacity-30"></i><p class="text-lg">Nenhuma comanda aberta</p></div>';
                 return;
             }
 
             container.innerHTML = tableOrders.map(order => {
                 const total = order.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+                const isEntregue = (order.status || '').toLowerCase() === 'entregue' || (order.status || '').toLowerCase() === 'pago';
                 return `
                     <div onclick="openTableModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-105 transition-transform border-2 ${order.status === 'aberta' ? 'border-[#00ffff]' : 'border-gray-600'}">
                         <div class="text-center mb-3">
                             <span class="text-3xl font-bold neon-cyan">MESA ${order.mesa}</span>
                         </div>
                         <p class="text-center text-gray-400 mb-2">${order.itens.length} itens</p>
-                        <p class="text-center font-bold text-xl neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</p>
+                        <p class="text-center font-bold text-xl neon-pink mb-2">R$ ${total.toFixed(2).replace('.', ',')}</p>
+                        <div class="text-center text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>Criado: ${getCreatedAt(order.data)}
+                        </div>
+                        <div class="text-center">
+                            <span class="text-xs font-mono ${isEntregue ? 'text-green-400' : 'text-yellow-400'}" id="timer-${order.id}">
+                                <i class="fas ${isEntregue ? 'fa-check-circle' : 'fa-hourglass-half'} mr-1"></i>
+                                ${isEntregue ? 'Finalizada' : formatElapsedTime(order.data)}
+                            </span>
+                        </div>
                     </div>
                 `;
             }).join('');
+
+            // Start timers (only for open tables)
+            tableOrders.forEach(order => {
+                const isEntregue = (order.status || '').toLowerCase() === 'entregue' || (order.status || '').toLowerCase() === 'pago';
+                if (isEntregue) return; // Don't start timer for finalized
+                if (timerIntervals[order.id]) clearInterval(timerIntervals[order.id]);
+                timerIntervals[order.id] = setInterval(() => {
+                    const el = document.getElementById(`timer-${order.id}`);
+                    if (el) el.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}`;
+                }, 1000);
+            });
         }
 
         function openOrderModal(orderId) {
@@ -656,6 +925,10 @@
             if (!currentOrder) return;
 
             if (newStatus === 'finalizado') {
+                // CONFIRMAÇÃO antes de finalizar
+                if (!confirm(`⚠️ Tem certeza que deseja FINALIZAR este pedido?\n\nPedido: ${currentOrder.id}\nCliente: ${currentOrder.cliente?.nome || 'N/A'}\nTotal: R$ ${(currentOrder.total || 0).toFixed(2).replace('.', ',')}\n\nEsta ação não pode ser desfeita.`)) {
+                    return;
+                }
                 await finalizeDeliveryOrder(currentOrder);
                 return;
             }
@@ -667,6 +940,36 @@
                     window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id),
                     currentOrder
                 );
+            }
+            
+            // Quando pedido for ENTREGUE, remover do Firebase para não reaparecer
+            if (newStatus === 'entregue') {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (window.firebaseDB && window.firebaseDB.remove) {
+                    try {
+                        // Salvar no historico antes de remover
+                        const sale = {
+                            id: currentOrder.id,
+                            tipo: 'delivery',
+                            cliente: currentOrder.cliente,
+                            itens: currentOrder.itens,
+                            pagamento: currentOrder.pagamento,
+                            total: currentOrder.total,
+                            statusFinal: 'entregue',
+                            dataPedido: currentOrder.data,
+                            dataEntrega: new Date().toISOString()
+                        };
+                        if (window.firebaseDB.push) {
+                            await window.firebaseDB.push(
+                                window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
+                                sale
+                            );
+                        }
+                        await window.firebaseDB.remove(
+                            window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id)
+                        );
+                    } catch(e) { console.error('Erro ao arquivar pedido entregue:', e); }
+                }
             }
             
             renderAllOrders();
@@ -698,176 +1001,101 @@
             audio.play().catch(() => {});
         }
 
-        function newTableOrder() {
-            const mesaNum = prompt('Número da mesa:');
-            if (!mesaNum) return;
-            
-            const newOrder = {
-                id: 'MESA_' + Date.now(),
-                mesa: parseInt(mesaNum),
-                itens: [],
-                status: 'aberta',
-                data: new Date().toISOString()
-            };
-            
-            tableOrders.push(newOrder);
-            renderTableOrders();
-            openTableModal(newOrder.id);
-        }
+        // ==========================================
+        //  FUNÇÕES DE MESA REESCRITAS ABAIXO
+        // ==========================================
 
-        function openTableModal(orderId) {
-            currentTableOrder = tableOrders.find(o => o.id === orderId);
-            if (!currentTableOrder) return;
-
-            document.getElementById('tableModalTitle').textContent = `MESA ${currentTableOrder.mesa}`;
+        // ==========================================
+        //  BALCÃO - Categorias Dinâmicas do Firebase
+        // ==========================================
+        function renderBalcaoCategories() {
+            const container = document.getElementById('balcaoCategories');
+            if (!container) return;
             
-            const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            let html = `<button onclick="filterQuickProducts('Todos')" 
+                class="balcao-cat-btn px-4 py-2 rounded-lg ${currentBalcaoCategory === 'Todos' ? 'bg-gradient-to-r from-[#ff00ff] to-[#00ffff] text-black' : 'glass-card hover:border-[#ff00ff]'} font-semibold whitespace-nowrap text-sm transition-all">
+                Todos
+            </button>`;
             
-            const content = `
-                <div class="space-y-4">
-                    <div class="glass-card p-4 rounded-xl">
-                        <h4 class="font-bold mb-3 neon-cyan">Adicionar Item</h4>
-                        <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                            ${quickProducts.map(p => `
-                                <button onclick="addItemToTable(${p.id})" class="p-2 glass rounded-lg text-center hover:border-[#00ffff] transition-colors">
-                                    <span class="text-2xl">${p.imagem}</span>
-                                    <p class="text-xs">${p.nome}</p>
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-4 rounded-xl">
-                        <h4 class="font-bold mb-3 neon-cyan">Itens da Comanda</h4>
-                        ${currentTableOrder.itens.length === 0 ? 
-                            '<p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>' :
-                            currentTableOrder.itens.map((item, idx) => `
-                                <div class="flex justify-between items-center py-2 border-b border-gray-700">
-                                    <span>${item.quantidade}x ${item.nome}</span>
-                                    <div class="flex items-center gap-3">
-                                        <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
-                                        <button onclick="removeTableItem(${idx})" class="text-red-500 hover:text-red-400">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')
-                        }
-                        <div class="flex justify-between pt-4 font-bold text-xl">
-                            <span>Total</span>
-                            <span class="neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-3">
-                        <button onclick="closeTableModal()" class="flex-1 py-3 glass rounded-xl font-semibold hover:border-[#ff00ff]">
-                            Voltar
-                        </button>
-                        <button onclick="closeTableOrder()" class="flex-1 py-3 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-semibold text-black">
-                            Fechar Conta
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('tableModalContent').innerHTML = content;
-            document.getElementById('tableModal').classList.remove('hidden');
-        }
-
-        function closeTableModal() {
-            document.getElementById('tableModal').classList.add('hidden');
-            currentTableOrder = null;
-        }
-
-        function addItemToTable(prodId) {
-            const prod = quickProducts.find(p => p.id === prodId);
-            if (!prod || !currentTableOrder) return;
-            
-            const existing = currentTableOrder.itens.find(i => i.nome === prod.nome);
-            if (existing) {
-                existing.quantidade++;
-            } else {
-                currentTableOrder.itens.push({
-                    nome: prod.nome,
-                    preco: prod.preco,
-                    quantidade: 1
-                });
-            }
-            
-            openTableModal(currentTableOrder.id);
-            renderTableOrders();
-        }
-
-        function removeTableItem(idx) {
-            if (!currentTableOrder) return;
-            currentTableOrder.itens.splice(idx, 1);
-            openTableModal(currentTableOrder.id);
-            renderTableOrders();
-        }
-
-        function closeTableOrder() {
-            if (!currentTableOrder) return;
-            
-            const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
-            
-            orders.push({
-                id: currentTableOrder.id,
-                tipo: 'mesa',
-                mesa: currentTableOrder.mesa,
-                cliente: { nome: `Mesa ${currentTableOrder.mesa}`, telefone: '-', endereco: '-' },
-                itens: [...currentTableOrder.itens],
-                pagamento: 'presencial',
-                total: total,
-                status: 'pago',
-                data: new Date().toISOString()
+            allCategories.forEach(cat => {
+                const nome = cat.nome || cat;
+                const isActive = currentBalcaoCategory === nome;
+                html += `<button onclick="filterQuickProducts('${nome}')" 
+                    class="balcao-cat-btn px-4 py-2 rounded-lg ${isActive ? 'bg-gradient-to-r from-[#ff00ff] to-[#00ffff] text-black' : 'glass-card hover:border-[#ff00ff]'} font-semibold whitespace-nowrap text-sm transition-all">
+                    ${nome}
+                </button>`;
             });
             
-            tableOrders = tableOrders.filter(o => o.id !== currentTableOrder.id);
-            
-            renderAllOrders();
-            updateDailySummary();
-            closeTableModal();
+            container.innerHTML = html;
         }
 
-        // Quick Sale (Balcão) Functions
         function filterQuickProducts(categoria) {
-            currentQuickCategory = categoria;
-            document.querySelectorAll('.quick-cat-btn').forEach(btn => {
-                btn.classList.remove('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]');
+            if (categoria) currentBalcaoCategory = categoria;
+            
+            // Update active button
+            document.querySelectorAll('.balcao-cat-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]', 'text-black');
                 btn.classList.add('glass-card', 'hover:border-[#ff00ff]');
             });
-            event.target.classList.add('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]');
-            event.target.classList.remove('glass-card', 'hover:border-[#ff00ff]');
-            renderQuickProducts();
-        }
-
-        function renderQuickProducts() {
-            const container = document.getElementById('quickProducts');
-            const filtered = currentQuickCategory === 'Todos' 
-                ? quickProducts 
-                : quickProducts.filter(p => p.categoria === currentQuickCategory);
+            event?.target?.classList?.add('bg-gradient-to-r', 'from-[#ff00ff]', 'to-[#00ffff]', 'text-black');
             
-            container.innerHTML = filtered.map(p => `
-                <button onclick="addQuickItem(${p.id})" class="p-3 glass rounded-xl text-center hover:scale-105 transition-transform hover:border-[#00ffff]">
-                    <span class="text-3xl block">${p.imagem}</span>
-                    <p class="text-sm font-semibold truncate">${p.nome}</p>
-                    <p class="text-xs neon-pink">R$ ${p.preco.toFixed(2).replace('.', ',')}</p>
-                </button>
-            `).join('');
+            renderQuickProductsGrid();
         }
 
-        function addQuickItem(prodId) {
-            const prod = quickProducts.find(p => p.id === prodId);
+        function renderQuickProductsGrid() {
+            const container = document.getElementById('quickProductsGrid');
+            if (!container) return;
+            
+            const searchTerm = (document.getElementById('balcaoSearch')?.value || '').toLowerCase().trim();
+            
+            let filtered = allProducts.filter(p => p.disponivel !== false);
+            
+            // Filter by category
+            if (currentBalcaoCategory !== 'Todos') {
+                filtered = filtered.filter(p => p.categoria === currentBalcaoCategory);
+            }
+            
+            // Filter by search
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    (p.nome || '').toLowerCase().includes(searchTerm) ||
+                    (p.descricao || '').toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8"><i class="fas fa-search text-3xl mb-2 block opacity-30"></i>Nenhum produto encontrado</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(p => {
+                const img = (p.galeria && p.galeria.length > 0) ? p.galeria[0] : (p.imagem || null);
+                return `
+                <button onclick="addQuickItemById('${p.id}')" class="p-2 glass rounded-xl text-center hover:scale-105 transition-transform hover:border-[#00ffff] group">
+                    ${img ? 
+                        `<div class="w-full h-20 rounded-lg mb-2 overflow-hidden bg-gray-800"><img src="${img}" alt="${p.nome}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-3xl\\'>🍽️</span>'"></div>` :
+                        `<div class="w-full h-20 rounded-lg mb-2 bg-gray-800 flex items-center justify-center text-3xl">🍽️</div>`
+                    }
+                    <p class="text-xs font-semibold truncate group-hover:text-[#00ffff]">${p.nome || 'Produto'}</p>
+                    <p class="text-xs neon-pink font-bold">R$ ${(p.preco || 0).toFixed(2).replace('.', ',')}</p>
+                </button>
+            `}).join('');
+        }
+
+        function addQuickItemById(prodId) {
+            const prod = allProducts.find(p => p.id === prodId);
             if (!prod) return;
             
-            const existing = quickSaleItems.find(i => i.nome === prod.nome);
+            const existing = quickSaleItems.find(i => i.id === prodId && !i.custom);
             if (existing) {
                 existing.quantidade++;
             } else {
                 quickSaleItems.push({
+                    id: prodId,
                     nome: prod.nome,
-                    preco: prod.preco,
-                    quantidade: 1
+                    preco: parseFloat(prod.preco) || 0,
+                    quantidade: 1,
+                    custom: false
                 });
             }
             
@@ -876,9 +1104,10 @@
 
         function renderQuickSaleItems() {
             const container = document.getElementById('quickSaleItems');
+            if (!container) return;
             
             if (quickSaleItems.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-4"><i class="fas fa-shopping-cart mr-1"></i>Nenhum item adicionado</p>';
                 document.getElementById('quickSaleTotal').textContent = 'R$ 0,00';
                 return;
             }
@@ -887,11 +1116,17 @@
                 const subtotal = item.preco * item.quantidade;
                 return `
                     <div class="flex justify-between items-center p-2 bg-black/20 rounded-lg">
-                        <span>${item.quantidade}x ${item.nome}</span>
-                        <div class="flex items-center gap-3">
-                            <span class="font-semibold">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
-                            <button onclick="removeQuickItem(${idx})" class="text-red-500 hover:text-red-400">
-                                <i class="fas fa-times"></i>
+                        <div class="flex-1">
+                            <span class="text-sm">${item.custom ? '<i class="fas fa-edit text-yellow-400 mr-1"></i>' : ''}${item.quantidade}x ${item.nome}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
+                            <div class="flex gap-1">
+                                <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">-</button>
+                                <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">+</button>
+                            </div>
+                            <button onclick="removeQuickItem(${idx})" class="text-red-500 hover:text-red-400 ml-1">
+                                <i class="fas fa-trash text-xs"></i>
                             </button>
                         </div>
                     </div>
@@ -900,6 +1135,13 @@
             
             const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             document.getElementById('quickSaleTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+        }
+
+        function changeQty(idx, delta) {
+            if (quickSaleItems[idx]) {
+                quickSaleItems[idx].quantidade = Math.max(1, quickSaleItems[idx].quantidade + delta);
+                renderQuickSaleItems();
+            }
         }
 
         function removeQuickItem(idx) {
@@ -912,47 +1154,537 @@
             renderQuickSaleItems();
         }
 
-        function finishQuickSale() {
-            if (quickSaleItems.length === 0) {
-                alert('Adicione pelo menos um item!');
+        // ==========================================
+        //  ITEM PERSONALIZADO
+        // ==========================================
+        function openCustomItemModal(target) {
+            customItemTarget = target;
+            document.getElementById('customItemName').value = '';
+            document.getElementById('customItemPrice').value = '';
+            document.getElementById('customItemModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('customItemName').focus(), 100);
+        }
+
+        function closeCustomItemModal() {
+            document.getElementById('customItemModal').classList.add('hidden');
+        }
+
+        function addCustomItem() {
+            const name = document.getElementById('customItemName').value.trim();
+            const price = parseFloat(document.getElementById('customItemPrice').value);
+            
+            if (!name) { alert('Digite o nome do item!'); return; }
+            if (!price || price <= 0) { alert('Digite um valor válido!'); return; }
+            
+            const customItem = {
+                id: 'custom_' + Date.now(),
+                nome: name,
+                preco: price,
+                quantidade: 1,
+                custom: true
+            };
+            
+            if (customItemTarget === 'balcao') {
+                quickSaleItems.push(customItem);
+                renderQuickSaleItems();
+            } else if (customItemTarget === 'mesa' && currentTableOrder) {
+                currentTableOrder.itens.push({
+                    nome: name,
+                    preco: price,
+                    quantidade: 1,
+                    custom: true
+                });
+                openTableModal(currentTableOrder.id);
+                renderTableOrders();
+                saveTableOrderToFirebase(currentTableOrder);
+            }
+            
+            closeCustomItemModal();
+        }
+
+        // ==========================================
+        //  CHECKOUT (CAIXA COMPLETO)
+        // ==========================================
+        function openCheckoutModal(type) {
+            payments = [];
+            
+            if (type === 'balcao') {
+                if (quickSaleItems.length === 0) { alert('Adicione pelo menos um item!'); return; }
+                checkoutData = {
+                    type: 'balcao',
+                    items: [...quickSaleItems],
+                    total: quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0),
+                    orderId: 'BALCAO_' + Date.now(),
+                    tableNumber: null
+                };
+            } else if (type === 'mesa') {
+                if (!currentTableOrder || currentTableOrder.itens.length === 0) { alert('Comanda sem itens!'); return; }
+                checkoutData = {
+                    type: 'mesa',
+                    items: [...currentTableOrder.itens],
+                    total: currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0),
+                    orderId: currentTableOrder.id,
+                    tableNumber: currentTableOrder.mesa
+                };
+            }
+            
+            // Render order info
+            const infoEl = document.getElementById('checkoutOrderInfo');
+            if (checkoutData.type === 'balcao') {
+                infoEl.innerHTML = '<p class="font-bold text-sm"><i class="fas fa-cash-register mr-2"></i>Venda de Balcão</p>';
+            } else {
+                infoEl.innerHTML = `<p class="font-bold text-sm"><i class="fas fa-utensils mr-2"></i>Mesa ${checkoutData.tableNumber} • Criada às ${getCreatedAt(new Date().toISOString())}</p>`;
+            }
+            
+            // Render items
+            document.getElementById('checkoutItems').innerHTML = checkoutData.items.map(item => `
+                <div class="flex justify-between items-center py-1 text-sm border-b border-gray-800">
+                    <span>${item.quantidade}x ${item.nome}</span>
+                    <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('checkoutTotal').textContent = 'R$ ' + checkoutData.total.toFixed(2).replace('.', ',');
+            document.getElementById('chkOrderTotal').textContent = 'R$ ' + checkoutData.total.toFixed(2).replace('.', ',');
+            document.getElementById('chkPaidTotal').textContent = 'R$ 0,00';
+            document.getElementById('chkRemaining').innerHTML = '<span>Restante:</span><span>R$ ' + checkoutData.total.toFixed(2).replace('.', ',') + '</span>';
+            
+            document.getElementById('paymentList').innerHTML = '';
+            document.getElementById('cashSection').classList.add('hidden');
+            document.getElementById('cashReceived').value = '';
+            document.getElementById('changeDisplay').textContent = '';
+            document.getElementById('btnConfirmCheckout').disabled = true;
+            
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+            payments = [];
+        }
+
+        function addPayment(method) {
+            const remaining = checkoutData.total - payments.reduce((sum, p) => sum + p.valor, 0);
+            if (remaining <= 0) return;
+            
+            const methodNames = { pix: 'PIX', debito: 'Cartão Débito', credito: 'Cartão Crédito', dinheiro: 'Espécie' };
+            
+            if (method === 'dinheiro') {
+                // Show cash calculator
+                document.getElementById('cashSection').classList.remove('hidden');
+                document.getElementById('cashReceived').value = remaining.toFixed(2);
+                calcChange();
                 return;
             }
             
-            const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
-            
-            orders.push({
-                id: 'BALCAO_' + Date.now(),
-                tipo: 'balcao',
-                cliente: { nome: 'Balcão', telefone: '-', endereco: '-' },
-                itens: [...quickSaleItems],
-                pagamento: 'presencial',
-                total: total,
-                status: 'pago',
-                data: new Date().toISOString()
-            });
-            
-            quickSaleItems = [];
-            renderQuickSaleItems();
-            renderAllOrders();
-            updateDailySummary();
-            
-            alert('Venda finalizada com sucesso!');
+            // For PIX/Debit/Credit: add as full remaining amount
+            payments.push({ metodo: method, nome: methodNames[method], valor: parseFloat(remaining.toFixed(2)) });
+            renderPayments();
         }
 
+        function calcChange() {
+            const total = checkoutData.total;
+            const otherPayments = payments.filter(p => p.metodo !== 'dinheiro').reduce((sum, p) => sum + p.valor, 0);
+            const remaining = total - otherPayments;
+            const received = parseFloat(document.getElementById('cashReceived').value) || 0;
+            const change = received - remaining;
+            
+            // Remove old cash payment
+            payments = payments.filter(p => p.metodo !== 'dinheiro');
+            
+            if (received > 0) {
+                payments.push({ metodo: 'dinheiro', nome: 'Espécie', valor: parseFloat(received.toFixed(2)) });
+            }
+            
+            if (change >= 0) {
+                document.getElementById('changeDisplay').innerHTML = `
+                    <span class="text-green-400">Troco: R$ ${change.toFixed(2).replace('.', ',')}</span>
+                `;
+            } else {
+                document.getElementById('changeDisplay').innerHTML = `
+                    <span class="text-red-400">Faltam: R$ ${Math.abs(change).toFixed(2).replace('.', ',')}</span>
+                `;
+            }
+            
+            renderPayments();
+        }
+
+        function renderPayments() {
+            const container = document.getElementById('paymentList');
+            const total = checkoutData.total;
+            const paid = payments.reduce((sum, p) => sum + p.valor, 0);
+            const remaining = total - paid;
+            
+            container.innerHTML = payments.map((p, idx) => `
+                <div class="flex justify-between items-center p-2 bg-black/30 rounded-lg">
+                    <span><i class="fas fa-${p.metodo === 'pix' ? 'qrcode' : p.metodo === 'dinheiro' ? 'money-bill' : 'credit-card'} mr-2"></i>${p.nome}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold neon-cyan">R$ ${p.valor.toFixed(2).replace('.', ',')}</span>
+                        <button onclick="removePayment(${idx})" class="text-red-500 hover:text-red-400">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('chkPaidTotal').textContent = 'R$ ' + paid.toFixed(2).replace('.', ',');
+            
+            if (remaining > 0.01) {
+                document.getElementById('chkRemaining').innerHTML = `<span>Restante:</span><span class="text-red-400">R$ ${remaining.toFixed(2).replace('.', ',')}</span>`;
+                document.getElementById('btnConfirmCheckout').disabled = true;
+            } else {
+                const cashPayment = payments.find(p => p.metodo === 'dinheiro');
+                const changeText = cashPayment && cashPayment.valor > (total - payments.filter(p => p.metodo !== 'dinheiro').reduce((s,p) => s + p.valor, 0)) 
+                    ? ` (Troco: R$ ${(cashPayment.valor - (total - payments.filter(p => p.metodo !== 'dinheiro').reduce((s,p) => s + p.valor, 0))).toFixed(2).replace('.', ',')})` 
+                    : '';
+                document.getElementById('chkRemaining').innerHTML = `<span>Status:</span><span class="text-green-400">✅ Pago${changeText}</span>`;
+                document.getElementById('btnConfirmCheckout').disabled = false;
+            }
+        }
+
+        function removePayment(idx) {
+            const removed = payments[idx];
+            if (removed && removed.metodo === 'dinheiro') {
+                document.getElementById('cashSection').classList.add('hidden');
+                document.getElementById('cashReceived').value = '';
+                document.getElementById('changeDisplay').textContent = '';
+            }
+            payments.splice(idx, 1);
+            renderPayments();
+        }
+
+        async function confirmCheckout() {
+            const total = checkoutData.total;
+            const paid = payments.reduce((sum, p) => sum + p.valor, 0);
+            
+            if (paid < total - 0.01) {
+                alert('Valor pago é menor que o total!');
+                return;
+            }
+
+            // Confirmation dialog
+            const methodNames = payments.map(p => p.nome).join(' + ');
+            const confirmMsg = `✅ CONFIRMAR PAGAMENTO\n\nTipo: ${checkoutData.type === 'balcao' ? 'Balcão' : 'Mesa ' + checkoutData.tableNumber}\nItens: ${checkoutData.items.length}\nTotal: R$ ${total.toFixed(2).replace('.', ',')}\nMétodos: ${methodNames}\n\nConfirmar?`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            // Build sale record
+            const venda = {
+                id: checkoutData.orderId,
+                tipo: checkoutData.type,
+                mesa: checkoutData.tableNumber || null,
+                cliente: { nome: checkoutData.type === 'balcao' ? 'Balcão' : `Mesa ${checkoutData.tableNumber}`, telefone: '-', endereco: '-' },
+                itens: checkoutData.items.map(i => ({ nome: i.nome, preco: i.preco, quantidade: i.quantidade, custom: i.custom })),
+                pagamentos: payments.map(p => ({ metodo: p.metodo, nome: p.nome, valor: p.valor })),
+                total: total,
+                pago: paid,
+                troco: paid > total ? paid - total : 0,
+                status: 'finalizado',
+                dataFinalizacao: new Date().toISOString(),
+                data: new Date().toISOString()
+            };
+            
+            try {
+                // Save to sales history in Firebase
+                if (window.firebaseDB?.push) {
+                    await window.firebaseDB.push(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
+                        venda
+                    );
+                }
+                
+                // If it was a table order, remove from Firebase
+                if (checkoutData.type === 'mesa' && window.firebaseDB?.remove) {
+                    await window.firebaseDB.remove(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'comandas/' + checkoutData.orderId)
+                    );
+                }
+                
+                // Clear local data
+                if (checkoutData.type === 'balcao') {
+                    quickSaleItems = [];
+                    renderQuickSaleItems();
+                } else if (checkoutData.type === 'mesa') {
+                    tableOrders = tableOrders.filter(o => o.id !== checkoutData.orderId);
+                    if (timerIntervals[checkoutData.orderId]) {
+                        clearInterval(timerIntervals[checkoutData.orderId]);
+                        delete timerIntervals[checkoutData.orderId];
+                    }
+                    renderTableOrders();
+                }
+                
+                closeCheckoutModal();
+                closeTableModal();
+                updateDailySummary();
+                renderAllOrders();
+                
+                // Success message
+                const changeText = venda.troco > 0 ? `\nTroco: R$ ${venda.troco.toFixed(2).replace('.', ',')}` : '';
+                alert(`✅ Venda finalizada com sucesso!\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}${changeText}`);
+                
+            } catch(e) {
+                console.error('Erro ao finalizar venda:', e);
+                alert('Erro ao salvar. Tente novamente.');
+            }
+        }
+
+        // ==========================================
+        //  MESAS - Table Orders
+        // ==========================================
+        async function newTableOrder() {
+            const mesaNum = prompt('Número da mesa:');
+            if (!mesaNum) return;
+            
+            const orderId = 'MESA_' + Date.now();
+            const newOrder = {
+                id: orderId,
+                mesa: parseInt(mesaNum),
+                itens: [],
+                status: 'aberta',
+                data: new Date().toISOString()
+            };
+            
+            tableOrders.push(newOrder);
+            
+            // Save to Firebase
+            if (window.firebaseDB?.set) {
+                try {
+                    await window.firebaseDB.set(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'comandas/' + orderId),
+                        newOrder
+                    );
+                } catch(e) { console.error('Erro ao salvar comanda:', e); }
+            }
+            
+            renderTableOrders();
+            openTableModal(orderId);
+        }
+
+        function openTableModal(orderId) {
+            currentTableOrder = tableOrders.find(o => o.id === orderId);
+            if (!currentTableOrder) return;
+
+            document.getElementById('tableModalTitle').textContent = `Mesa ${currentTableOrder.mesa}`;
+            
+            // Render categories bar
+            renderTableCategories();
+            renderTableProductsGrid();
+            
+            renderTableItemsContent();
+            document.getElementById('tableModal').classList.remove('hidden');
+        }
+
+        function renderTableCategories() {
+            const container = document.getElementById('tableCategoriesBar');
+            if (!container) return;
+            
+            let html = `<button onclick="filterTableProducts('Todos')" 
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${currentTableCategory === 'Todos' ? 'bg-gradient-to-r from-[#ff00ff] to-[#00ffff] text-black' : 'glass-card hover:border-[#ff00ff]'}">
+                Todos
+            </button>`;
+            
+            allCategories.forEach(cat => {
+                const nome = cat.nome || cat;
+                const isActive = currentTableCategory === nome;
+                html += `<button onclick="filterTableProducts('${nome}')" 
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${isActive ? 'bg-gradient-to-r from-[#ff00ff] to-[#00ffff] text-black' : 'glass-card hover:border-[#ff00ff]'}">
+                    ${nome}
+                </button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function filterTableProducts(categoria) {
+            if (categoria) currentTableCategory = categoria;
+            renderTableCategories();
+            renderTableProductsGrid();
+        }
+
+        function renderTableProductsGrid() {
+            const container = document.getElementById('tableProductsGrid');
+            if (!container) return;
+            
+            const searchTerm = (document.getElementById('tableSearch')?.value || '').toLowerCase().trim();
+            
+            let filtered = allProducts.filter(p => p.disponivel !== false);
+            
+            if (currentTableCategory !== 'Todos') {
+                filtered = filtered.filter(p => p.categoria === currentTableCategory);
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    (p.nome || '').toLowerCase().includes(searchTerm) ||
+                    (p.descricao || '').toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4 text-sm">Nenhum produto</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(p => `
+                <button onclick="addItemToTable('${p.id}')" class="p-2 glass rounded-lg text-center hover:border-[#00ffff] transition-colors">
+                    <div class="w-full h-14 rounded mb-1 overflow-hidden bg-gray-800 flex items-center justify-center">
+                        ${(p.galeria && p.galeria[0]) ? 
+                            `<img src="${p.galeria[0]}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'text-xl\\'>🍽️</span>'">` :
+                            '<span class="text-xl">🍽️</span>'
+                        }
+                    </div>
+                    <p class="text-xs truncate font-semibold">${p.nome || 'Produto'}</p>
+                    <p class="text-xs neon-pink">R$ ${(p.preco || 0).toFixed(2).replace('.', ',')}</p>
+                </button>
+            `).join('');
+        }
+
+        function renderTableItemsContent() {
+            if (!currentTableOrder) return;
+            
+            const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
+            const isEntregue = (currentTableOrder.status || '').toLowerCase() === 'entregue' || (currentTableOrder.status || '').toLowerCase() === 'pago';
+            
+            const content = `
+                <div class="space-y-3">
+                    <div class="glass-card p-3 rounded-xl">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-sm neon-cyan"><i class="fas fa-receipt mr-1"></i>Itens da Comanda</h4>
+                            <span class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>Criada às ${getCreatedAt(currentTableOrder.data)}</span>
+                        </div>
+                        <div class="text-center mb-2">
+                            <span class="text-xs font-mono ${isEntregue ? 'text-green-400' : 'text-yellow-400'}" id="timer-${currentTableOrder.id}">
+                                <i class="fas ${isEntregue ? 'fa-check-circle' : 'fa-hourglass-half'} mr-1"></i>
+                                ${isEntregue ? 'Finalizada' : formatElapsedTime(currentTableOrder.data)}
+                            </span>
+                        </div>
+                        ${currentTableOrder.itens.length === 0 ? 
+                            '<p class="text-gray-500 text-center py-3 text-sm">Nenhum item adicionado</p>' :
+                            currentTableOrder.itens.map((item, idx) => `
+                                <div class="flex justify-between items-center py-1.5 border-b border-gray-700 text-sm">
+                                    <span>${item.custom ? '<i class="fas fa-edit text-yellow-400 mr-1"></i>' : ''}${item.quantidade}x ${item.nome}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
+                                        <button onclick="removeTableItem(${idx})" class="text-red-500 hover:text-red-400">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                        <div class="flex justify-between pt-3 font-bold text-lg">
+                            <span>Total</span>
+                            <span class="neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="closeTableModal()" class="flex-1 py-3 glass rounded-xl font-semibold hover:border-[#ff00ff]">
+                            <i class="fas fa-arrow-left mr-1"></i> Voltar
+                        </button>
+                        <button onclick="openCheckoutModal('mesa')" class="flex-1 py-3 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-semibold text-black">
+                            <i class="fas fa-cash-register mr-1"></i> Fechar Conta (Caixa)
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('tableModalContent').innerHTML = content;
+            
+            // Start timer
+            if (!isEntregue) {
+                if (timerIntervals[currentTableOrder.id]) clearInterval(timerIntervals[currentTableOrder.id]);
+                timerIntervals[currentTableOrder.id] = setInterval(() => {
+                    const el = document.getElementById(`timer-${currentTableOrder.id}`);
+                    if (el && currentTableOrder) el.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(currentTableOrder.data)}`;
+                }, 1000);
+            }
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModal').classList.add('hidden');
+            if (currentTableOrder && timerIntervals[currentTableOrder.id]) {
+                clearInterval(timerIntervals[currentTableOrder.id]);
+            }
+            currentTableOrder = null;
+        }
+
+        function addItemToTable(prodId) {
+            const prod = allProducts.find(p => p.id === prodId);
+            if (!prod || !currentTableOrder) return;
+            
+            const existing = currentTableOrder.itens.find(i => i.id === prodId && !i.custom);
+            if (existing) {
+                existing.quantidade++;
+            } else {
+                currentTableOrder.itens.push({
+                    id: prodId,
+                    nome: prod.nome,
+                    preco: parseFloat(prod.preco) || 0,
+                    quantidade: 1,
+                    custom: false
+                });
+            }
+            
+            renderTableItemsContent();
+            renderTableOrders();
+            saveTableOrderToFirebase(currentTableOrder);
+        }
+
+        async function saveTableOrderToFirebase(order) {
+            if (window.firebaseDB?.set) {
+                try {
+                    await window.firebaseDB.set(
+                        window.firebaseDB.ref(window.firebaseDB.db, 'comandas/' + order.id),
+                        order
+                    );
+                } catch(e) { console.error('Erro ao salvar comanda:', e); }
+            }
+        }
+
+        function removeTableItem(idx) {
+            if (!currentTableOrder) return;
+            currentTableOrder.itens.splice(idx, 1);
+            renderTableItemsContent();
+            renderTableOrders();
+            saveTableOrderToFirebase(currentTableOrder);
+        }
+
+        // ==========================================
+        //  RESUMO DIÁRIO
+        // ==========================================
         function updateDailySummary() {
-            const pedidosDelivery = orders.filter(o => o.tipo === 'delivery' && (o.status === 'pago' || o.status === 'finalizado'));
-            const pedidosMesa = orders.filter(o => o.tipo === 'mesa' && (o.status === 'pago' || o.status === 'finalizado'));
-            const pedidosBalcao = orders.filter(o => o.tipo === 'balcao' && (o.status === 'pago' || o.status === 'finalizado'));
+            // Count from orders + localStorage sales
+            let vendas = JSON.parse(localStorage.getItem('mh_vendas_dia') || '[]');
             
-            document.getElementById('resumoDelivery').textContent = pedidosDelivery.length;
-            document.getElementById('resumoMesa').textContent = pedidosMesa.length;
-            document.getElementById('resumoBalcao').textContent = pedidosBalcao.length;
+            // Filter today's sales
+            const today = new Date().toDateString();
+            vendas = vendas.filter(v => new Date(v.data).toDateString() === today);
             
-            const allPaid = [...pedidosDelivery, ...pedidosMesa, ...pedidosBalcao];
+            const deliveryCount = vendas.filter(v => v.tipo === 'delivery').length;
+            const mesaCount = vendas.filter(v => v.tipo === 'mesa').length;
+            const balcaoCount = vendas.filter(v => v.tipo === 'balcao').length;
             
-            const pix = allPaid.filter(o => o.pagamento === 'pix').reduce((sum, o) => sum + o.total, 0);
-            const dinheiro = allPaid.filter(o => o.pagamento === 'dinheiro' || o.pagamento === 'presencial').reduce((sum, o) => sum + o.total, 0);
-            const cartao = allPaid.filter(o => o.pagamento === 'cartao').reduce((sum, o) => sum + o.total, 0);
+            document.getElementById('resumoDelivery').textContent = deliveryCount;
+            document.getElementById('resumoMesa').textContent = mesaCount;
+            document.getElementById('resumoBalcao').textContent = balcaoCount;
+            
+            let pix = 0, dinheiro = 0, cartao = 0;
+            vendas.forEach(v => {
+                if (v.pagamentos) {
+                    v.pagamentos.forEach(pg => {
+                        if (pg.metodo === 'pix') pix += pg.valor;
+                        else if (pg.metodo === 'dinheiro') dinheiro += pg.valor;
+                        else cartao += pg.valor;
+                    });
+                } else if (v.pagamento) {
+                    const p = v.pagamento.toLowerCase();
+                    if (p.includes('pix')) pix += v.total;
+                    else if (p.includes('dinheiro') || p.includes('espécie')) dinheiro += v.total;
+                    else cartao += v.total;
+                }
+            });
+            
             const total = pix + dinheiro + cartao;
             
             document.getElementById('resumoPix').textContent = 'R$ ' + pix.toFixed(2).replace('.', ',');
@@ -961,45 +1693,12 @@
             document.getElementById('resumoTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
         }
 
+        // ==========================================
+        //  IMPRESSÃO
+        // ==========================================
         function printReport() {
             if (!currentOrder) return;
-            
-            const printContent = `
-                <html>
-                    <head>
-                        <title>Comanda - ${currentOrder.id}</title>
-                        <style>
-                            body { font-family: monospace; font-size: 12px; width: 58mm; margin: 0; padding: 5px; }
-                            .center { text-align: center; }
-                            .right { text-align: right; }
-                            .border { border-top: 1px dashed #000; margin: 5px 0; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="center">
-                            <h2>MH LANCHES</h2>
-                            <p>COMANDA</p>
-                        </div>
-                        <div class="border"></div>
-                        <p><strong>Pedido:</strong> ${currentOrder.id}</p>
-                        <p><strong>Cliente:</strong> ${currentOrder.cliente.nome}</p>
-                        <p><strong>Data:</strong> ${new Date(currentOrder.data).toLocaleString('pt-BR')}</p>
-                        <div class="border"></div>
-                        <p><strong>ITENS:</strong></p>
-                        ${currentOrder.itens.map(i => `
-                            <p>${i.quantidade}x ${i.nome} - R$ ${(i.preco * i.quantidade).toFixed(2)}</p>
-                        `).join('')}
-                        <div class="border"></div>
-                        <p class="right"><strong>TOTAL: R$ ${currentOrder.total.toFixed(2)}</strong></p>
-                        <div class="border"></div>
-                        <div class="center">
-                            <p>Obrigado pela preferência!</p>
-                            <p>${new Date().toLocaleString('pt-BR')}</p>
-                        </div>
-                    </body>
-                </html>
-            `;
-            
+            const printContent = `<html><head><title>Comanda</title><style>body{font-family:monospace;font-size:12px;width:58mm;margin:0;padding:5px}.center{text-align:center}.right{text-align:right}.border{border-top:1px dashed #000;margin:5px 0}</style></head><body><div class="center"><h2>MH LANCHES</h2><p>COMANDA</p></div><div class="border"></div><p><strong>Pedido:</strong> ${currentOrder.id}</p><p><strong>Cliente:</strong> ${currentOrder.cliente?.nome || 'N/A'}</p><p><strong>Data:</strong> ${new Date(currentOrder.data).toLocaleString('pt-BR')}</p><div class="border"></div><p><strong>ITENS:</strong></p>${currentOrder.itens.map(i => `<p>${i.quantidade}x ${i.nome} - R$ ${(i.preco * i.quantidade).toFixed(2)}</p>`).join('')}<div class="border"></div><p class="right"><strong>TOTAL: R$ ${currentOrder.total?.toFixed(2)}</strong></p><div class="border"></div><div class="center"><p>Obrigado pela preferência!</p><p>${new Date().toLocaleString('pt-BR')}</p></div></body></html>`;
             const printWin = window.open('', '_blank');
             printWin.document.write(printContent);
             printWin.document.close();
@@ -1008,41 +1707,7 @@
 
         function printDailyReport() {
             const total = document.getElementById('resumoTotal').textContent;
-            const printContent = `
-                <html>
-                    <head>
-                        <title>Resumo Diário - MH Lanches</title>
-                        <style>
-                            body { font-family: monospace; font-size: 12px; width: 58mm; margin: 0; padding: 5px; }
-                            .center { text-align: center; }
-                            .right { text-align: right; }
-                            .border { border-top: 1px dashed #000; margin: 5px 0; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="center">
-                            <h2>MH LANCHES</h2>
-                            <p>RESUMO DIÁRIO</p>
-                            <p>${new Date().toLocaleDateString('pt-BR')}</p>
-                        </div>
-                        <div class="border"></div>
-                        <p>Delivery: ${document.getElementById('resumoDelivery').textContent}</p>
-                        <p>Mesas: ${document.getElementById('resumoMesa').textContent}</p>
-                        <p>Balcão: ${document.getElementById('resumoBalcao').textContent}</p>
-                        <div class="border"></div>
-                        <p>Pix: ${document.getElementById('resumoPix').textContent}</p>
-                        <p>Dinheiro: ${document.getElementById('resumoDinheiro').textContent}</p>
-                        <p>Cartão: ${document.getElementById('resumoCartao').textContent}</p>
-                        <div class="border"></div>
-                        <p class="right"><strong>TOTAL: ${total}</strong></p>
-                        <div class="border"></div>
-                        <div class="center">
-                            <p>${new Date().toLocaleString('pt-BR')}</p>
-                        </div>
-                    </body>
-                </html>
-            `;
-            
+            const printContent = `<html><head><title>Resumo Diário</title><style>body{font-family:monospace;font-size:12px;width:58mm;margin:0;padding:5px}.center{text-align:center}.right{text-align:right}.border{border-top:1px dashed #000;margin:5px 0}</style></head><body><div class="center"><h2>MH LANCHES</h2><p>RESUMO DIÁRIO</p><p>${new Date().toLocaleDateString('pt-BR')}</p></div><div class="border"></div><p>Delivery: ${document.getElementById('resumoDelivery').textContent}</p><p>Mesas: ${document.getElementById('resumoMesa').textContent}</p><p>Balcão: ${document.getElementById('resumoBalcao').textContent}</p><div class="border"></div><p>Pix: ${document.getElementById('resumoPix').textContent}</p><p>Dinheiro: ${document.getElementById('resumoDinheiro').textContent}</p><p>Cartão: ${document.getElementById('resumoCartao').textContent}</p><div class="border"></div><p class="right"><strong>TOTAL: ${total}</strong></p><div class="border"></div><div class="center"><p>${new Date().toLocaleString('pt-BR')}</p></div></body></html>`;
             const printWin = window.open('', '_blank');
             printWin.document.write(printContent);
             printWin.document.close();
