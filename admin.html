@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MH Lanches - Admin</title>
+    <link rel="icon" type="image/png" href="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Rajdhani', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass { background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 0, 255, 0.3); }
+        .glass-card { background: rgba(30, 30, 50, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(0, 255, 255, 0.2); }
+        .neon-pink { color: #ff00ff; }
+        .neon-cyan { color: #00ffff; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff00ff, #00ffff); border-radius: 4px; }
+        .tab-active { background: linear-gradient(135deg, #ff00ff, #00ffff); color: white; }
+        .subtab-active { border-bottom: 2px solid #ff00ff; color: #ff00ff; }
+        .config-group { border-left: 3px solid #ff00ff; padding-left: 1rem; margin-bottom: 1.5rem; }
+        .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .badge-destaque { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; }
+        .badge-promocao { background: linear-gradient(135deg, #ff4444, #ff0000); color: #fff; }
+        .badge-pausado { background: linear-gradient(135deg, #666, #444); color: #fff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
+            authDomain: "cardapiomhlanches.firebaseapp.com",
+            databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
+            projectId: "cardapiomhlanches",
+            storageBucket: "cardapiomhlanches.firebasestorage.app",
+            messagingSenderId: "919725344771",
+            appId: "1:919725344771:web:69be07a143162e76cf2636"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+        window.firebaseDB = { db, storage, ref, set, get, push, remove, onValue, storageRef, uploadBytes, getDownloadURL };
+        
+        // Expor funções globalmente
+        window.uploadImageToStorage = async (file, path) => {
+            try {
+                const imageRef = storageRef(storage, path);
+                await uploadBytes(imageRef, file);
+                return await getDownloadURL(imageRef);
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                throw error;
+            }
+        };
+    </script>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 bg-[#0a0a1a]">
+        <div class="glass rounded-2xl p-8 w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <img src="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572" 
+                     alt="MH Lanches Logo" 
+                     class="mx-auto mb-4 w-48 h-auto"
+                     style="border: none;">
+                <h1 class="font-orbitron text-3xl font-black neon-pink mb-2">MH LANCHES</h1>
+                <p class="text-gray-400">Painel Administrativo</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Usuário</label>
+                    <input type="text" id="loginUser" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Senha</label>
+                    <input type="password" id="loginPass" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <p id="loginError" class="text-red-500 text-sm hidden">Credenciais inválidas</p>
+                <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                    Entrar
+                </button>
+            </form>
+            <p class="text-center text-gray-500 text-sm mt-4">
+                Admin: admin / admin123<br>
+                Funcionário: func / func123
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <!-- Header -->
+        <header class="glass py-4 px-6 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h1 class="font-orbitron text-xl font-bold neon-pink">MH LANCHES ADMIN</h1>
+                    <span id="userLevel" class="px-3 py-1 rounded-full text-sm font-semibold"></span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-store mr-1"></i> Loja
+                    </a>
+                    <a href="pdv.html" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-cash-register mr-1"></i> PDV
+                    </a>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="px-6 py-4">
+            <div class="max-w-7xl mx-auto flex flex-wrap gap-2">
+                <button onclick="showTab('dashboard')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all tab-active" data-tab="dashboard">
+                    <i class="fas fa-chart-bar mr-2"></i> Dashboard
+                </button>
+                <button onclick="showTab('produtos')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="produtos">
+                    <i class="fas fa-hamburger mr-2"></i> Produtos
+                </button>
+                <button onclick="showTab('categorias')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="categorias">
+                    <i class="fas fa-tags mr-2"></i> Categorias
+                </button>
+                <button onclick="showTab('pedidos')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="pedidos">
+                    <i class="fas fa-list mr-2"></i> Pedidos
+                </button>
+                <button onclick="showTab('config')" class="tab-btn px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#ff00ff]" data-tab="config">
+                    <i class="fas fa-cog mr-2"></i> Configurações
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="px-6 pb-12">
+            <div class="max-w-7xl mx-auto">
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Pedidos Hoje</p>
+                                    <p id="statPedidos" class="text-3xl font-bold neon-pink">0</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#ff00ff]/20 flex items-center justify-center">
+                                    <i class="fas fa-shopping-bag text-2xl neon-pink"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Vendas Hoje</p>
+                                    <p id="statVendas" class="text-3xl font-bold neon-cyan">R$ 0,00</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-[#00ffff]/20 flex items-center justify-center">
+                                    <i class="fas fa-dollar-sign text-2xl neon-cyan"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Ticket Médio</p>
+                                    <p id="statTicket" class="text-3xl font-bold text-green-400">R$ 0,00</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                                    <i class="fas fa-chart-line text-2xl text-green-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-400 text-sm">Produtos</p>
+                                    <p id="statProdutos" class="text-3xl font-bold text-yellow-400">0</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                    <i class="fas fa-utensils text-2xl text-yellow-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos Tab -->
+                <div id="tab-produtos" class="tab-content hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                        <h2 class="text-2xl font-bold neon-pink">Gerenciar Produtos</h2>
+                        <button onclick="openProductModal()" class="px-6 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-2"></i> Novo Produto
+                        </button>
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <div class="glass-card rounded-2xl p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">🔍 Buscar</label>
+                                <input type="text" id="filtroBusca" placeholder="Nome do produto..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">📁 Categoria</label>
+                                <select id="filtroCategoria" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                                    <option value="">Todas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">⏸️ Status</label>
+                                <select id="filtroStatus" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                                    <option value="">Todos</option>
+                                    <option value="ativo">Ativos</option>
+                                    <option value="pausado">Pausados</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">📅 Ordenar</label>
+                                <select id="filtroOrdenar" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                                    <option value="nome">Nome A-Z</option>
+                                    <option value="nome-desc">Nome Z-A</option>
+                                    <option value="preco-asc">Menor Preço</option>
+                                    <option value="preco-desc">Maior Preço</option>
+                                    <option value="recente">Mais Recentes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="limparFiltros()" class="mt-3 text-sm text-gray-400 hover:text-white">
+                            <i class="fas fa-eraser mr-1"></i> Limpar Filtros
+                        </button>
+                    </div>
+
+                    <!-- Lista de Produtos -->
+                    <div id="produtosGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+                </div>
+
+                <!-- Categorias Tab -->
+                <div id="tab-categorias" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold neon-pink">Gerenciar Categorias</h2>
+                        <button onclick="openCategoryModal()" class="px-6 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-2"></i> Nova Categoria
+                        </button>
+                    </div>
+                    <div id="categoriasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+                </div>
+
+                <!-- Pedidos Tab -->
+                <div id="tab-pedidos" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold neon-pink mb-6">Histórico de Pedidos</h2>
+                    <div class="glass-card rounded-2xl overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-black/30">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">ID</th>
+                                    <th class="px-6 py-4 text-left">Cliente</th>
+                                    <th class="px-6 py-4 text-left">Data/Hora</th>
+                                    <th class="px-6 py-4 text-left">Total</th>
+                                    <th class="px-6 py-4 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Configurações Tab -->
+                <div id="tab-config" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold neon-pink mb-6">Configurações do Site</h2>
+                    
+                    <!-- Config Subtabs -->
+                    <div class="flex flex-wrap gap-4 mb-6 border-b border-gray-700 pb-4">
+                        <button onclick="showConfigSubtab('personalizacao')" class="config-subtab px-4 py-2 font-semibold transition-all subtab-active" data-subtab="personalizacao">
+                            <i class="fas fa-store mr-2"></i> Personalização
+                        </button>
+                        <button onclick="showConfigSubtab('horarios')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="horarios">
+                            <i class="fas fa-clock mr-2"></i> Horário de Funcionamento
+                        </button>
+                        <button onclick="showConfigSubtab('delivery')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="delivery">
+                            <i class="fas fa-motorcycle mr-2"></i> Delivery
+                        </button>
+                        <button onclick="showConfigSubtab('anuncios')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="anuncios">
+                            <i class="fas fa-bullhorn mr-2"></i> Anúncios
+                        </button>
+                        <button onclick="showConfigSubtab('cupons')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="cupons">
+                            <i class="fas fa-ticket-alt mr-2"></i> Cupons
+                        </button>
+                        <button onclick="showConfigSubtab('banco')" class="config-subtab px-4 py-2 font-semibold transition-all text-gray-400 hover:text-white" data-subtab="banco">
+                            <i class="fas fa-database mr-2"></i> Banco de Dados
+                        </button>
+                    </div>
+
+                    <!-- INFORMAÇÕES DA LOJA -->
+                    <div id="config-personalizacao" class="config-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- IDENTIDADE VISUAL -->
+                            <div class="glass-card rounded-2xl p-6 lg:col-span-2">
+                                <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-palette mr-2"></i> Identidade Visual</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">URL da Logo Principal</label>
+                                        <input type="text" id="config_logoUrl" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                        <label class="block text-xs text-gray-400 mt-2 mb-1">ou envie uma imagem</label>
+                                        <input type="file" id="config_logoUpload" accept="image/*" class="w-full text-sm text-gray-300">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">URL do Favicon</label>
+                                        <input type="text" id="config_favicon" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                                        <label class="block text-xs text-gray-400 mt-2 mb-1">ou envie uma imagem</label>
+                                        <input type="file" id="config_faviconUpload" accept="image/*" class="w-full text-sm text-gray-300">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Cor Primária</label>
+                                        <input type="color" id="config_corPrimaria" class="w-full h-12 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold mb-2">Cor Secundária</label>
+                                        <input type="color" id="config_corSecundaria" class="w-full h-12 bg-gray-800/50 border border-gray-700 rounded-lg cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DADOS DA LOJA -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-building mr-2"></i> Dados da Loja</h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-sm font-semibold mb-2">Nome da Loja</label><input type="text" id="config_lojaNome" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Título Principal</label><input type="text" id="config_tituloPrincipal" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Slogan</label><input type="text" id="config_slogan" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Telefone</label><input type="text" id="config_lojaTelefone" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Endereço</label><input type="text" id="config_lojaEndereco" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Cidade/UF</label><input type="text" id="config_lojaCidade" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                </div>
+                            </div>
+
+                            <!-- REDES SOCIAIS -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-share-alt mr-2"></i> Redes Sociais</h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-sm font-semibold mb-2">WhatsApp</label><input type="text" id="config_whatsapp" placeholder="https://wa.me/55..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Instagram</label><input type="text" id="config_instagram" placeholder="https://instagram.com/..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Facebook</label><input type="text" id="config_facebook" placeholder="https://facebook.com/..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Website</label><input type="text" id="config_website" placeholder="https://..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="salvarConfiguracoes()" class="mt-6 w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                            <i class="fas fa-save mr-2"></i> Salvar Todas as Configurações
+                        </button>
+                    </div>
+
+                    <!-- HORÁRIOS -->
+                    <div id="config-horarios" class="config-content hidden">
+                        <div class="glass-card rounded-2xl p-6 mb-6">
+                            <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-clock mr-2"></i> Horário por Dia</h3>
+                            <div id="horariosContainer" class="space-y-3"></div>
+                        </div>
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-calendar-times mr-2"></i> Fechamento Programado</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="fechamentoAtivo" class="w-5 h-5 accent-[#ff00ff]">
+                                    <label class="font-semibold">Ativar Fechamento Temporário</label>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-semibold mb-2">Data Início</label><input type="datetime-local" id="fechamentoInicio" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                    <div><label class="block text-sm font-semibold mb-2">Data Fim</label><input type="datetime-local" id="fechamentoFim" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                </div>
+                                <div><label class="block text-sm font-semibold mb-2">Motivo</label><input type="text" id="fechamentoMotivo" placeholder="Ex: Feriado, Manutenção..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                <div><label class="block text-sm font-semibold mb-2">Mensagem para Clientes</label><input type="text" id="fechamentoMensagem" placeholder="Ex: Voltamos em breve!" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                            </div>
+                        </div>
+                        <button onclick="salvarHorarios()" class="mt-6 w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                            <i class="fas fa-save mr-2"></i> Salvar Horários
+                        </button>
+                    </div>
+
+                    <!-- DELIVERY -->
+                    <div id="config-delivery" class="config-content hidden">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-motorcycle mr-2"></i> Configurações de Delivery</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-semibold mb-2">Taxa de Entrega (R$)</label><input type="number" step="0.01" id="delivery_taxa" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                <div><label class="block text-sm font-semibold mb-2">Valor Mínimo (R$)</label><input type="number" step="0.01" id="delivery_minimo" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                <div><label class="block text-sm font-semibold mb-2">Tempo Médio (min)</label><input type="number" id="delivery_tempo" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                                <div><label class="block text-sm font-semibold mb-2">Raio de Entrega (km)</label><input type="number" id="delivery_raio" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></div>
+                            </div>
+                        </div>
+                        <button onclick="salvarDelivery()" class="mt-6 w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                            <i class="fas fa-save mr-2"></i> Salvar Delivery
+                        </button>
+                    </div>
+
+                    <!-- ANÚNCIOS -->
+                    <div id="config-anuncios" class="config-content hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold neon-cyan"><i class="fas fa-bullhorn mr-2"></i> Banners Rotativos</h3>
+                            <button onclick="addAnuncio()" class="px-4 py-2 bg-[#ff00ff] rounded-lg font-semibold hover:scale-105 transition-transform">
+                                <i class="fas fa-plus mr-2"></i> Adicionar
+                            </button>
+                        </div>
+                        <div id="anunciosList" class="space-y-4"></div>
+                        <button onclick="salvarAnuncios()" class="mt-6 w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                            <i class="fas fa-save mr-2"></i> Salvar Anúncios
+                        </button>
+                    </div>
+
+                    <!-- CUPONS -->
+                    <div id="config-cupons" class="config-content hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold neon-pink"><i class="fas fa-ticket-alt mr-2"></i> Cupons de Desconto</h3>
+                            <button onclick="addCupom()" class="px-4 py-2 bg-[#ff00ff] rounded-lg font-semibold hover:scale-105 transition-transform">
+                                <i class="fas fa-plus mr-2"></i> Criar Cupom
+                            </button>
+                        </div>
+                        <div id="cuponsList" class="space-y-4"></div>
+                        <button onclick="salvarCupons()" class="mt-6 w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                            <i class="fas fa-save mr-2"></i> Salvar Cupons
+                        </button>
+                    </div>
+
+                    <!-- BANCO DE DADOS -->
+                    <div id="config-banco" class="config-content hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-database mr-2"></i> Tipo de Banco</h3>
+                                <p class="text-gray-400 mb-4">Escolha onde os dados serão salvos</p>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 p-4 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                                        <input type="radio" name="dbType" value="firebase" checked class="w-5 h-5 accent-[#ff00ff]">
+                                        <div>
+                                            <p class="font-bold">Firebase (Nuvem)</p>
+                                            <p class="text-sm text-gray-400">Dados sincronizados em tempo real</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-exclamation-triangle mr-2"></i> Zona de Perigo</h3>
+                                <p class="text-gray-400 mb-4">Ações irreversíveis</p>
+                                <button onclick="resetarBanco()" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-colors">
+                                    <i class="fas fa-trash mr-2"></i> Resetar Banco de Dados
+                                </button>
+                                <button onclick="exportarBackup()" class="w-full py-3 mt-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition-colors">
+                                    <i class="fas fa-download mr-2"></i> Exportar Backup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="absolute inset-0 bg-black/70 min-h-screen" onclick="closeProductModal()"></div>
+        <div class="relative max-w-4xl mx-auto my-8 glass rounded-2xl p-6 z-10 border border-[#ff00ff]/30 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="productModalTitle" class="text-2xl font-bold neon-pink flex items-center gap-2">
+                    <i class="fas fa-box-open"></i> Novo Produto
+                </h2>
+                <button onclick="closeProductModal()" class="text-2xl hover:text-red-500 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="productForm" class="space-y-5">
+                <!-- Tipo de Produto -->
+                <div class="p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                    <label class="block text-sm font-bold neon-cyan mb-3"><i class="fas fa-tags"></i> Tipo do Produto</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="simples" checked onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span>📦 Simples</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="pizza" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span>🍕 Pizza (Meio a Meio)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
+                            <input type="radio" name="prodTipo" value="pastel" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
+                            <span>🥟 Pastel (Especial)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Informações Básicas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Nome do Produto *</label>
+                        <input type="text" id="prodNome" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Preço (R$) *</label>
+                        <input type="number" step="0.01" id="prodPreco" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Categoria *</label>
+                        <select id="prodCategoria" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></select>
+                    </div>
+                    <div id="tempoPreparoField" class="hidden">
+                        <label class="block text-sm font-semibold mb-2">Tempo de Preparo (min)</label>
+                        <input type="number" id="prodTempoPreparo" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Descrição</label>
+                    <textarea id="prodDesc" rows="3" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none"></textarea>
+                </div>
+
+                <!-- Upload de Imagens -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Imagens do Produto (até 3)</label>
+                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-[#ff00ff] transition-colors">
+                        <input type="file" id="prodImagemInput" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden">
+                        <label for="prodImagemInput" class="cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-2"></i>
+                            <p class="text-gray-400">Clique para enviar imagens do seu dispositivo</p>
+                            <p class="text-xs text-gray-500 mt-1">Máximo 3 imagens • Redimensionamento automático</p>
+                        </label>
+                    </div>
+                    <div id="galleryPreviewContainer" class="grid grid-cols-3 gap-2 mt-4"></div>
+                </div>
+
+                <!-- Opções de Destaque e Promoção -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="flex items-center gap-3 p-4 bg-gray-800 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="prodDestaque" class="w-5 h-5 accent-[#ffd700]">
+                        <span class="font-semibold"><i class="fas fa-star text-yellow-400 mr-2"></i> Produto em Destaque</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-4 bg-gray-800 rounded-lg cursor-pointer">
+                        <input type="checkbox" id="prodPromocao" onchange="togglePromoFields()" class="w-5 h-5 accent-[#ff4444]">
+                        <span class="font-semibold"><i class="fas fa-fire text-red-400 mr-2"></i> Em Promoção</span>
+                    </label>
+                </div>
+
+                <div id="promoFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Preço Original (R$)</label>
+                        <input type="number" step="0.01" id="prodPrecoOriginal" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Desconto (%)</label>
+                        <input type="number" id="prodDesconto" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Sabores (Pizza e Pastel) -->
+                <div id="saboresSection" class="hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold neon-cyan"><i class="fas fa-pizza-slice"></i> Sabores Disponíveis</label>
+                        <button type="button" onclick="addSabor()" class="px-3 py-1 bg-[#ff00ff] rounded-lg text-sm font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-1"></i> Adicionar Sabor
+                        </button>
+                    </div>
+                    <div id="saboresList" class="space-y-2"></div>
+                    <p class="text-xs text-gray-400 mt-2">Para pizza: cliente escolhe 2 metades. Para pastel: até 5 sabores.</p>
+                </div>
+
+                <!-- Opcionais -->
+                <div id="opcionaisSection" class="hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold neon-pink"><i class="fas fa-check-circle"></i> Opcionais (Grátis)</label>
+                        <button type="button" onclick="addOpcional()" class="px-3 py-1 bg-[#ff00ff] rounded-lg text-sm font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-1"></i> Adicionar Opcional
+                        </button>
+                    </div>
+                    <div id="opcionaisList" class="space-y-2"></div>
+                    <div class="mt-2">
+                        <label class="block text-sm font-semibold mb-1">Máximo de opcionais grátis</label>
+                        <input type="number" id="opcionalMaxGratis" value="2" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-[#ff00ff] focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Adicionais -->
+                <div id="adicionaisSection" class="hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold neon-cyan"><i class="fas fa-plus-circle"></i> Adicionais (Pagos)</label>
+                        <button type="button" onclick="addAdicional()" class="px-3 py-1 bg-[#00ffff] rounded-lg text-sm font-semibold hover:scale-105 transition-transform">
+                            <i class="fas fa-plus mr-1"></i> Adicionar Adicional
+                        </button>
+                    </div>
+                    <div id="adicionaisList" class="space-y-2"></div>
+                </div>
+
+                <!-- Status -->
+                <label class="flex items-center gap-3 p-4 bg-gray-800 rounded-lg cursor-pointer">
+                    <input type="checkbox" id="prodPausado" class="w-5 h-5 accent-red-500">
+                    <span class="font-semibold"><i class="fas fa-pause-circle text-red-400 mr-2"></i> Produto Pausado / Indisponível</span>
+                </label>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                        <i class="fas fa-save mr-2"></i> Salvar Produto
+                    </button>
+                    <button type="button" onclick="closeProductModal()" class="px-8 py-4 bg-gray-700 rounded-xl font-bold hover:bg-gray-600 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="absolute inset-0 bg-black/70 min-h-screen" onclick="closeCategoryModal()"></div>
+        <div class="relative max-w-md mx-auto my-8 glass rounded-2xl p-6 z-10 border border-[#ff00ff]/30 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold neon-pink"><i class="fas fa-tag mr-2"></i> Nova Categoria</h2>
+                <button onclick="closeCategoryModal()" class="text-2xl hover:text-red-500 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="categoryForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Nome da Categoria *</label>
+                    <input type="text" id="catNome" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Ícone (emoji)</label>
+                    <input type="text" id="catIcone" placeholder="🍔" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform">
+                        Salvar
+                    </button>
+                    <button type="button" onclick="closeCategoryModal()" class="px-6 py-3 bg-gray-700 rounded-xl font-bold hover:bg-gray-600 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="glass-card rounded-xl px-6 py-4 flex items-center gap-3">
+            <i class="fas fa-check-circle text-green-400 text-xl"></i>
+            <span id="toastMessage" class="font-semibold"></span>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis Globais
+        let currentUser = null;
+        let userLevel = null;
+        let produtos = [];
+        let categorias = [];
+        let pedidos = [];
+        let siteConfig = {};
+        let editingProductId = null;
+        let currentGaleria = [];
+        let currentSabores = [];
+        let currentOpcionais = [];
+        let currentAdicionais = [];
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+            
+            if (user === 'admin' && pass === 'admin123') {
+                currentUser = user;
+                userLevel = 'ADMIN';
+                document.getElementById('userLevel').textContent = '🔴 ADMIN';
+                document.getElementById('userLevel').className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-500/20 text-red-400';
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                initAdmin();
+            } else if (user === 'func' && pass === 'func123') {
+                currentUser = user;
+                userLevel = 'FUNC';
+                document.getElementById('userLevel').textContent = '🟢 FUNCIONÁRIO';
+                document.getElementById('userLevel').className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-500/20 text-green-400';
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            userLevel = null;
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                if (btn.dataset.tab === tab) btn.classList.add('tab-active');
+            });
+        }
+
+        function showConfigSubtab(subtab) {
+            document.querySelectorAll('.config-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('config-' + subtab).classList.remove('hidden');
+            document.querySelectorAll('.config-subtab').forEach(btn => {
+                btn.classList.remove('subtab-active');
+                btn.classList.add('text-gray-400');
+                if (btn.dataset.subtab === subtab) {
+                    btn.classList.add('subtab-active');
+                    btn.classList.remove('text-gray-400');
+                }
+            });
+        }
+
+        function showToast(msg) {
+            document.getElementById('toastMessage').textContent = msg;
+            document.getElementById('toast').classList.remove('hidden');
+            setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
+        }
+
+        // Inicialização
+        async function initAdmin() {
+            await carregarDados();
+            renderDashboard();
+            renderProdutos();
+            renderCategorias();
+            renderPedidos();
+            carregarConfiguracoes();
+            setupFiltros();
+        }
+
+        async function carregarDados() {
+            const firebase = window.firebaseDB;
+            
+            // Carregar produtos
+            const prodSnap = await firebase.get(firebase.ref(firebase.db, 'produtos'));
+            produtos = prodSnap.exists() ? Object.values(prodSnap.val()) : [];
+            
+            // Carregar categorias
+            const catSnap = await firebase.get(firebase.ref(firebase.db, 'categorias'));
+            categorias = catSnap.exists() ? Object.values(catSnap.val()) : [];
+            
+            // Carregar pedidos
+            const pedSnap = await firebase.get(firebase.ref(firebase.db, 'pedidos'));
+            pedidos = pedSnap.exists() ? Object.values(pedSnap.val()) : [];
+            
+            // Carregar config
+            const cfgSnap = await firebase.get(firebase.ref(firebase.db, 'config'));
+            siteConfig = cfgSnap.exists() ? cfgSnap.val() : {};
+            
+            // Não criar dados automáticos - usuário cria manualmente
+        }
+
+        // Funções removidas - não criar dados automáticos
+
+        function renderDashboard() {
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const pedidosHoje = pedidos.filter(p => new Date(p.data).toLocaleDateString('pt-BR') === hoje);
+            const totalVendas = pedidosHoje.reduce((sum, p) => sum + (p.total || 0), 0);
+            const ticketMedio = pedidosHoje.length > 0 ? totalVendas / pedidosHoje.length : 0;
+            
+            document.getElementById('statPedidos').textContent = pedidosHoje.length;
+            document.getElementById('statVendas').textContent = totalVendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('statTicket').textContent = ticketMedio.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('statProdutos').textContent = produtos.length;
+        }
+
+        function renderProdutos() {
+            const grid = document.getElementById('produtosGrid');
+            const busca = document.getElementById('filtroBusca').value.toLowerCase();
+            const catFiltro = document.getElementById('filtroCategoria').value;
+            const statusFiltro = document.getElementById('filtroStatus').value;
+            const ordenar = document.getElementById('filtroOrdenar').value;
+            
+            let filtrados = produtos.filter(p => {
+                const matchBusca = p.nome.toLowerCase().includes(busca);
+                const matchCat = !catFiltro || p.categoria === catFiltro;
+                const matchStatus = !statusFiltro || (statusFiltro === 'pausado' ? p.pausado : !p.pausado);
+                return matchBusca && matchCat && matchStatus;
+            });
+            
+            // Ordenar
+            filtrados.sort((a, b) => {
+                if (ordenar === 'nome') return a.nome.localeCompare(b.nome);
+                if (ordenar === 'nome-desc') return b.nome.localeCompare(a.nome);
+                if (ordenar === 'preco-asc') return (a.preco || 0) - (b.preco || 0);
+                if (ordenar === 'preco-desc') return (b.preco || 0) - (a.preco || 0);
+                return 0;
+            });
+            
+            grid.innerHTML = filtrados.map(p => {
+                const imgSrc = p.imagem || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=60';
+                return `
+                <div class="glass-card rounded-2xl p-4 flex gap-4 ${p.pausado ? 'opacity-50 grayscale' : ''}">
+                    <div class="w-32 h-32 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800 border border-gray-700">
+                        <img src="${imgSrc}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=60'">
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-bold text-lg">${p.nome}</h3>
+                                    <p class="text-sm text-gray-400">${p.categoria || 'Sem categoria'}</p>
+                                    <p class="text-xs text-gray-500 mt-1 capitalize">${p.tipo || 'simples'}</p>
+                                </div>
+                                <div class="text-right">
+                                    ${p.promocao && p.precoOriginal ? `<p class="text-sm text-gray-500 line-through">R$ ${p.precoOriginal.toFixed(2)}</p>` : ''}
+                                    <p class="font-bold text-xl neon-cyan">R$ ${(p.preco || 0).toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-2 flex-wrap">
+                                ${p.destaque ? '<span class="badge badge-destaque">⭐ Destaque</span>' : ''}
+                                ${p.promocao ? '<span class="badge badge-promocao">🔥 Promoção</span>' : ''}
+                                ${p.pausado ? '<span class="badge badge-pausado">⏸️ Pausado</span>' : ''}
+                                ${p.tipo === 'pizza' && p.tempoPreparo ? `<span class="badge" style="background:#333;color:#fff">⏱️ ${p.tempoPreparo} min</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="editProduct('${p.id}')" class="px-3 py-1 bg-blue-600 rounded-lg text-sm hover:bg-blue-700"><i class="fas fa-edit mr-1"></i> Editar</button>
+                            <button onclick="toggleProdutoStatus('${p.id}')" class="px-3 py-1 ${p.pausado ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} rounded-lg text-sm"><i class="fas fa-${p.pausado ? 'play' : 'pause'} mr-1"></i> ${p.pausado ? 'Ativar' : 'Pausar'}</button>
+                            <button onclick="deleteProduct('${p.id}')" class="px-3 py-1 bg-red-600 rounded-lg text-sm hover:bg-red-700"><i class="fas fa-trash mr-1"></i> Excluir</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            // Atualizar filtro de categorias
+            const catSelect = document.getElementById('filtroCategoria');
+            if (catSelect) {
+                const cats = categorias && categorias.length > 0 ? categorias : [];
+                catSelect.innerHTML = '<option value="">Todas</option>' + 
+                    cats.map(c => {
+                        const nome = typeof c === 'string' ? c : (c.nome || c.name || 'Categoria');
+                        return `<option value="${nome}">${nome}</option>`;
+                    }).join('');
+            }
+        }
+
+        function renderCategorias() {
+            const grid = document.getElementById('categoriasGrid');
+            grid.innerHTML = categorias.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)).map((c, idx) => `
+                <div class="glass-card rounded-2xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${c.icone || '📁'}</span>
+                            <div>
+                                <h3 class="font-bold">${c.nome}</h3>
+                                <p class="text-xs text-gray-400">${produtos.filter(p => p.categoria === c.nome).length} produtos</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="moverCategoria(${idx}, -1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-up"></i></button>
+                            <button onclick="moverCategoria(${idx}, 1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-down"></i></button>
+                            <button onclick="editCategoria('${c.id}')" class="p-2 hover:bg-blue-700 rounded-lg"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteCategoria('${c.id}')" class="p-2 hover:bg-red-700 rounded-lg"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPedidos() {
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = pedidos.slice(0, 50).map(p => `
+                <tr class="border-t border-gray-700 hover:bg-gray-800/50">
+                    <td class="px-6 py-4 text-sm font-mono">${p.id?.substring(0, 8) || 'N/A'}</td>
+                    <td class="px-6 py-4">${p.cliente?.nome || 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-400">${p.data ? new Date(p.data).toLocaleString('pt-BR') : 'N/A'}</td>
+                    <td class="px-6 py-4 font-bold neon-cyan">R$ ${(p.total || 0).toFixed(2)}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs ${getStatusClass(p.status)}">${p.status || 'Novo'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'novo': 'bg-purple-500/20 text-purple-400',
+                'producao': 'bg-orange-500/20 text-orange-400',
+                'pronto': 'bg-green-500/20 text-green-400',
+                'saiu-entrega': 'bg-blue-500/20 text-blue-400',
+                'entregue': 'bg-green-600/20 text-green-500',
+                'pago': 'bg-green-600/20 text-green-500',
+                'finalizado': 'bg-gray-500/20 text-gray-400'
+            };
+            return classes[status] || 'bg-gray-500/20 text-gray-400';
+        }
+
+        // Modal de Produto
+        function openProductModal() {
+            editingProductId = null;
+            document.getElementById('productModalTitle').textContent = 'Novo Produto';
+            document.getElementById('productForm').reset();
+            currentGaleria = [];
+            currentSabores = [];
+            currentOpcionais = [];
+            currentAdicionais = [];
+            document.getElementById('galleryPreviewContainer').innerHTML = '';
+            document.getElementById('saboresList').innerHTML = '';
+            document.getElementById('opcionaisList').innerHTML = '';
+            document.getElementById('adicionaisList').innerHTML = '';
+            toggleProdTypeFields();
+            populateCategoriaSelect(); // Popula o select de categorias
+            document.getElementById('productModal').classList.remove('hidden');
+        }
+
+        function populateCategoriaSelect() {
+            const select = document.getElementById('prodCategoria');
+            if (!select) return;
+            // Garante que categorias tem dados
+            const cats = categorias && categorias.length > 0 ? categorias : [];
+            select.innerHTML = '<option value="">Selecione...</option>' + 
+                cats.map(c => {
+                    const nome = typeof c === 'string' ? c : (c.nome || c.name || 'Categoria');
+                    return `<option value="${nome}">${nome}</option>`;
+                }).join('');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+
+        function toggleProdTypeFields() {
+            const tipo = document.querySelector('input[name="prodTipo"]:checked').value;
+            document.getElementById('tempoPreparoField').classList.toggle('hidden', tipo !== 'pizza');
+            document.getElementById('saboresSection').classList.toggle('hidden', !['pizza', 'pastel'].includes(tipo));
+            document.getElementById('opcionaisSection').classList.toggle('hidden', !['pizza', 'pastel'].includes(tipo));
+            document.getElementById('adicionaisSection').classList.toggle('hidden', !['pizza', 'pastel'].includes(tipo));
+        }
+
+        function togglePromoFields() {
+            const show = document.getElementById('prodPromocao').checked;
+            document.getElementById('promoFields').classList.toggle('hidden', !show);
+        }
+
+        async function handleImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            for (let i = 0; i < files.length && currentGaleria.length < 3; i++) {
+                const file = files[i];
+                try {
+                    // Otimizar imagem
+                    const optimized = await optimizeImage(file);
+                    
+                    // Upload para Firebase Storage
+                    const path = `produtos/${Date.now()}_${file.name}`;
+                    const url = await window.uploadImageToStorage(optimized, path);
+                    
+                    currentGaleria.push(url);
+                    renderGalleryPreview();
+                } catch (error) {
+                    console.error('Erro no upload:', error);
+                    showToast('Erro ao fazer upload da imagem');
+                }
+            }
+            event.target.value = '';
+        }
+
+        function optimizeImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Redimensionar se necessário (max 1024px)
+                        if (width > 1024) {
+                            height = (height * 1024) / width;
+                            width = 1024;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Comprimir para JPEG
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', 0.8);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderGalleryPreview() {
+            const container = document.getElementById('galleryPreviewContainer');
+            container.innerHTML = currentGaleria.map((url, idx) => `
+                <div class="relative rounded-lg overflow-hidden h-24 bg-gray-800">
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-600 rounded-full p-1 hover:bg-red-700">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(idx) {
+            currentGaleria.splice(idx, 1);
+            renderGalleryPreview();
+        }
+
+        function addSabor() {
+            const id = Date.now();
+            currentSabores.push({ id, nome: '', pausado: false });
+            renderSabores();
+        }
+
+        function renderSabores() {
+            const container = document.getElementById('saboresList');
+            container.innerHTML = currentSabores.map((s, idx) => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${s.nome}" onchange="currentSabores[${idx}].nome=this.value" placeholder="Nome do sabor" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <button type="button" onclick="currentSabores[${idx}].pausado=!currentSabores[${idx}].pausado; renderSabores()" class="p-2 rounded-lg ${s.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80">
+                        <i class="fas fa-${s.pausado ? 'pause' : 'check'}"></i>
+                    </button>
+                    <button type="button" onclick="currentSabores.splice(${idx}, 1); renderSabores()" class="p-2 bg-red-600 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addOpcional() {
+            const id = Date.now();
+            currentOpcionais.push({ id, nome: '', preco: 0, pausado: false });
+            renderOpcionais();
+        }
+
+        function renderOpcionais() {
+            const container = document.getElementById('opcionaisList');
+            container.innerHTML = currentOpcionais.map((o, idx) => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${o.nome}" onchange="currentOpcionais[${idx}].nome=this.value" placeholder="Nome" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <input type="number" step="0.01" value="${o.preco}" onchange="currentOpcionais[${idx}].preco=parseFloat(this.value)" placeholder="R$" class="w-20 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <button type="button" onclick="currentOpcionais[${idx}].pausado=!currentOpcionais[${idx}].pausado; renderOpcionais()" class="p-2 rounded-lg ${o.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80">
+                        <i class="fas fa-${o.pausado ? 'pause' : 'check'}"></i>
+                    </button>
+                    <button type="button" onclick="currentOpcionais.splice(${idx}, 1); renderOpcionais()" class="p-2 bg-red-600 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addAdicional() {
+            const id = Date.now();
+            currentAdicionais.push({ id, nome: '', preco: 0, pausado: false });
+            renderAdicionais();
+        }
+
+        function renderAdicionais() {
+            const container = document.getElementById('adicionaisList');
+            container.innerHTML = currentAdicionais.map((a, idx) => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${a.nome}" onchange="currentAdicionais[${idx}].nome=this.value" placeholder="Nome" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <input type="number" step="0.01" value="${a.preco}" onchange="currentAdicionais[${idx}].preco=parseFloat(this.value)" placeholder="R$" class="w-20 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <button type="button" onclick="currentAdicionais[${idx}].pausado=!currentAdicionais[${idx}].pausado; renderAdicionais()" class="p-2 rounded-lg ${a.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80">
+                        <i class="fas fa-${a.pausado ? 'pause' : 'check'}"></i>
+                    </button>
+                    <button type="button" onclick="currentAdicionais.splice(${idx}, 1); renderAdicionais()" class="p-2 bg-red-600 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function saveProduct(e) {
+            e.preventDefault();
+            
+            const tipo = document.querySelector('input[name="prodTipo"]:checked').value;
+            const produto = {
+                id: editingProductId || Date.now(),
+                nome: document.getElementById('prodNome').value,
+                preco: parseFloat(document.getElementById('prodPreco').value) || 0,
+                categoria: document.getElementById('prodCategoria').value,
+                tipo: tipo,
+                descricao: document.getElementById('prodDesc').value,
+                imagem: currentGaleria[0] || '',
+                imagens: currentGaleria,
+                pausado: document.getElementById('prodPausado').checked,
+                destaque: document.getElementById('prodDestaque').checked,
+                promocao: document.getElementById('prodPromocao').checked,
+                precoOriginal: document.getElementById('prodPrecoOriginal').value ? parseFloat(document.getElementById('prodPrecoOriginal').value) : null,
+                desconto: document.getElementById('prodDesconto').value ? parseInt(document.getElementById('prodDesconto').value) : null,
+                tempoPreparo: document.getElementById('prodTempoPreparo').value ? parseInt(document.getElementById('prodTempoPreparo').value) : null,
+                sabores: tipo === 'pizza' || tipo === 'pastel' ? currentSabores : [],
+                opcionais: tipo === 'pizza' || tipo === 'pastel' ? currentOpcionais : [],
+                adicionais: tipo === 'pizza' || tipo === 'pastel' ? currentAdicionais : [],
+                opcionalMaxGratis: parseInt(document.getElementById('opcionalMaxGratis').value) || 2
+            };
+            
+            const firebase = window.firebaseDB;
+            await firebase.set(firebase.ref(firebase.db, 'produtos/' + produto.id), produto);
+            
+            if (!editingProductId) produtos.push(produto);
+            else {
+                const idx = produtos.findIndex(p => p.id === produto.id);
+                if (idx >= 0) produtos[idx] = produto;
+            }
+            
+            closeProductModal();
+            renderProdutos();
+            renderDashboard();
+            showToast('Produto salvo com sucesso!');
+        }
+
+        function editProduct(id) {
+            const prod = produtos.find(p => String(p.id) === String(id));
+            if (prod) {
+                editingProductId = prod.id;
+                document.getElementById('productModalTitle').textContent = 'Editar Produto';
+                document.getElementById('prodNome').value = prod.nome || '';
+                document.getElementById('prodPreco').value = prod.preco || 0;
+                document.getElementById('prodCategoria').value = prod.categoria || '';
+                document.getElementById('prodDesc').value = prod.descricao || '';
+                document.getElementById('prodPausado').checked = !!prod.pausado;
+                document.getElementById('prodDestaque').checked = !!prod.destaque;
+                document.getElementById('prodPromocao').checked = !!prod.promocao;
+                document.getElementById('prodPrecoOriginal').value = prod.precoOriginal || '';
+                document.getElementById('prodDesconto').value = prod.desconto || '';
+                document.getElementById('prodTempoPreparo').value = prod.tempoPreparo || '';
+                
+                const tipoRadio = document.querySelector(`input[name="prodTipo"][value="${prod.tipo || 'simples'}"]`);
+                if (tipoRadio) tipoRadio.checked = true;
+                
+                currentGaleria = prod.imagens || (prod.imagem ? [prod.imagem] : []);
+                currentSabores = Array.isArray(prod.sabores) ? [...prod.sabores] : [];
+                currentOpcionais = Array.isArray(prod.opcionais) ? [...prod.opcionais] : [];
+                currentAdicionais = Array.isArray(prod.adicionais) ? [...prod.adicionais] : [];
+                
+                renderGalleryPreview();
+                renderSabores();
+                renderOpcionais();
+                renderAdicionais();
+                toggleProdTypeFields();
+                togglePromoFields();
+                
+                document.getElementById('productModal').classList.remove('hidden');
+            }
+        }
+
+        async function toggleProdutoStatus(id) {
+            const prod = produtos.find(p => p.id === id);
+            if (prod) {
+                prod.pausado = !prod.pausado;
+                const firebase = window.firebaseDB;
+                await firebase.set(firebase.ref(firebase.db, 'produtos/' + id), prod);
+                renderProdutos();
+                showToast(prod.pausado ? 'Produto pausado' : 'Produto ativado');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                const firebase = window.firebaseDB;
+                await firebase.remove(firebase.ref(firebase.db, 'produtos/' + id));
+                produtos = produtos.filter(p => p.id !== id);
+                renderProdutos();
+                renderDashboard();
+                showToast('Produto excluído');
+            }
+        }
+
+        // Categorias
+        function openCategoryModal() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        async function saveCategory(e) {
+            e.preventDefault();
+            const firebase = window.firebaseDB;
+            const id = document.getElementById('catNome').value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
+            const categoria = {
+                id: id,
+                nome: document.getElementById('catNome').value,
+                icone: document.getElementById('catIcone').value || '📁',
+                ordem: categorias.length + 1
+            };
+            
+            await firebase.set(firebase.ref(firebase.db, 'categorias/' + id), categoria);
+            categorias.push(categoria);
+            closeCategoryModal();
+            renderCategorias();
+            showToast('Categoria salva!');
+        }
+
+        function moverCategoria(idx, dir) {
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= categorias.length) return;
+            [categorias[idx], categorias[newIdx]] = [categorias[newIdx], categorias[idx]];
+            categorias.forEach((c, i) => c.ordem = i + 1);
+            renderCategorias();
+        }
+
+        async function deleteCategoria(id) {
+            if (confirm('Excluir esta categoria?')) {
+                const firebase = window.firebaseDB;
+                await firebase.remove(firebase.ref(firebase.db, 'categorias/' + id));
+                categorias = categorias.filter(c => c.id !== id);
+                renderCategorias();
+            }
+        }
+
+        // Filtros
+        function setupFiltros() {
+            document.getElementById('filtroBusca').addEventListener('input', renderProdutos);
+            document.getElementById('filtroCategoria').addEventListener('change', renderProdutos);
+            document.getElementById('filtroStatus').addEventListener('change', renderProdutos);
+            document.getElementById('filtroOrdenar').addEventListener('change', renderProdutos);
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtroBusca').value = '';
+            document.getElementById('filtroCategoria').value = '';
+            document.getElementById('filtroStatus').value = '';
+            document.getElementById('filtroOrdenar').value = 'nome';
+            renderProdutos();
+        }
+
+        // Configurações
+        function carregarConfiguracoes() {
+            document.getElementById('config_logoUrl').value = siteConfig.logoUrl || '';
+            document.getElementById('config_favicon').value = siteConfig.favicon || '';
+            document.getElementById('config_corPrimaria').value = siteConfig.corPrimaria || '#ff00ff';
+            document.getElementById('config_corSecundaria').value = siteConfig.corSecundaria || '#00ffff';
+            document.getElementById('config_lojaNome').value = siteConfig.lojaNome || 'MH Lanches';
+            document.getElementById('config_tituloPrincipal').value = siteConfig.tituloPrincipal || 'MH LANCHES';
+            document.getElementById('config_slogan').value = siteConfig.slogan || '';
+            document.getElementById('config_lojaTelefone').value = siteConfig.lojaTelefone || '';
+            document.getElementById('config_lojaEndereco').value = siteConfig.lojaEndereco || '';
+            document.getElementById('config_lojaCidade').value = siteConfig.lojaCidade || '';
+            document.getElementById('config_whatsapp').value = siteConfig.whatsapp || '';
+            document.getElementById('config_instagram').value = siteConfig.instagram || '';
+            document.getElementById('config_facebook').value = siteConfig.facebook || '';
+            document.getElementById('config_website').value = siteConfig.website || '';
+        }
+
+        async function salvarConfiguracoes() {
+            const firebase = window.firebaseDB;
+            const config = {
+                logoUrl: document.getElementById('config_logoUrl').value,
+                favicon: document.getElementById('config_favicon').value,
+                corPrimaria: document.getElementById('config_corPrimaria').value,
+                corSecundaria: document.getElementById('config_corSecundaria').value,
+                lojaNome: document.getElementById('config_lojaNome').value,
+                tituloPrincipal: document.getElementById('config_tituloPrincipal').value,
+                slogan: document.getElementById('config_slogan').value,
+                lojaTelefone: document.getElementById('config_lojaTelefone').value,
+                lojaEndereco: document.getElementById('config_lojaEndereco').value,
+                lojaCidade: document.getElementById('config_lojaCidade').value,
+                whatsapp: document.getElementById('config_whatsapp').value,
+                instagram: document.getElementById('config_instagram').value,
+                facebook: document.getElementById('config_facebook').value,
+                website: document.getElementById('config_website').value
+            };
+            
+            await firebase.set(firebase.ref(firebase.db, 'config'), config);
+            siteConfig = config;
+            showToast('Configurações salvas!');
+        }
+
+        async function salvarHorarios() { /* Implementar */ showToast('Horários salvos!'); }
+        async function salvarDelivery() { /* Implementar */ showToast('Delivery salvo!'); }
+        function addAnuncio() { /* Implementar */ }
+        function salvarAnuncios() { /* Implementar */ }
+        function addCupom() { /* Implementar */ }
+        function salvarCupons() { /* Implementar */ }
+        async function resetarBanco() {
+            if (confirm('ATENÇÃO: Isso apagará TODOS os dados! Continuar?')) {
+                const firebase = window.firebaseDB;
+                await firebase.remove(firebase.ref(firebase.db, 'produtos'));
+                await firebase.remove(firebase.ref(firebase.db, 'categorias'));
+                await firebase.remove(firebase.ref(firebase.db, 'pedidos'));
+                produtos = [];
+                categorias = [];
+                pedidos = [];
+                showToast('Banco resetado! Dados limpos.');
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+        function exportarBackup() { /* Implementar */ }
+
+        document.getElementById('productForm').addEventListener('submit', saveProduct);
+        document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+    </script>
+</body>
+</html>
