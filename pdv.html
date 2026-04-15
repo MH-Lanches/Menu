@@ -30,6 +30,24 @@
         .status-pago { background: linear-gradient(135deg, #00ffff, #0088ff); }
         .status-finalizado { background: linear-gradient(135deg, #666, #444); }
         .pulse-alert { animation: pulse 1s ease-in-out infinite; }
+        .pdv-shell { height: 100vh; overflow: hidden; }
+        .pdv-main { height: calc(100vh - 172px); overflow: hidden; }
+        .pdv-panel-scroll { overflow: auto; min-height: 0; }
+        .pdv-card-compact { min-height: 120px; }
+        .payment-chip.active {
+            border-color: rgba(0,255,255,.65);
+            box-shadow: 0 0 20px rgba(0,255,255,.18);
+            transform: translateY(-1px);
+        }
+        .cash-sidebar-sticky {
+            position: sticky;
+            top: 0;
+            height: calc(100vh - 190px);
+        }
+        .cash-summary-pill {
+            background: rgba(0,0,0,.28);
+            border: 1px solid rgba(255,255,255,.08);
+        }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -42,7 +60,7 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
+<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] h-screen overflow-hidden text-white">
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
@@ -92,7 +110,7 @@
     </div>
 
     <!-- PDV Panel -->
-    <div id="pdvPanel" class="hidden">
+    <div id="pdvPanel" class="hidden pdv-shell">
         <!-- Header -->
         <header class="glass py-3 px-4 sticky top-0 z-40">
             <div class="flex justify-between items-center">
@@ -176,134 +194,185 @@
         </div>
 
         <!-- Main Content -->
-        <div class="px-4 pb-8">
-            <div class="grid grid-cols-12 gap-4">
-                <!-- Orders Column -->
-                <div class="col-span-8">
-                    <!-- Tabs -->
-                    <div class="flex gap-2 mb-4">
-                        <button onclick="showOrderTab('delivery')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all status-novo" data-tab="delivery">
+        <div class="px-4 pb-4 pdv-main">
+            <div class="grid grid-cols-12 gap-4 h-full">
+                <div class="col-span-12 xl:col-span-8 h-full flex flex-col overflow-hidden">
+                    <div class="flex gap-2 mb-4 shrink-0 overflow-x-auto pb-1">
+                        <button onclick="showOrderTab('delivery')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all status-novo whitespace-nowrap" data-tab="delivery">
                             <i class="fas fa-motorcycle mr-2"></i> Delivery
                         </button>
-                        <button onclick="showOrderTab('mesa')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff]" data-tab="mesa">
+                        <button onclick="showOrderTab('mesa')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff] whitespace-nowrap" data-tab="mesa">
                             <i class="fas fa-utensils mr-2"></i> Mesas
                         </button>
-                        <button onclick="showOrderTab('balcao')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff]" data-tab="balcao">
+                        <button onclick="showOrderTab('balcao')" class="order-tab px-6 py-3 rounded-xl font-semibold transition-all glass-card hover:border-[#00ffff] whitespace-nowrap" data-tab="balcao">
                             <i class="fas fa-cash-register mr-2"></i> Balcão
                         </button>
                     </div>
 
-                    <!-- Delivery Orders -->
-                    <div id="tab-delivery" class="order-content">
-                        <div id="deliveryOrders" class="grid grid-cols-2 gap-4">
-                        </div>
-                    </div>
-
-                    <!-- Table Orders -->
-                    <div id="tab-mesa" class="order-content hidden">
-                        <div class="grid grid-cols-5 gap-4 mb-4">
-                            <div class="col-span-5">
-                                <button onclick="newTableOrder()" class="w-full py-4 bg-gradient-to-r from-[#00ffff] to-[#00ff88] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
-                                    <i class="fas fa-plus mr-2"></i> Nova Comanda de Mesa
-                                </button>
-                            </div>
-                        </div>
-                        <div id="tableOrders" class="grid grid-cols-3 gap-4">
-                        </div>
-                    </div>
-
-                    <!-- Counter Sale -->
-                    <div id="tab-balcao" class="order-content hidden">
-                        <div class="glass-card rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-4 neon-cyan"><i class="fas fa-cash-register mr-2"></i>Venda Rápida - Balcão</h3>
-                            
-                            <!-- Search + Categories -->
-                            <div class="flex gap-2 mb-4">
-                                <div class="flex-1 relative">
-                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                    <input type="text" id="balcaoSearch" placeholder="Buscar produto..." 
-                                        oninput="filterQuickProducts()" 
-                                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
-                                </div>
-                                <button onclick="openCustomItemModal('balcao')" class="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold whitespace-nowrap text-black hover:scale-105 transition-transform" title="Item Personalizado">
-                                    <i class="fas fa-edit mr-1"></i> Item ✏️
-                                </button>
-                            </div>
-                            
-                            <!-- Dynamic Categories -->
-                            <div id="balcaoCategories" class="flex gap-2 mb-4 overflow-x-auto pb-2">
-                                <!-- Categorias carregadas do Firebase -->
-                            </div>
-
-                            <!-- Products Grid -->
-                            <div id="quickProductsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6 max-h-72 overflow-y-auto">
-                            </div>
-
-                            <!-- Current Sale -->
-                            <div class="border-t border-gray-700 pt-4">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h4 class="font-bold"><i class="fas fa-receipt mr-2"></i>Itens da Venda</h4>
-                                    <button onclick="clearQuickSale()" class="text-red-500 hover:text-red-400">
-                                        <i class="fas fa-trash mr-1"></i> Limpar
+                    <div class="flex-1 overflow-hidden">
+                        <div id="tab-delivery" class="order-content h-full">
+                            <div class="glass-card rounded-2xl p-4 h-full flex flex-col overflow-hidden">
+                                <div class="flex items-center justify-between mb-4 shrink-0">
+                                    <div>
+                                        <h3 class="text-xl font-bold neon-cyan">Pedidos Delivery</h3>
+                                        <p class="text-sm text-gray-400">Operação em tempo real com atualização automática.</p>
+                                    </div>
+                                    <button onclick="refreshOrders()" class="px-4 py-2 glass rounded-xl font-semibold hover:border-[#00ffff] transition-colors">
+                                        <i class="fas fa-rotate mr-2"></i> Atualizar
                                     </button>
                                 </div>
-                                <div id="quickSaleItems" class="space-y-2 max-h-40 overflow-y-auto mb-4">
-                                    <p class="text-gray-500 text-center py-4">Nenhum item adicionado</p>
+                                <div id="deliveryOrders" class="pdv-panel-scroll grid grid-cols-1 2xl:grid-cols-2 gap-4 pr-1"></div>
+                            </div>
+                        </div>
+
+                        <div id="tab-mesa" class="order-content hidden h-full">
+                            <div class="grid grid-cols-12 gap-4 h-full overflow-hidden">
+                                <div class="col-span-12 2xl:col-span-5 glass-card rounded-2xl p-4 flex flex-col overflow-hidden">
+                                    <div class="flex items-center justify-between mb-4 shrink-0">
+                                        <div>
+                                            <h3 class="text-xl font-bold neon-cyan">Comandas de Mesa</h3>
+                                            <p class="text-sm text-gray-400">Abra, acompanhe e envie a comanda ativa direto para o caixa lateral.</p>
+                                        </div>
+                                        <button onclick="newTableOrder()" class="px-4 py-3 bg-gradient-to-r from-[#00ffff] to-[#00ff88] rounded-xl font-bold text-black hover:scale-105 transition-transform whitespace-nowrap">
+                                            <i class="fas fa-plus mr-2"></i> Nova Mesa
+                                        </button>
+                                    </div>
+                                    <div id="tableOrders" class="pdv-panel-scroll grid grid-cols-1 xl:grid-cols-2 gap-3 pr-1"></div>
                                 </div>
-                                <div class="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                                    <span class="text-xl font-bold">Total:</span>
-                                    <span id="quickSaleTotal" class="text-2xl font-bold neon-cyan">R$ 0,00</span>
+                                <div class="col-span-12 2xl:col-span-7 glass-card rounded-2xl p-4 flex flex-col overflow-hidden">
+                                    <div class="flex gap-2 mb-3 shrink-0">
+                                        <div class="flex-1 relative">
+                                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                            <input type="text" id="tableSearch" placeholder="Buscar produto para a mesa ativa..." oninput="filterTableProducts()" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
+                                        </div>
+                                        <button onclick="openCustomItemModal('mesa')" class="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold text-black hover:scale-105 transition-transform whitespace-nowrap">
+                                            <i class="fas fa-edit mr-1"></i> Item Livre
+                                        </button>
+                                    </div>
+                                    <div id="tableCategoriesBar" class="flex gap-2 mb-4 overflow-x-auto pb-2 shrink-0"></div>
+                                    <div id="tableProductsGrid" class="pdv-panel-scroll grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-1 mb-4"></div>
+                                    <div id="tableModalContent" class="shrink-0"></div>
                                 </div>
-                                <button onclick="openCheckoutModal('balcao')" class="w-full mt-4 py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black">
-                                    <i class="fas fa-cash-register mr-2"></i> Fechar Conta (Caixa)
-                                </button>
+                            </div>
+                        </div>
+
+                        <div id="tab-balcao" class="order-content hidden h-full">
+                            <div class="glass-card rounded-2xl p-4 h-full flex flex-col overflow-hidden">
+                                <div class="flex items-center justify-between mb-4 shrink-0">
+                                    <div>
+                                        <h3 class="text-xl font-bold neon-cyan"><i class="fas fa-cash-register mr-2"></i>Venda Rápida - Balcão</h3>
+                                        <p class="text-sm text-gray-400">Selecione produtos e envie a venda direto para o caixa lateral fixo.</p>
+                                    </div>
+                                    <button onclick="openCheckoutModal('balcao')" class="px-4 py-3 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-black hover:scale-105 transition-transform whitespace-nowrap">
+                                        <i class="fas fa-cash-register mr-2"></i> Abrir Caixa
+                                    </button>
+                                </div>
+                                <div class="flex gap-2 mb-4 shrink-0">
+                                    <div class="flex-1 relative">
+                                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                        <input type="text" id="balcaoSearch" placeholder="Buscar produto..." oninput="filterQuickProducts()" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white">
+                                    </div>
+                                    <button onclick="openCustomItemModal('balcao')" class="px-4 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold whitespace-nowrap text-black hover:scale-105 transition-transform" title="Item Personalizado">
+                                        <i class="fas fa-edit mr-1"></i> Item Livre
+                                    </button>
+                                </div>
+                                <div id="balcaoCategories" class="flex gap-2 mb-4 overflow-x-auto pb-2 shrink-0"></div>
+                                <div id="quickProductsGrid" class="pdv-panel-scroll grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 pr-1"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column - Resumo -->
-                <div class="col-span-4">
-                    <div class="glass-card rounded-2xl p-6 sticky top-20">
-                        <h3 class="text-xl font-bold mb-4 neon-pink">Resumo do Dia</h3>
-                        
-                        <div class="space-y-4 mb-6">
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Pedidos Delivery</span>
-                                <span id="resumoDelivery" class="font-bold">0</span>
+                <div class="col-span-12 xl:col-span-4 h-full overflow-hidden">
+                    <div class="glass-card rounded-2xl p-4 cash-sidebar-sticky flex flex-col overflow-hidden">
+                        <div class="flex items-center justify-between mb-4 shrink-0">
+                            <div>
+                                <h3 class="text-xl font-bold neon-pink"><i class="fas fa-cash-register mr-2"></i> Caixa / Fechamento</h3>
+                                <p id="cashContextLabel" class="text-sm text-gray-400">Abra uma venda de balcão, mesa ou delivery para operar.</p>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Comandas de Mesa</span>
-                                <span id="resumoMesa" class="font-bold">0</span>
+                            <button onclick="openCashClosingReport()" class="px-3 py-2 glass rounded-xl text-sm font-semibold hover:border-[#ff00ff] transition-colors">
+                                <i class="fas fa-file-invoice-dollar mr-1"></i> Fechamento
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 mb-4 shrink-0 text-center text-sm">
+                            <div class="cash-summary-pill rounded-xl p-3">
+                                <p class="text-gray-400">Turno</p>
+                                <p id="cashShiftTotal" class="font-bold neon-cyan">R$ 0,00</p>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-400">Vendas Balcão</span>
-                                <span id="resumoBalcao" class="font-bold">0</span>
+                            <div class="cash-summary-pill rounded-xl p-3">
+                                <p class="text-gray-400">Pendências</p>
+                                <p id="cashPendingCount" class="font-bold text-yellow-400">0</p>
                             </div>
-                            <div class="border-t border-gray-700 pt-4">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-400">Pix</span>
-                                    <span id="resumoPix" class="font-bold">R$ 0,00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-400">Dinheiro</span>
-                                    <span id="resumoDinheiro" class="font-bold">R$ 0,00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-400">Cartão</span>
-                                    <span id="resumoCartao" class="font-bold">R$ 0,00</span>
-                                </div>
-                            </div>
-                            <div class="border-t border-gray-700 pt-4">
-                                <div class="flex justify-between text-xl">
-                                    <span class="font-bold">Total do Dia</span>
-                                    <span id="resumoTotal" class="font-bold neon-cyan">R$ 0,00</span>
-                                </div>
+                            <div class="cash-summary-pill rounded-xl p-3">
+                                <p class="text-gray-400">Caixa</p>
+                                <p id="cashDrawerTotal" class="font-bold text-green-400">R$ 0,00</p>
                             </div>
                         </div>
 
-                        <button onclick="printDailyReport()" class="w-full py-3 glass rounded-xl font-semibold hover:border-[#ff00ff] transition-colors">
-                            <i class="fas fa-print mr-2"></i> Imprimir Resumo Diário
+                        <div id="pendingList" class="shrink-0 mb-4 max-h-24 overflow-y-auto space-y-2 text-sm"></div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
+                            <button onclick="printDailyReport()" class="py-3 glass rounded-xl font-semibold hover:border-[#ff00ff] transition-colors">
+                                <i class="fas fa-print mr-2"></i> Resumo
+                            </button>
+                            <button onclick="printCurrentReceipt()" class="py-3 glass rounded-xl font-semibold hover:border-[#00ffff] transition-colors">
+                                <i class="fas fa-receipt mr-2"></i> Comprovante
+                            </button>
+                        </div>
+
+                        <div class="p-3 bg-black/25 rounded-xl mb-4 shrink-0">
+                            <div id="checkoutOrderInfo" class="text-sm text-gray-300">Nenhuma venda ativa no caixa.</div>
+                        </div>
+
+                        <div id="checkoutItems" class="pdv-panel-scroll mb-4 space-y-2 pr-1"></div>
+
+                        <div class="p-4 bg-black/40 rounded-xl mb-4 shrink-0">
+                            <div class="flex justify-between items-center text-sm text-gray-400 mb-2">
+                                <span>Subtotal</span>
+                                <span id="chkOrderSubtotal">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm text-red-300 mb-2">
+                                <span>Desconto</span>
+                                <span id="checkoutDiscountPreview">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xl font-bold">
+                                <span>Total a pagar</span>
+                                <span id="checkoutTotal" class="text-3xl neon-cyan">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mb-3 shrink-0">
+                            <input type="number" id="discountValue" placeholder="Desconto R$" step="0.01" min="0" oninput="recalculateCheckoutTotals()" class="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#ff00ff] focus:outline-none text-white">
+                            <input type="text" id="checkoutObservation" placeholder="Observações do caixa" class="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#ff00ff] focus:outline-none text-white">
+                        </div>
+
+                        <h4 class="font-bold mb-2 neon-cyan shrink-0"><i class="fas fa-credit-card mr-2"></i>Forma(s) de Pagamento</h4>
+                        <div class="grid grid-cols-3 gap-2 mb-3 shrink-0">
+                            <button onclick="addPayment('pix')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-qrcode mr-1"></i> PIX</button>
+                            <button onclick="addPayment('debito')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-credit-card mr-1"></i> Débito</button>
+                            <button onclick="addPayment('credito')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-credit-card mr-1"></i> Crédito</button>
+                            <button onclick="addPayment('dinheiro')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-money-bill mr-1"></i> Espécie</button>
+                            <button onclick="addPayment('vale')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-ticket mr-1"></i> Vale</button>
+                            <button onclick="addPayment('credito_interno')" class="payment-chip py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm"><i class="fas fa-wallet mr-1"></i> Crédito</button>
+                        </div>
+
+                        <div id="paymentList" class="space-y-2 mb-3 shrink-0 max-h-32 overflow-y-auto"></div>
+
+                        <div id="cashSection" class="hidden mb-3 p-3 bg-black/30 rounded-xl shrink-0">
+                            <label class="block text-sm font-semibold mb-2">Valor Recebido (R$)</label>
+                            <input type="number" id="cashReceived" placeholder="0.00" step="0.01" min="0" oninput="calcChange()" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white text-xl font-mono">
+                            <div id="changeDisplay" class="mt-2 text-center text-xl font-bold text-green-400"></div>
+                        </div>
+
+                        <div class="p-3 bg-black/30 rounded-xl mb-3 shrink-0">
+                            <div class="flex justify-between text-sm text-gray-400 mb-1"><span>Total do Pedido:</span><span id="chkOrderTotal">R$ 0,00</span></div>
+                            <div class="flex justify-between text-sm text-green-400"><span>Total Pago:</span><span id="chkPaidTotal">R$ 0,00</span></div>
+                            <div id="chkRemaining" class="flex justify-between text-sm text-red-400 mt-1"><span>Restante:</span><span>R$ 0,00</span></div>
+                        </div>
+
+                        <button onclick="confirmCheckout()" id="btnConfirmCheckout" class="w-full py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg transition-transform text-black disabled:opacity-50 disabled:cursor-not-allowed shrink-0" disabled>
+                            <i class="fas fa-check-circle mr-2"></i> Confirmar Pagamento e Finalizar
                         </button>
                     </div>
                 </div>
@@ -351,34 +420,28 @@
         </div>
     </div>
 
-    <!-- Table Order Modal -->
-    <div id="tableModal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/70" onclick="closeTableModal()"></div>
+    <!-- Legacy Table Modal (desativado, mantido apenas para compatibilidade) -->
+    <div id="tableModal" class="fixed inset-0 z-50 hidden pointer-events-none opacity-0">
+        <div class="absolute inset-0 bg-black/70"></div>
         <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-2xl mx-auto glass rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="tableModalTitle" class="text-2xl font-bold neon-cyan">Mesa 1</h2>
-                <button onclick="closeTableModal()" class="text-2xl hover:text-red-500">
+                <h2 id="legacyTableModalTitle" class="text-2xl font-bold neon-cyan">Mesa 1</h2>
+                <button type="button" class="text-2xl opacity-50 cursor-not-allowed">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
-            <!-- Search + Categories inside table modal -->
             <div class="flex gap-2 mb-3">
                 <div class="flex-1 relative">
                     <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="tableSearch" placeholder="Buscar produto..." 
-                        oninput="filterTableProducts()" 
-                        class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 focus:border-[#00ffff] focus:outline-none text-white text-sm">
+                    <input type="text" id="legacyTableSearch" placeholder="Buscar produto..." class="w-full bg-gray-800/50 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white text-sm">
                 </div>
-                <button onclick="openCustomItemModal('mesa')" class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold text-black hover:scale-105 transition-transform text-sm" title="Item Personalizado">
+                <button type="button" class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg font-semibold text-black text-sm opacity-60 cursor-not-allowed">
                     <i class="fas fa-edit"></i> Item ✏️
                 </button>
             </div>
-            <div id="tableCategoriesBar" class="flex gap-1.5 mb-3 overflow-x-auto pb-1"></div>
-            
-            <div id="tableProductsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4 max-h-48 overflow-y-auto"></div>
-            
-            <div id="tableModalContent"></div>
+            <div id="legacyTableCategoriesBar" class="flex gap-1.5 mb-3 overflow-x-auto pb-1"></div>
+            <div id="legacyTableProductsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4 max-h-48 overflow-y-auto"></div>
+            <div id="legacyTableModalContent"></div>
         </div>
     </div>
 
@@ -406,80 +469,20 @@
         </div>
     </div>
 
-    <!-- Checkout Modal (Caixa) -->
-    <div id="checkoutModal" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-black/70" onclick="closeCheckoutModal()"></div>
+    <!-- Legacy Checkout Modal (desativado em favor do caixa lateral fixo) -->
+    <div id="checkoutModal" class="fixed inset-0 z-[60] hidden pointer-events-none opacity-0">
+        <div class="absolute inset-0 bg-black/70"></div>
         <div class="absolute inset-x-2 sm:inset-x-8 top-4 bottom-4 mx-auto glass rounded-2xl p-4 sm:p-6 max-w-3xl overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold neon-pink"><i class="fas fa-cash-register mr-2"></i>Fechamento de Caixa</h2>
-                <button onclick="closeCheckoutModal()" class="text-2xl hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button type="button" class="text-2xl opacity-50 cursor-not-allowed"><i class="fas fa-times"></i></button>
             </div>
-
-            <!-- Order Info -->
-            <div id="checkoutOrderInfo" class="mb-4 p-3 bg-black/30 rounded-xl"></div>
-
-            <!-- Items -->
-            <div id="checkoutItems" class="mb-4 max-h-40 overflow-y-auto space-y-1"></div>
-
-            <!-- Total -->
+            <div id="legacyCheckoutOrderInfo" class="mb-4 p-3 bg-black/30 rounded-xl"></div>
+            <div id="legacyCheckoutItems" class="mb-4 max-h-40 overflow-y-auto space-y-1"></div>
             <div class="flex justify-between items-center p-4 bg-black/40 rounded-xl mb-4">
                 <span class="text-xl font-bold">Total a Pagar:</span>
-                <span id="checkoutTotal" class="text-3xl font-bold neon-cyan">R$ 0,00</span>
+                <span id="legacyCheckoutTotal" class="text-3xl font-bold neon-cyan">R$ 0,00</span>
             </div>
-
-            <!-- Payment Methods -->
-            <h4 class="font-bold mb-2 neon-cyan"><i class="fas fa-credit-card mr-2"></i>Forma(s) de Pagamento:</h4>
-            
-            <!-- Payment buttons -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-                <button onclick="addPayment('pix')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
-                    <i class="fas fa-qrcode mr-1"></i> PIX
-                </button>
-                <button onclick="addPayment('debito')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
-                    <i class="fas fa-credit-card mr-1"></i> Débito
-                </button>
-                <button onclick="addPayment('credito')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
-                    <i class="fas fa-credit-card mr-1"></i> Crédito
-                </button>
-                <button onclick="addPayment('dinheiro')" class="py-3 glass-card rounded-xl font-semibold hover:border-[#00ffff] transition-colors text-sm">
-                    <i class="fas fa-money-bill mr-1"></i> Espécie
-                </button>
-            </div>
-
-            <!-- Payment List -->
-            <div id="paymentList" class="space-y-2 mb-4"></div>
-
-            <!-- Cash Change Calculator -->
-            <div id="cashSection" class="hidden mb-4 p-4 bg-black/30 rounded-xl">
-                <label class="block text-sm font-semibold mb-2">💵 Valor Recebido (R$):</label>
-                <input type="number" id="cashReceived" placeholder="0.00" step="0.01" min="0"
-                    oninput="calcChange()"
-                    class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:border-[#00ffff] focus:outline-none text-white text-xl font-mono">
-                <div id="changeDisplay" class="mt-2 text-center text-xl font-bold text-green-400"></div>
-            </div>
-
-            <!-- Payment Summary -->
-            <div class="p-3 bg-black/30 rounded-xl mb-4">
-                <div class="flex justify-between text-sm text-gray-400 mb-1">
-                    <span>Total do Pedido:</span>
-                    <span id="chkOrderTotal">R$ 0,00</span>
-                </div>
-                <div class="flex justify-between text-sm text-green-400">
-                    <span>Total Pago:</span>
-                    <span id="chkPaidTotal">R$ 0,00</span>
-                </div>
-                <div id="chkRemaining" class="flex justify-between text-sm text-red-400 mt-1">
-                    <span>Restante:</span>
-                    <span>R$ 0,00</span>
-                </div>
-            </div>
-
-            <!-- Confirm Button -->
-            <button onclick="confirmCheckout()" id="btnConfirmCheckout" 
-                class="w-full py-4 bg-gradient-to-r from-[#00ff88] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform text-black disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled>
-                <i class="fas fa-check-circle mr-2"></i> Confirmar Pagamento e Finalizar
-            </button>
         </div>
     </div>
 
@@ -504,8 +507,17 @@
         let currentTableCategory = 'Todos';
         let currentTableId = null;
         let customItemTarget = 'balcao';
-        let checkoutData = { type: 'balcao', items: [], total: 0, orderId: null, tableNumber: null };
+        let checkoutData = { type: null, items: [], total: 0, originalTotal: 0, orderId: null, tableNumber: null, sourceLabel: '', openedAt: null, observation: '', discount: 0 };
         let payments = [];
+        let cashClosures = [];
+        let currentReceiptData = null;
+        let selectedMoveItemIndex = null;
+        let cashSession = JSON.parse(localStorage.getItem('mh_cash_session') || 'null') || {
+            id: 'CX_' + Date.now(),
+            openedAt: new Date().toISOString(),
+            openingFloat: 0,
+            status: 'aberto'
+        };
 
         // Products loaded from Firebase
         let allProducts = [];
@@ -638,8 +650,14 @@
                         salesHistory = Object.entries(data).map(([key, value]) => ({
                             id: value?.id || key,
                             ...(value || {})
-                        }));
+                        })).sort((a, b) => new Date(b.dataFinalizacao || b.data || 0) - new Date(a.dataFinalizacao || a.data || 0));
                         updateDailySummary();
+                        updateCashSidebarSummary();
+                    });
+
+                    onValue(ref(db, 'caixaFechamentos'), (snapshot) => {
+                        const data = snapshot.val() || {};
+                        cashClosures = Object.entries(data).map(([key, value]) => ({ id: key, ...(value || {}) }));
                     });
                 }, 1000);
             }
@@ -680,9 +698,12 @@
         function showPDVPanel() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('pdvPanel').classList.remove('hidden');
+            persistCashSession();
             renderAllOrders();
             updateStats();
             updateDailySummary();
+            resetCashPanel();
+            updateCashSidebarSummary();
         }
 
         function logout() {
@@ -753,6 +774,253 @@
             return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
+        function formatMoney(value) {
+            return 'R$ ' + Number(value || 0).toFixed(2).replace('.', ',');
+        }
+
+        function persistCashSession() {
+            localStorage.setItem('mh_cash_session', JSON.stringify(cashSession));
+        }
+
+        function getPendingEntries() {
+            return [
+                ...orders.filter(o => ['novo', 'producao', 'pronto', 'saiu-entrega'].includes((o.status || '').toLowerCase())).map(o => ({ id: o.id, label: o.cliente?.nome || o.id, tipo: 'delivery', total: Number(o.total || 0) })),
+                ...tableOrders.filter(o => !['finalizado', 'pago', 'entregue'].includes((o.status || '').toLowerCase())).map(o => ({ id: o.id, label: `Mesa ${o.mesa}`, tipo: 'mesa', total: o.itens.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 1), 0) }))
+            ];
+        }
+
+        function renderPendingList() {
+            const container = document.getElementById('pendingList');
+            if (!container) return;
+            const pending = getPendingEntries().slice(0, 5);
+            document.getElementById('cashPendingCount').textContent = String(getPendingEntries().length);
+            if (!pending.length) {
+                container.innerHTML = '<div class="text-xs text-gray-500 p-2 bg-black/20 rounded-lg">Nenhuma pendência em aberto.</div>';
+                return;
+            }
+            container.innerHTML = pending.map(item => `
+                <button onclick="focusPending('${item.tipo}','${item.id}')" class="w-full flex items-center justify-between p-2 bg-black/20 rounded-lg hover:border hover:border-[#00ffff] text-left transition-colors">
+                    <span class="text-xs"><strong>${item.tipo === 'mesa' ? 'Mesa' : 'Delivery'}:</strong> ${item.label}</span>
+                    <span class="text-xs neon-cyan">${formatMoney(item.total)}</span>
+                </button>
+            `).join('');
+        }
+
+        function updateCashSidebarSummary() {
+            const shiftStart = new Date(cashSession.openedAt || Date.now()).getTime();
+            const shiftSales = salesHistory.filter(v => new Date(v.dataFinalizacao || v.data || 0).getTime() >= shiftStart);
+            const shiftTotal = shiftSales.reduce((sum, v) => sum + Number(v.total || 0), 0);
+            const cashOnly = shiftSales.reduce((sum, v) => {
+                if (Array.isArray(v.pagamentos)) {
+                    return sum + v.pagamentos.filter(p => p.metodo === 'dinheiro').reduce((acc, p) => acc + Number(p.valor || 0), 0);
+                }
+                const pagamento = String(v.pagamento || '').toLowerCase();
+                return pagamento.includes('dinheiro') || pagamento.includes('esp') ? sum + Number(v.total || 0) : sum;
+            }, 0);
+            document.getElementById('cashShiftTotal').textContent = formatMoney(shiftTotal);
+            document.getElementById('cashDrawerTotal').textContent = formatMoney(Number(cashSession.openingFloat || 0) + cashOnly);
+            renderPendingList();
+        }
+
+        function resetCashPanel() {
+            checkoutData = { type: null, items: [], total: 0, originalTotal: 0, orderId: null, tableNumber: null, sourceLabel: '', openedAt: null, observation: '', discount: 0 };
+            payments = [];
+            currentReceiptData = null;
+            document.getElementById('cashContextLabel').textContent = 'Abra uma venda de balcão, mesa ou delivery para operar.';
+            document.getElementById('checkoutOrderInfo').innerHTML = 'Nenhuma venda ativa no caixa.';
+            document.getElementById('checkoutItems').innerHTML = '<div class="text-sm text-gray-500 text-center py-8">Nenhum item carregado.</div>';
+            document.getElementById('checkoutTotal').textContent = formatMoney(0);
+            document.getElementById('chkOrderSubtotal').textContent = formatMoney(0);
+            document.getElementById('checkoutDiscountPreview').textContent = formatMoney(0);
+            document.getElementById('chkOrderTotal').textContent = formatMoney(0);
+            document.getElementById('chkPaidTotal').textContent = formatMoney(0);
+            document.getElementById('chkRemaining').innerHTML = '<span>Restante:</span><span>R$ 0,00</span>';
+            document.getElementById('paymentList').innerHTML = '';
+            document.getElementById('discountValue').value = '';
+            document.getElementById('checkoutObservation').value = '';
+            document.getElementById('cashSection').classList.add('hidden');
+            document.getElementById('cashReceived').value = '';
+            document.getElementById('changeDisplay').textContent = '';
+            document.getElementById('btnConfirmCheckout').disabled = true;
+        }
+
+        function focusPending(tipo, id) {
+            if (tipo === 'delivery') {
+                showOrderTab('delivery');
+                openOrderModal(id);
+            } else if (tipo === 'mesa') {
+                showOrderTab('mesa');
+                openTableModal(id);
+            }
+        }
+
+        function renderCheckoutItems() {
+            const container = document.getElementById('checkoutItems');
+            if (!container) return;
+            if (!checkoutData.items.length) {
+                container.innerHTML = '<div class="text-sm text-gray-500 text-center py-8">Nenhum item carregado.</div>';
+                return;
+            }
+            container.innerHTML = checkoutData.items.map((item, idx) => `
+                <div class="p-3 bg-black/20 rounded-xl border border-white/5">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="text-sm font-semibold">${item.quantidade}x ${item.nome}</div>
+                        <div class="text-sm neon-cyan">${formatMoney(Number(item.preco || 0) * Number(item.quantidade || 1))}</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="changeCheckoutItemQty(${idx}, -1)" class="px-2 py-1 rounded-lg glass text-xs">-1</button>
+                        <button onclick="changeCheckoutItemQty(${idx}, 1)" class="px-2 py-1 rounded-lg glass text-xs">+1</button>
+                        ${checkoutData.type === 'mesa' ? `<button onclick="moveCheckoutItem(${idx})" class="px-2 py-1 rounded-lg bg-blue-600/80 text-xs">Mover</button>` : ''}
+                        <button onclick="removeCheckoutItem(${idx})" class="px-2 py-1 rounded-lg bg-red-600/80 text-xs">Cancelar Item</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function syncCheckoutItemsToSource() {
+            if (checkoutData.type === 'balcao') {
+                quickSaleItems = checkoutData.items.map(item => ({ ...item }));
+                renderQuickSaleItems();
+            }
+            if (checkoutData.type === 'mesa' && currentTableOrder) {
+                currentTableOrder.itens = checkoutData.items.map(item => ({ ...item }));
+                renderTableItemsContent();
+                renderTableOrders();
+                saveTableOrderToFirebase(currentTableOrder);
+            }
+        }
+
+        function changeCheckoutItemQty(index, delta) {
+            const item = checkoutData.items[index];
+            if (!item) return;
+            item.quantidade = Math.max(1, Number(item.quantidade || 1) + delta);
+            renderCheckoutItems();
+            recalculateCheckoutTotals();
+            syncCheckoutItemsToSource();
+        }
+
+        function removeCheckoutItem(index) {
+            checkoutData.items.splice(index, 1);
+            renderCheckoutItems();
+            recalculateCheckoutTotals();
+            syncCheckoutItemsToSource();
+        }
+
+        function moveCheckoutItem(index) {
+            if (checkoutData.type !== 'mesa' || !currentTableOrder) return;
+            const availableTables = tableOrders.filter(order => order.id !== currentTableOrder.id);
+            if (!availableTables.length) return alert('Não há outra comanda aberta para receber o item.');
+            const alvoMesa = prompt('Mover para qual mesa?\nMesas abertas: ' + availableTables.map(order => order.mesa).join(', '));
+            if (!alvoMesa) return;
+            const target = availableTables.find(order => String(order.mesa) === String(alvoMesa));
+            if (!target) return alert('Mesa não encontrada entre as comandas abertas.');
+            const [item] = checkoutData.items.splice(index, 1);
+            if (!item) return;
+            target.itens.push({ ...item });
+            currentTableOrder.itens = checkoutData.items.map(i => ({ ...i }));
+            saveTableOrderToFirebase(target);
+            saveTableOrderToFirebase(currentTableOrder);
+            renderTableOrders();
+            renderTableItemsContent();
+            renderCheckoutItems();
+            recalculateCheckoutTotals();
+            alert(`Item movido para a mesa ${target.mesa}.`);
+        }
+
+        function recalculateCheckoutTotals() {
+            const subtotal = checkoutData.items.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 1), 0);
+            const discount = Math.max(0, Number(document.getElementById('discountValue').value || 0));
+            checkoutData.originalTotal = subtotal;
+            checkoutData.discount = Math.min(subtotal, discount);
+            checkoutData.total = Math.max(0, subtotal - checkoutData.discount);
+            document.getElementById('chkOrderSubtotal').textContent = formatMoney(subtotal);
+            document.getElementById('checkoutDiscountPreview').textContent = formatMoney(checkoutData.discount);
+            document.getElementById('checkoutTotal').textContent = formatMoney(checkoutData.total);
+            document.getElementById('chkOrderTotal').textContent = formatMoney(checkoutData.total);
+            renderPayments();
+        }
+
+        function activateCheckoutContext(data) {
+            checkoutData = {
+                ...checkoutData,
+                ...data,
+                items: (data.items || []).map(item => ({ ...item })),
+                originalTotal: Number(data.total || 0),
+                total: Number(data.total || 0),
+                discount: 0,
+                observation: ''
+            };
+            payments = [];
+            document.getElementById('discountValue').value = '';
+            document.getElementById('checkoutObservation').value = checkoutData.observation || '';
+            document.getElementById('cashContextLabel').textContent = checkoutData.sourceLabel || 'Venda ativa no caixa';
+            document.getElementById('checkoutOrderInfo').innerHTML = `
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-bold text-white">${checkoutData.sourceLabel || 'Venda ativa'}</p>
+                        <p class="text-xs text-gray-400">Aberta às ${getCreatedAt(checkoutData.openedAt || new Date().toISOString())}</p>
+                    </div>
+                    <div class="text-right text-xs text-gray-400">
+                        <p>${checkoutData.type === 'mesa' ? 'Comanda editável' : checkoutData.type === 'delivery' ? 'Pedido delivery' : 'Venda balcão'}</p>
+                        <p>${checkoutData.items.length} item(ns)</p>
+                    </div>
+                </div>`;
+            document.getElementById('paymentList').innerHTML = '';
+            document.getElementById('cashSection').classList.add('hidden');
+            document.getElementById('cashReceived').value = '';
+            document.getElementById('changeDisplay').textContent = '';
+            renderCheckoutItems();
+            recalculateCheckoutTotals();
+        }
+
+        async function openCashClosingReport() {
+            const opening = Number(prompt('Troco inicial do caixa (R$):', String(cashSession.openingFloat || 0)) || cashSession.openingFloat || 0);
+            cashSession.openingFloat = Number(opening || 0);
+            persistCashSession();
+            const shiftStart = new Date(cashSession.openedAt || Date.now()).getTime();
+            const shiftSales = salesHistory.filter(v => new Date(v.dataFinalizacao || v.data || 0).getTime() >= shiftStart);
+            const byMethod = { pix: 0, dinheiro: 0, debito: 0, credito: 0, vale: 0, credito_interno: 0 };
+            shiftSales.forEach(v => {
+                (v.pagamentos || []).forEach(p => {
+                    const key = p.metodo || 'credito';
+                    byMethod[key] = (byMethod[key] || 0) + Number(p.valor || 0);
+                });
+            });
+            const total = shiftSales.reduce((sum, v) => sum + Number(v.total || 0), 0);
+            const expectedDrawer = Number(cashSession.openingFloat || 0) + Number(byMethod.dinheiro || 0);
+            const informedFinal = Number(prompt(`Fechamento do caixa\n\nTotal do turno: ${formatMoney(total)}\nDinheiro esperado: ${formatMoney(expectedDrawer)}\n\nInforme o valor real em caixa:`, String(expectedDrawer)) || expectedDrawer);
+            const payload = {
+                sessionId: cashSession.id,
+                openedAt: cashSession.openedAt,
+                closedAt: new Date().toISOString(),
+                openingFloat: Number(cashSession.openingFloat || 0),
+                expectedDrawer,
+                informedFinal,
+                difference: Number(informedFinal - expectedDrawer),
+                totalSales: total,
+                payments: byMethod,
+                pendingCount: getPendingEntries().length,
+                operator: currentUser?.username || 'operador'
+            };
+            if (window.firebaseDB?.push) {
+                await window.firebaseDB.push(window.firebaseDB.ref(window.firebaseDB.db, 'caixaFechamentos'), payload);
+            }
+            alert(`Fechamento registrado!\n\nTotal do turno: ${formatMoney(total)}\nDiferença: ${formatMoney(payload.difference)}`);
+            cashSession = { id: 'CX_' + Date.now(), openedAt: new Date().toISOString(), openingFloat: 0, status: 'aberto' };
+            persistCashSession();
+            updateCashSidebarSummary();
+        }
+
+        function printCurrentReceipt() {
+            if (!currentReceiptData) return alert('Nenhum comprovante disponível ainda.');
+            const venda = currentReceiptData;
+            const printContent = `<html><head><title>Comprovante</title><style>body{font-family:monospace;font-size:12px;width:58mm;margin:0;padding:5px}.center{text-align:center}.right{text-align:right}.border{border-top:1px dashed #000;margin:5px 0}</style></head><body><div class="center"><h2>MH LANCHES</h2><p>COMPROVANTE</p></div><div class="border"></div><p><strong>ID:</strong> ${venda.id}</p><p><strong>Origem:</strong> ${venda.tipo === 'mesa' ? 'Mesa ' + venda.mesa : venda.tipo}</p><p><strong>Data:</strong> ${new Date(venda.dataFinalizacao || venda.data).toLocaleString('pt-BR')}</p><div class="border"></div>${venda.itens.map(i => `<p>${i.quantidade}x ${i.nome} - ${formatMoney(i.preco * i.quantidade)}</p>`).join('')}<div class="border"></div><p><strong>Pagamentos:</strong></p>${(venda.pagamentos || []).map(p => `<p>${p.nome}: ${formatMoney(p.valor)}</p>`).join('')}<div class="border"></div><p class="right"><strong>TOTAL: ${formatMoney(venda.total)}</strong></p><div class="center"><p>Obrigado!</p></div></body></html>`;
+            const printWin = window.open('', '_blank');
+            printWin.document.write(printContent);
+            printWin.document.close();
+            printWin.print();
+        }
+
         function renderDeliveryOrders() {
             const container = document.getElementById('deliveryOrders');
             const deliveryOrders = orders.filter(o => {
@@ -792,8 +1060,13 @@
                             <p class="text-sm">${item.quantidade}x ${item.nome}</p>
                         `).join('')}
                     </div>
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
-                        <span class="text-sm">${order.pagamento}</span>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700 gap-3">
+                        <div>
+                            <span class="text-sm block">${order.pagamento}</span>
+                            <button onclick="event.stopPropagation(); activateDeliveryCash('${order.id}')" class="mt-2 px-3 py-1.5 rounded-lg glass text-xs font-semibold hover:border-[#00ffff]">
+                                <i class="fas fa-cash-register mr-1"></i> Abrir no Caixa
+                            </button>
+                        </div>
                         <div class="text-right">
                             <span class="font-bold neon-cyan block">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
                             <span class="text-xs font-mono text-yellow-400" id="timer-${order.id}">
@@ -871,9 +1144,26 @@
             });
         }
 
+        function activateDeliveryCash(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            currentOrder = order;
+            activateCheckoutContext({
+                type: 'delivery',
+                items: order.itens || [],
+                total: Number(order.total || 0),
+                orderId: order.id,
+                tableNumber: null,
+                sourceLabel: `Delivery • ${order.cliente?.nome || order.id}`,
+                openedAt: order.data || new Date().toISOString(),
+                observation: order.observacao || ''
+            });
+        }
+
         function openOrderModal(orderId) {
             currentOrder = orders.find(o => o.id === orderId);
             if (!currentOrder) return;
+            activateDeliveryCash(orderId);
 
             document.getElementById('modalOrderId').textContent = currentOrder.id;
             
@@ -1137,41 +1427,51 @@
             }
             
             renderQuickSaleItems();
+            openCheckoutModal('balcao');
         }
 
         function renderQuickSaleItems() {
             const container = document.getElementById('quickSaleItems');
-            if (!container) return;
-            
-            if (quickSaleItems.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4"><i class="fas fa-shopping-cart mr-1"></i>Nenhum item adicionado</p>';
-                document.getElementById('quickSaleTotal').textContent = 'R$ 0,00';
-                return;
-            }
-            
-            container.innerHTML = quickSaleItems.map((item, idx) => {
-                const subtotal = item.preco * item.quantidade;
-                return `
-                    <div class="flex justify-between items-center p-2 bg-black/20 rounded-lg">
-                        <div class="flex-1">
-                            <span class="text-sm">${item.custom ? '<i class="fas fa-edit text-yellow-400 mr-1"></i>' : ''}${item.quantidade}x ${item.nome}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-semibold">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
-                            <div class="flex gap-1">
-                                <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">-</button>
-                                <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">+</button>
+            if (container) {
+                if (quickSaleItems.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-4"><i class="fas fa-shopping-cart mr-1"></i>Nenhum item adicionado</p>';
+                } else {
+                    container.innerHTML = quickSaleItems.map((item, idx) => {
+                        const subtotal = item.preco * item.quantidade;
+                        return `
+                            <div class="flex justify-between items-center p-2 bg-black/20 rounded-lg">
+                                <div class="flex-1">
+                                    <span class="text-sm">${item.custom ? '<i class="fas fa-edit text-yellow-400 mr-1"></i>' : ''}${item.quantidade}x ${item.nome}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-semibold">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
+                                    <div class="flex gap-1">
+                                        <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">-</button>
+                                        <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 rounded bg-gray-700 hover:bg-gray-600 text-xs flex items-center justify-center">+</button>
+                                    </div>
+                                    <button onclick="removeQuickItem(${idx})" class="text-red-500 hover:text-red-400 ml-1">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <button onclick="removeQuickItem(${idx})" class="text-red-500 hover:text-red-400 ml-1">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
+                        `;
+                    }).join('');
+                }
+            }
             const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
-            document.getElementById('quickSaleTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+            const totalEl = document.getElementById('quickSaleTotal');
+            if (totalEl) totalEl.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+            if (checkoutData.type === 'balcao') {
+                activateCheckoutContext({
+                    type: 'balcao',
+                    items: quickSaleItems,
+                    total,
+                    orderId: checkoutData.orderId || ('BALCAO_' + Date.now()),
+                    tableNumber: null,
+                    sourceLabel: 'Balcão • Venda ativa',
+                    openedAt: checkoutData.openedAt || new Date().toISOString()
+                });
+            }
         }
 
         function changeQty(idx, delta) {
@@ -1224,6 +1524,7 @@
             if (customItemTarget === 'balcao') {
                 quickSaleItems.push(customItem);
                 renderQuickSaleItems();
+                openCheckoutModal('balcao');
             } else if (customItemTarget === 'mesa' && currentTableOrder) {
                 currentTableOrder.itens.push({
                     nome: name,
@@ -1247,75 +1548,63 @@
             
             if (type === 'balcao') {
                 if (quickSaleItems.length === 0) { alert('Adicione pelo menos um item!'); return; }
-                checkoutData = {
+                activateCheckoutContext({
                     type: 'balcao',
-                    items: [...quickSaleItems],
+                    items: quickSaleItems,
                     total: quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0),
-                    orderId: 'BALCAO_' + Date.now(),
-                    tableNumber: null
-                };
+                    orderId: checkoutData.orderId && checkoutData.type === 'balcao' ? checkoutData.orderId : ('BALCAO_' + Date.now()),
+                    tableNumber: null,
+                    sourceLabel: 'Balcão • Venda ativa',
+                    openedAt: checkoutData.openedAt && checkoutData.type === 'balcao' ? checkoutData.openedAt : new Date().toISOString()
+                });
             } else if (type === 'mesa') {
                 if (!currentTableOrder || currentTableOrder.itens.length === 0) { alert('Comanda sem itens!'); return; }
-                checkoutData = {
+                activateCheckoutContext({
                     type: 'mesa',
-                    items: [...currentTableOrder.itens],
+                    items: currentTableOrder.itens,
                     total: currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0),
                     orderId: currentTableOrder.id,
-                    tableNumber: currentTableOrder.mesa
-                };
+                    tableNumber: currentTableOrder.mesa,
+                    sourceLabel: `Mesa ${currentTableOrder.mesa} • Comanda ativa`,
+                    openedAt: currentTableOrder.data || new Date().toISOString(),
+                    observation: currentTableOrder.observacao || ''
+                });
+            } else if (type === 'delivery' && currentOrder) {
+                activateDeliveryCash(currentOrder.id);
             }
-            
-            // Render order info
-            const infoEl = document.getElementById('checkoutOrderInfo');
-            if (checkoutData.type === 'balcao') {
-                infoEl.innerHTML = '<p class="font-bold text-sm"><i class="fas fa-cash-register mr-2"></i>Venda de Balcão</p>';
-            } else {
-                infoEl.innerHTML = `<p class="font-bold text-sm"><i class="fas fa-utensils mr-2"></i>Mesa ${checkoutData.tableNumber} • Criada às ${getCreatedAt(new Date().toISOString())}</p>`;
-            }
-            
-            // Render items
-            document.getElementById('checkoutItems').innerHTML = checkoutData.items.map(item => `
-                <div class="flex justify-between items-center py-1 text-sm border-b border-gray-800">
-                    <span>${item.quantidade}x ${item.nome}</span>
-                    <span>R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}</span>
-                </div>
-            `).join('');
-            
-            document.getElementById('checkoutTotal').textContent = 'R$ ' + checkoutData.total.toFixed(2).replace('.', ',');
-            document.getElementById('chkOrderTotal').textContent = 'R$ ' + checkoutData.total.toFixed(2).replace('.', ',');
-            document.getElementById('chkPaidTotal').textContent = 'R$ 0,00';
-            document.getElementById('chkRemaining').innerHTML = '<span>Restante:</span><span>R$ ' + checkoutData.total.toFixed(2).replace('.', ',') + '</span>';
-            
-            document.getElementById('paymentList').innerHTML = '';
-            document.getElementById('cashSection').classList.add('hidden');
-            document.getElementById('cashReceived').value = '';
-            document.getElementById('changeDisplay').textContent = '';
-            document.getElementById('btnConfirmCheckout').disabled = true;
-            
-            document.getElementById('checkoutModal').classList.remove('hidden');
         }
 
         function closeCheckoutModal() {
-            document.getElementById('checkoutModal').classList.add('hidden');
-            payments = [];
+            resetCashPanel();
         }
 
         function addPayment(method) {
-            const remaining = checkoutData.total - payments.reduce((sum, p) => sum + p.valor, 0);
+            const remaining = Math.max(0, checkoutData.total - payments.reduce((sum, p) => sum + p.valor, 0));
             if (remaining <= 0) return;
             
-            const methodNames = { pix: 'PIX', debito: 'Cartão Débito', credito: 'Cartão Crédito', dinheiro: 'Espécie' };
+            const methodNames = {
+                pix: 'PIX',
+                debito: 'Cartão Débito',
+                credito: 'Cartão Crédito',
+                dinheiro: 'Espécie',
+                vale: 'Vale / Voucher',
+                credito_interno: 'Crédito Interno'
+            };
             
             if (method === 'dinheiro') {
-                // Show cash calculator
                 document.getElementById('cashSection').classList.remove('hidden');
                 document.getElementById('cashReceived').value = remaining.toFixed(2);
                 calcChange();
                 return;
             }
-            
-            // For PIX/Debit/Credit: add as full remaining amount
-            payments.push({ metodo: method, nome: methodNames[method], valor: parseFloat(remaining.toFixed(2)) });
+
+            const suggested = remaining.toFixed(2);
+            const input = prompt(`Valor para ${methodNames[method]}:`, suggested);
+            if (input === null) return;
+            const value = Number(String(input).replace(',', '.'));
+            if (!value || value <= 0) return alert('Informe um valor válido.');
+
+            payments.push({ metodo: method, nome: methodNames[method], valor: Number(value.toFixed(2)) });
             renderPayments();
         }
 
@@ -1349,14 +1638,25 @@
         function renderPayments() {
             const container = document.getElementById('paymentList');
             const total = checkoutData.total;
-            const paid = payments.reduce((sum, p) => sum + p.valor, 0);
+            const paid = payments.reduce((sum, p) => sum + Number(p.valor || 0), 0);
             const remaining = total - paid;
+            const icons = {
+                pix: 'qrcode',
+                dinheiro: 'money-bill',
+                debito: 'credit-card',
+                credito: 'credit-card',
+                vale: 'ticket',
+                credito_interno: 'wallet'
+            };
             
             container.innerHTML = payments.map((p, idx) => `
                 <div class="flex justify-between items-center p-2 bg-black/30 rounded-lg">
-                    <span><i class="fas fa-${p.metodo === 'pix' ? 'qrcode' : p.metodo === 'dinheiro' ? 'money-bill' : 'credit-card'} mr-2"></i>${p.nome}</span>
+                    <span><i class="fas fa-${icons[p.metodo] || 'credit-card'} mr-2"></i>${p.nome}</span>
                     <div class="flex items-center gap-2">
-                        <span class="font-bold neon-cyan">R$ ${p.valor.toFixed(2).replace('.', ',')}</span>
+                        <span class="font-bold neon-cyan">R$ ${Number(p.valor || 0).toFixed(2).replace('.', ',')}</span>
+                        <button onclick="editPayment(${idx})" class="text-yellow-400 hover:text-yellow-300">
+                            <i class="fas fa-pen text-xs"></i>
+                        </button>
                         <button onclick="removePayment(${idx})" class="text-red-500 hover:text-red-400">
                             <i class="fas fa-times text-xs"></i>
                         </button>
@@ -1371,9 +1671,9 @@
                 document.getElementById('btnConfirmCheckout').disabled = true;
             } else {
                 const cashPayment = payments.find(p => p.metodo === 'dinheiro');
-                const changeText = cashPayment && cashPayment.valor > (total - payments.filter(p => p.metodo !== 'dinheiro').reduce((s,p) => s + p.valor, 0)) 
-                    ? ` (Troco: R$ ${(cashPayment.valor - (total - payments.filter(p => p.metodo !== 'dinheiro').reduce((s,p) => s + p.valor, 0))).toFixed(2).replace('.', ',')})` 
-                    : '';
+                const nonCashPaid = payments.filter(p => p.metodo !== 'dinheiro').reduce((s,p) => s + Number(p.valor || 0), 0);
+                const changeValue = cashPayment ? Math.max(0, Number(cashPayment.valor || 0) - Math.max(0, total - nonCashPaid)) : 0;
+                const changeText = changeValue > 0 ? ` (Troco: R$ ${changeValue.toFixed(2).replace('.', ',')})` : '';
                 document.getElementById('chkRemaining').innerHTML = `<span>Status:</span><span class="text-green-400">✅ Pago${changeText}</span>`;
                 document.getElementById('btnConfirmCheckout').disabled = false;
             }
@@ -1390,54 +1690,71 @@
             renderPayments();
         }
 
+        function editPayment(idx) {
+            const payment = payments[idx];
+            if (!payment) return;
+            const input = prompt(`Novo valor para ${payment.nome}:`, Number(payment.valor || 0).toFixed(2));
+            if (input === null) return;
+            const value = Number(String(input).replace(',', '.'));
+            if (!value || value <= 0) return alert('Informe um valor válido.');
+            payment.valor = Number(value.toFixed(2));
+            if (payment.metodo === 'dinheiro') {
+                document.getElementById('cashSection').classList.remove('hidden');
+                document.getElementById('cashReceived').value = payment.valor.toFixed(2);
+                calcChange();
+                return;
+            }
+            renderPayments();
+        }
+
         async function confirmCheckout() {
             const total = checkoutData.total;
-            const paid = payments.reduce((sum, p) => sum + p.valor, 0);
+            const paid = payments.reduce((sum, p) => sum + Number(p.valor || 0), 0);
             
             if (paid < total - 0.01) {
                 alert('Valor pago é menor que o total!');
                 return;
             }
 
-            // Confirmation dialog
-            const methodNames = payments.map(p => p.nome).join(' + ');
-            const confirmMsg = `✅ CONFIRMAR PAGAMENTO\n\nTipo: ${checkoutData.type === 'balcao' ? 'Balcão' : 'Mesa ' + checkoutData.tableNumber}\nItens: ${checkoutData.items.length}\nTotal: R$ ${total.toFixed(2).replace('.', ',')}\nMétodos: ${methodNames}\n\nConfirmar?`;
-            
+            const methodNames = payments.map(p => `${p.nome} (${formatMoney(p.valor)})`).join(' + ');
+            const originLabel = checkoutData.type === 'balcao' ? 'Balcão' : checkoutData.type === 'mesa' ? 'Mesa ' + checkoutData.tableNumber : 'Delivery';
+            const confirmMsg = `✅ CONFIRMAR PAGAMENTO\n\nOrigem: ${originLabel}\nItens: ${checkoutData.items.length}\nTotal líquido: ${formatMoney(total)}\nMétodos: ${methodNames}\n\nConfirmar?`;
             if (!confirm(confirmMsg)) return;
             
-            // Build sale record
+            const nonCashPaid = payments.filter(p => p.metodo !== 'dinheiro').reduce((sum, p) => sum + Number(p.valor || 0), 0);
+            const cashPayment = payments.find(p => p.metodo === 'dinheiro');
+            const troco = cashPayment ? Math.max(0, Number(cashPayment.valor || 0) - Math.max(0, total - nonCashPaid)) : 0;
             const venda = {
                 id: checkoutData.orderId,
                 tipo: checkoutData.type,
                 mesa: checkoutData.tableNumber || null,
-                cliente: { nome: checkoutData.type === 'balcao' ? 'Balcão' : `Mesa ${checkoutData.tableNumber}`, telefone: '-', endereco: '-' },
-                itens: checkoutData.items.map(i => ({ nome: i.nome, preco: i.preco, quantidade: i.quantidade, custom: i.custom })),
-                pagamentos: payments.map(p => ({ metodo: p.metodo, nome: p.nome, valor: p.valor })),
+                cliente: checkoutData.type === 'delivery' ? currentOrder?.cliente || { nome: 'Delivery' } : { nome: checkoutData.type === 'balcao' ? 'Balcão' : `Mesa ${checkoutData.tableNumber}`, telefone: '-', endereco: '-' },
+                itens: checkoutData.items.map(i => ({ nome: i.nome, preco: Number(i.preco || 0), quantidade: Number(i.quantidade || 1), custom: i.custom })),
+                pagamentos: payments.map(p => ({ metodo: p.metodo, nome: p.nome, valor: Number(p.valor || 0) })),
+                subtotal: Number(checkoutData.originalTotal || total),
+                desconto: Number(checkoutData.discount || 0),
                 total: total,
                 pago: paid,
-                troco: paid > total ? paid - total : 0,
-                status: 'finalizado',
+                troco,
+                observacaoCaixa: document.getElementById('checkoutObservation').value.trim(),
+                status: 'concluida',
+                sessionId: cashSession.id,
                 dataFinalizacao: new Date().toISOString(),
                 data: new Date().toISOString()
             };
             
             try {
-                // Save to sales history in Firebase
                 if (window.firebaseDB?.push) {
-                    await window.firebaseDB.push(
-                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
-                        venda
-                    );
+                    await window.firebaseDB.push(window.firebaseDB.ref(window.firebaseDB.db, 'vendas'), venda);
                 }
-                
-                // If it was a table order, remove from Firebase
+
                 if (checkoutData.type === 'mesa' && window.firebaseDB?.remove) {
-                    await window.firebaseDB.remove(
-                        window.firebaseDB.ref(window.firebaseDB.db, 'comandas/' + checkoutData.orderId)
-                    );
+                    await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.db, 'comandas/' + checkoutData.orderId));
+                }
+                if (checkoutData.type === 'delivery' && currentOrder && window.firebaseDB?.remove) {
+                    await window.firebaseDB.remove(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id));
                 }
                 
-                // Clear local data
                 if (checkoutData.type === 'balcao') {
                     quickSaleItems = [];
                     renderQuickSaleItems();
@@ -1447,17 +1764,20 @@
                         clearInterval(timerIntervals[checkoutData.orderId]);
                         delete timerIntervals[checkoutData.orderId];
                     }
+                    currentTableOrder = null;
                     renderTableOrders();
+                } else if (checkoutData.type === 'delivery') {
+                    orders = orders.filter(o => o.id !== checkoutData.orderId);
+                    closeOrderModal();
                 }
                 
-                closeCheckoutModal();
-                closeTableModal();
+                currentReceiptData = venda;
+                resetCashPanel();
                 updateDailySummary();
                 renderAllOrders();
+                updateCashSidebarSummary();
                 
-                // Success message
-                const changeText = venda.troco > 0 ? `\nTroco: R$ ${venda.troco.toFixed(2).replace('.', ',')}` : '';
-                alert(`✅ Venda finalizada com sucesso!\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}${changeText}`);
+                alert(`✅ Venda finalizada com sucesso!\n\nTotal: ${formatMoney(total)}${troco > 0 ? `\nTroco: ${formatMoney(troco)}` : ''}`);
                 
             } catch(e) {
                 console.error('Erro ao finalizar venda:', e);
@@ -1483,7 +1803,6 @@
             
             tableOrders.push(newOrder);
             
-            // Save to Firebase
             if (window.firebaseDB?.set) {
                 try {
                     await window.firebaseDB.set(
@@ -1501,14 +1820,20 @@
             currentTableOrder = tableOrders.find(o => o.id === orderId);
             if (!currentTableOrder) return;
 
-            document.getElementById('tableModalTitle').textContent = `Mesa ${currentTableOrder.mesa}`;
-            
-            // Render categories bar
             renderTableCategories();
             renderTableProductsGrid();
-            
             renderTableItemsContent();
-            document.getElementById('tableModal').classList.remove('hidden');
+            activateCheckoutContext({
+                type: 'mesa',
+                items: currentTableOrder.itens || [],
+                total: currentTableOrder.itens.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 1), 0),
+                orderId: currentTableOrder.id,
+                tableNumber: currentTableOrder.mesa,
+                sourceLabel: `Mesa ${currentTableOrder.mesa} • Comanda ativa`,
+                openedAt: currentTableOrder.data || new Date().toISOString(),
+                observation: currentTableOrder.observacao || ''
+            });
+            document.getElementById('tableModal').classList.add('hidden');
         }
 
         function renderTableCategories() {
@@ -1651,6 +1976,7 @@
                 clearInterval(timerIntervals[currentTableOrder.id]);
             }
             currentTableOrder = null;
+            resetCashPanel();
         }
 
         function addItemToTable(prodId) {
@@ -1672,6 +1998,16 @@
             
             renderTableItemsContent();
             renderTableOrders();
+            activateCheckoutContext({
+                type: 'mesa',
+                items: currentTableOrder.itens,
+                total: currentTableOrder.itens.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 1), 0),
+                orderId: currentTableOrder.id,
+                tableNumber: currentTableOrder.mesa,
+                sourceLabel: `Mesa ${currentTableOrder.mesa} • Comanda ativa`,
+                openedAt: currentTableOrder.data || new Date().toISOString(),
+                observation: currentTableOrder.observacao || ''
+            });
             saveTableOrderToFirebase(currentTableOrder);
         }
 
@@ -1691,6 +2027,16 @@
             currentTableOrder.itens.splice(idx, 1);
             renderTableItemsContent();
             renderTableOrders();
+            activateCheckoutContext({
+                type: 'mesa',
+                items: currentTableOrder.itens,
+                total: currentTableOrder.itens.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 1), 0),
+                orderId: currentTableOrder.id,
+                tableNumber: currentTableOrder.mesa,
+                sourceLabel: `Mesa ${currentTableOrder.mesa} • Comanda ativa`,
+                openedAt: currentTableOrder.data || new Date().toISOString(),
+                observation: currentTableOrder.observacao || ''
+            });
             saveTableOrderToFirebase(currentTableOrder);
         }
 
