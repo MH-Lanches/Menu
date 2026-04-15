@@ -34,7 +34,7 @@
         import { getDatabase, ref, set, get, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-storage.js";
 
-        const firebaseConfig = {
+        const defaultFirebaseConfig = {
             apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
             authDomain: "cardapiomhlanches.firebaseapp.com",
             databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
@@ -43,6 +43,16 @@
             messagingSenderId: "919725344771",
             appId: "1:919725344771:web:69be07a143162e76cf2636"
         };
+        const firebaseConfig = (() => {
+            try {
+                const saved = localStorage.getItem('mh_firebase_config');
+                if (saved) {
+                    const cfg = JSON.parse(saved);
+                    if (cfg.apiKey && cfg.projectId && cfg.appId) return cfg;
+                }
+            } catch(e) {}
+            return defaultFirebaseConfig;
+        })();
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -526,6 +536,42 @@
                                     </label>
                                 </div>
                             </div>
+                            <!-- STATUS DO FIREBASE -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-signal mr-2"></i> Status do Banco de Dados</h3>
+                                <div id="firebaseStatusBox" class="flex items-center gap-4 p-4 rounded-lg bg-gray-800 mb-4">
+                                    <div id="firebaseStatusDot" class="w-4 h-4 rounded-full bg-yellow-500 animate-pulse"></div>
+                                    <span id="firebaseStatusText" class="font-bold text-lg">Verificando conexão...</span>
+                                </div>
+                                <div id="firebaseInfo" class="text-sm text-gray-400 space-y-1">
+                                    <p>📡 Database: <span id="fbDbUrl">-</span></p>
+                                    <p>🔑 Project: <span id="fbProjectId">-</span></p>
+                                </div>
+                            </div>
+                            <!-- TROCAR CONTA FIREBASE -->
+                            <div class="glass-card rounded-2xl p-6">
+                                <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-exchange-alt mr-2"></i> Trocar Conta Firebase</h3>
+                                <p class="text-gray-400 mb-4 text-sm">Preencha os dados da nova conta Firebase para revenda ou migração</p>
+                                <div class="space-y-3">
+                                    <div><label class="block text-sm font-semibold mb-1">API Key</label><input type="text" id="fbApiKey" placeholder="AIza..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">Auth Domain</label><input type="text" id="fbAuthDomain" placeholder="projeto.firebaseapp.com" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">Database URL</label><input type="text" id="fbDatabaseUrl" placeholder="https://projeto-default-rtdb.firebaseio.com" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">Project ID</label><input type="text" id="fbProjectIdInput" placeholder="projeto-id" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">Storage Bucket</label><input type="text" id="fbStorageBucket" placeholder="projeto.firebasestorage.app" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">Messaging Sender ID</label><input type="text" id="fbMessagingSenderId" placeholder="000000000000" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                    <div><label class="block text-sm font-semibold mb-1">App ID</label><input type="text" id="fbAppId" placeholder="1:000000000000:web:xxxxxx" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"></div>
+                                </div>
+                                <div class="flex gap-3 mt-4">
+                                    <button onclick="loadCurrentFirebaseConfig()" class="flex-1 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold text-sm transition-colors">
+                                        <i class="fas fa-eye mr-1"></i> Ver Config Atual
+                                    </button>
+                                    <button onclick="saveNewFirebaseConfig()" class="flex-1 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-bold text-sm transition-colors">
+                                        <i class="fas fa-save mr-1"></i> Salvar Nova Config
+                                    </button>
+                                </div>
+                                <div id="firebaseSaveResult" class="mt-3 text-sm hidden"></div>
+                            </div>
+                            <!-- ZONA DE PERIGO -->
                             <div class="glass-card rounded-2xl p-6">
                                 <h3 class="text-xl font-bold mb-4 neon-pink"><i class="fas fa-exclamation-triangle mr-2"></i> Zona de Perigo</h3>
                                 <p class="text-gray-400 mb-4">Ações irreversíveis</p>
@@ -1558,6 +1604,112 @@
         function salvarAnuncios() { /* Implementar */ }
         function addCupom() { /* Implementar */ }
         function salvarCupons() { /* Implementar */ }
+        // ===== FIREBASE CONFIG MANAGEMENT =====
+        function checkFirebaseStatus() {
+            const fb = window.firebaseDB;
+            if (!fb || !fb.db) {
+                updateFirebaseStatusUI('offline', 'Firebase não inicializado');
+                return;
+            }
+            try {
+                const connectedRef = fb.ref(fb.db, '.info/connected');
+                fb.onValue(connectedRef, (snap) => {
+                    if (snap.val() === true) {
+                        updateFirebaseStatusUI('online', '✅ Conectado ao Firebase');
+                    } else {
+                        updateFirebaseStatusUI('offline', '❌ Desconectado');
+                    }
+                });
+                fb.get(fb.ref(fb.db, 'config')).then(() => {
+                    updateFirebaseStatusUI('online', '✅ Conectado ao Firebase');
+                }).catch((err) => {
+                    updateFirebaseStatusUI('error', '⚠️ Erro: ' + err.message);
+                });
+            } catch (err) {
+                updateFirebaseStatusUI('error', '⚠️ Erro: ' + err.message);
+            }
+        }
+
+        function updateFirebaseStatusUI(status, message) {
+            const dot = document.getElementById('firebaseStatusDot');
+            const text = document.getElementById('firebaseStatusText');
+            const box = document.getElementById('firebaseStatusBox');
+            if (!dot || !text) return;
+            dot.className = 'w-4 h-4 rounded-full';
+            if (status === 'online') {
+                dot.classList.add('bg-green-500');
+                if (box) box.style.borderColor = 'rgba(34,197,94,0.3)';
+                text.textContent = message;
+                text.style.color = '#22c55e';
+            } else if (status === 'offline') {
+                dot.classList.add('bg-red-500', 'animate-pulse');
+                if (box) box.style.borderColor = 'rgba(239,68,68,0.3)';
+                text.textContent = message;
+                text.style.color = '#ef4444';
+            } else {
+                dot.classList.add('bg-yellow-500', 'animate-pulse');
+                text.textContent = message;
+                text.style.color = '#eab308';
+            }
+            const saved = localStorage.getItem('mh_firebase_config');
+            if (saved) {
+                try {
+                    const cfg = JSON.parse(saved);
+                    const el1 = document.getElementById('fbDbUrl');
+                    const el2 = document.getElementById('fbProjectId');
+                    if (el1) el1.textContent = cfg.databaseURL || '-';
+                    if (el2) el2.textContent = cfg.projectId || '-';
+                } catch(e) {}
+            }
+        }
+
+        function loadCurrentFirebaseConfig() {
+            const saved = localStorage.getItem('mh_firebase_config');
+            if (saved) {
+                try {
+                    const cfg = JSON.parse(saved);
+                    document.getElementById('fbApiKey').value = cfg.apiKey || '';
+                    document.getElementById('fbAuthDomain').value = cfg.authDomain || '';
+                    document.getElementById('fbDatabaseUrl').value = cfg.databaseURL || '';
+                    document.getElementById('fbProjectIdInput').value = cfg.projectId || '';
+                    document.getElementById('fbStorageBucket').value = cfg.storageBucket || '';
+                    document.getElementById('fbMessagingSenderId').value = cfg.messagingSenderId || '';
+                    document.getElementById('fbAppId').value = cfg.appId || '';
+                    showFirebaseResult('Configuração atual carregada!', 'success');
+                } catch(e) {
+                    showFirebaseResult('Erro ao carregar: ' + e.message, 'error');
+                }
+            } else {
+                showFirebaseResult('Nenhuma config personalizada. Usando padrão.', 'info');
+            }
+        }
+
+        function saveNewFirebaseConfig() {
+            const apiKey = document.getElementById('fbApiKey').value.trim();
+            const authDomain = document.getElementById('fbAuthDomain').value.trim();
+            const databaseURL = document.getElementById('fbDatabaseUrl').value.trim();
+            const projectId = document.getElementById('fbProjectIdInput').value.trim();
+            const storageBucket = document.getElementById('fbStorageBucket').value.trim();
+            const messagingSenderId = document.getElementById('fbMessagingSenderId').value.trim();
+            const appId = document.getElementById('fbAppId').value.trim();
+            if (!apiKey || !projectId || !appId) {
+                showFirebaseResult('Preencha: API Key, Project ID e App ID!', 'error');
+                return;
+            }
+            const config = { apiKey, authDomain, databaseURL, projectId, storageBucket, messagingSenderId, appId };
+            localStorage.setItem('mh_firebase_config', JSON.stringify(config));
+            showFirebaseResult('✅ Salvo! Recarregue a página para aplicar.', 'success');
+        }
+
+        function showFirebaseResult(msg, type) {
+            const el = document.getElementById('firebaseSaveResult');
+            if (!el) return;
+            el.classList.remove('hidden');
+            el.textContent = msg;
+            el.style.color = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#eab308';
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
         async function resetarBanco() {
             if (confirm('ATENÇÃO: Isso apagará TODOS os dados! Continuar?')) {
                 const firebase = window.firebaseDB;
@@ -1572,6 +1724,9 @@
             }
         }
         function exportarBackup() { /* Implementar */ }
+
+        // Check Firebase status on load
+        setTimeout(checkFirebaseStatus, 2000);
 
         document.getElementById('productForm').addEventListener('submit', saveProduct);
         document.getElementById('categoryForm').addEventListener('submit', saveCategory);

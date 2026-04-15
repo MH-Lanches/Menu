@@ -35,6 +35,7 @@
         .status-producao{background:rgba(255,170,0,0.15);border:1px solid var(--neon-yellow);color:var(--neon-yellow)}
         .status-pronto{background:rgba(0,255,136,0.15);border:1px solid var(--neon-green);color:var(--neon-green)}
         .status-entrega{background:rgba(168,85,247,0.15);border:1px solid var(--neon-purple);color:var(--neon-purple)}
+        .status-saiu-entrega{background:rgba(168,85,247,0.15);border:1px solid var(--neon-purple);color:var(--neon-purple)}
         .status-entregue{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.5);color:rgba(0,255,136,0.8)}
         .status-pago{background:rgba(0,255,136,0.2);border:1px solid var(--neon-green);color:var(--neon-green)}
         .cat-btn{padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-secondary);cursor:pointer;transition:all .2s;font-size:13px;white-space:nowrap}
@@ -139,6 +140,12 @@
                 <h3 id="cartTitle" class="text-sm font-bold text-gray-300">🛒 Carrinho</h3>
                 <span id="cartInfo" class="text-xs text-gray-500">Selecione um pedido ou inicie venda</span>
             </div>
+            <!-- Status do Delivery -->
+            <div id="cartDeliveryStatus" class="p-3 shrink-0 hidden" style="background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(0,212,255,0.1)">
+                <div class="text-xs text-gray-400 mb-2">📦 Status do Pedido</div>
+                <div id="cartStatusBadge" class="badge status-novo mb-2 inline-block">Novo</div>
+                <div id="cartStatusActions" class="flex flex-wrap gap-1"></div>
+            </div>
             <div id="cartItems" class="flex-1 scroll-area p-3 space-y-1"></div>
             <div class="p-3 shrink-0 space-y-2" style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)">
                 <div class="flex justify-between text-sm"><span class="text-gray-400">Subtotal</span><span id="cartSubtotal" class="font-bold">R$ 0,00</span></div>
@@ -155,9 +162,9 @@
 
 <!-- PAYMENT SIDEBAR PANEL -->
 <div id="paymentSidebar" class="sidebar-panel glass-sidebar flex flex-col">
-    <div class="p-4 shrink-0 flex items-center justify-between" style="border-bottom:1px solid rgba(255,255,255,0.05)">
-        <h2 class="text-lg font-bold neon-text">💰 PAGAMENTO</h2>
-        <button onclick="closePaymentPanel()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+    <div class="p-4 shrink-0 flex items-center" style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <h2 class="text-lg font-bold neon-text flex-1">💰 PAGAMENTO</h2>
+        <span class="text-xs text-gray-500">Finalize a venda para fechar</span>
     </div>
     <div class="flex-1 scroll-area p-4 space-y-4">
         <!-- Order Info -->
@@ -220,7 +227,6 @@
     <!-- Footer Buttons -->
     <div class="p-4 shrink-0 space-y-2" style="border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.3)">
         <button onclick="finalizeSale()" id="btnFinalize" class="btn-neon w-full py-3 text-lg font-bold">✅ FINALIZAR VENDA</button>
-        <button onclick="closePaymentPanel()" class="btn-danger w-full py-2">Cancelar</button>
     </div>
 </div>
 
@@ -288,7 +294,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, push, remove, update, get } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
-const firebaseConfig = {
+const defaultFirebaseConfig = {
     apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
     authDomain: "cardapiomhlanches.firebaseapp.com",
     databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
@@ -297,6 +303,16 @@ const firebaseConfig = {
     messagingSenderId: "919725344771",
     appId: "1:919725344771:web:69be07a143162e76cf2636"
 };
+const firebaseConfig = (() => {
+    try {
+        const saved = localStorage.getItem('mh_firebase_config');
+        if (saved) {
+            const cfg = JSON.parse(saved);
+            if (cfg.apiKey && cfg.projectId && cfg.appId) return cfg;
+        }
+    } catch(e) {}
+    return defaultFirebaseConfig;
+})();
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -406,10 +422,24 @@ function loadDeliveryOrders() {
         if (snap.exists()) {
             const data = snap.val();
             deliveryOrders = Object.entries(data)
-                .filter(([k, v]) => v && v.status !== 'finalizado' && v.status !== 'pago' && v.tipo !== 'mesa')
-                .map(([k, v]) => ({ id: k, ...v }));
+                .filter(([k, v]) => {
+                    if (!v) return false;
+                    if (v.status === 'finalizado') return false;
+                    if (v.tipo === 'mesa') return false;
+                    return true;
+                })
+                .map(([k, v]) => ({
+                    id: k,
+                    ...v,
+                    tipo: v.tipo || 'delivery',
+                    status: v.status || 'novo',
+                    horaCriacao: v.horaCriacao || v.data || new Date().toISOString()
+                }));
         }
+        console.log('🛵 Delivery orders:', deliveryOrders.length, deliveryOrders.map(o => o.id));
         if (currentTab === 'delivery') renderOrdersList();
+    }, (error) => {
+        console.error('❌ Erro ao carregar pedidos:', error.message);
     });
 }
 
@@ -420,9 +450,18 @@ function loadTableOrders() {
             const data = snap.val();
             tableOrders = Object.entries(data)
                 .filter(([k, v]) => v && v.status !== 'finalizado')
-                .map(([k, v]) => ({ id: k, ...v }));
+                .map(([k, v]) => ({
+                    id: k,
+                    ...v,
+                    tipo: 'mesa',
+                    status: v.status || 'novo',
+                    horaCriacao: v.horaCriacao || new Date().toISOString()
+                }));
         }
+        console.log('🍽️ Table orders:', tableOrders.length, tableOrders.map(o => o.id));
         if (currentTab === 'mesas') renderOrdersList();
+    }, (error) => {
+        console.error('❌ Erro ao carregar mesas:', error.message);
     });
 }
 
@@ -656,6 +695,71 @@ window.selectOrder = function(orderId) {
     document.getElementById('cartInfo').textContent = order.id.substring(0, 10) + ' | ' + getStatusLabel(order.status);
     renderCart();
     renderOrdersList();
+    renderCartDeliveryStatus();
+};
+
+function renderCartDeliveryStatus() {
+    const panel = document.getElementById('cartDeliveryStatus');
+    const badge = document.getElementById('cartStatusBadge');
+    const actions = document.getElementById('cartStatusActions');
+    
+    if (!activeOrder || currentTab !== 'delivery') {
+        panel.classList.add('hidden');
+        return;
+    }
+    
+    panel.classList.remove('hidden');
+    
+    const status = activeOrder.status || 'novo';
+    const statusLabels = {
+        'novo': '🆕 Novo',
+        'producao': '🔥 Em Produção',
+        'pronto': '✅ Pronto',
+        'saiu-entrega': '🛵 Saiu p/ Entrega',
+        'entregue': '📦 Entregue',
+        'pago': '💰 Pago'
+    };
+    const statusClasses = {
+        'novo': 'status-novo',
+        'producao': 'status-producao',
+        'pronto': 'status-pronto',
+        'saiu-entrega': 'status-entrega',
+        'entregue': 'status-entregue',
+        'pago': 'status-pago'
+    };
+    
+    badge.textContent = statusLabels[status] || status;
+    badge.className = 'badge ' + (statusClasses[status] || 'status-novo') + ' mb-2 inline-block';
+    
+    // Show action buttons based on current status
+    let btns = [];
+    if (status === 'novo') {
+        btns.push(`<button onclick="updateCartOrderStatus('producao')" class="badge status-producao cursor-pointer hover:opacity-80">🔥 Produção</button>`);
+    }
+    if (status === 'producao') {
+        btns.push(`<button onclick="updateCartOrderStatus('pronto')" class="badge status-pronto cursor-pointer hover:opacity-80">✅ Pronto</button>`);
+    }
+    if (status === 'pronto') {
+        btns.push(`<button onclick="updateCartOrderStatus('saiu-entrega')" class="badge status-entrega cursor-pointer hover:opacity-80">🛵 Entrega</button>`);
+    }
+    if (status === 'saiu-entrega') {
+        btns.push(`<button onclick="updateCartOrderStatus('entregue')" class="badge status-entregue cursor-pointer hover:opacity-80">📦 Entregue</button>`);
+    }
+    if (status === 'entregue') {
+        btns.push(`<button onclick="selectOrderForPay('${activeOrder.id}')" class="badge status-pago cursor-pointer hover:opacity-80">💰 Pagar</button>`);
+    }
+    
+    actions.innerHTML = btns.join('');
+}
+
+window.updateCartOrderStatus = function(newStatus) {
+    if (!activeOrder) return;
+    const path = 'pedidos/' + activeOrder.id;
+    update(ref(db, path), { status: newStatus });
+    activeOrder.status = newStatus;
+    document.getElementById('cartInfo').textContent = activeOrder.id.substring(0, 10) + ' | ' + getStatusLabel(newStatus);
+    renderCartDeliveryStatus();
+    renderOrdersList();
 };
 
 window.selectOrderForPay = function(orderId) {
@@ -677,19 +781,47 @@ window.addToCart = function(productId) {
     const pid = String(productId);
     const product = allProducts.find(p => String(p.id) === pid);
     if (!product) {
-        console.warn('Produto não encontrado:', productId, 'em', allProducts.map(p => p.id));
+        console.warn('Produto não encontrado:', productId, 'IDs disponíveis:', allProducts.map(p => p.id));
         if (allProducts.length === 0) {
-            alert('Nenhum produto cadastrado! Crie produtos no Painel Admin primeiro.');
+            alert('⚠️ Nenhum produto cadastrado!\n\nCrie produtos no Painel Admin primeiro.\n\nVerifique também se o Firebase está conectado.');
+        } else {
+            alert('⚠️ Produto não encontrado!\nID: ' + productId);
         }
         return;
     }
 
+    // Auto-create order based on current tab
     if (!activeOrder) {
         if (currentTab === 'balcao') {
             startBalcaoSale();
-        } else {
-            alert('Selecione um pedido ou inicie uma venda balcão primeiro!');
-            return;
+        } else if (currentTab === 'mesas') {
+            // Auto-create a new table comanda
+            const mesaName = prompt('🍽️ Nome ou número da mesa:', 'Mesa 1');
+            if (!mesaName) return;
+            const tableId = 'MESA_' + Date.now();
+            const newTable = {
+                id: tableId,
+                mesa: mesaName,
+                tipo: 'mesa',
+                status: 'novo',
+                itens: [],
+                horaCriacao: new Date().toISOString()
+            };
+            activeOrder = newTable;
+            cartItems = [];
+            document.getElementById('cartTitle').textContent = '🍽️ Mesa ' + mesaName;
+            document.getElementById('cartInfo').textContent = 'Comanda aberta';
+            // Save to Firebase
+            set(ref(db, 'mesas/' + tableId), newTable).catch(err => console.error('Erro ao salvar mesa:', err));
+            renderCart();
+        } else if (currentTab === 'delivery') {
+            // Select first available delivery order
+            if (deliveryOrders.length > 0) {
+                selectOrderForPay(deliveryOrders[0].id);
+            } else {
+                alert('🛵 Nenhum pedido de delivery ativo!\n\nOs pedidos feitos pelo site aparecerão aqui automaticamente.\n\nVerifique se o Firebase está conectado.');
+                return;
+            }
         }
     }
 
@@ -828,6 +960,7 @@ window.clearCart = function() {
     activeOrder = null;
     document.getElementById('cartTitle').textContent = '🛒 Carrinho';
     document.getElementById('cartInfo').textContent = 'Selecione um pedido ou inicie venda';
+    document.getElementById('cartDeliveryStatus').classList.add('hidden');
     renderCart();
 };
 
@@ -885,6 +1018,15 @@ window.openPaymentPanel = function() {
     selectedPaymentMethod = '';
     multiPayments = [];
     document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+    // Restore singlePaySection to default (dinheiro)
+    document.getElementById('singlePaySection').innerHTML = `
+        <div class="text-xs text-gray-400 mb-2">Valor Recebido</div>
+        <input type="number" id="payValorRecebido" value="" min="0" step="0.01" class="w-full text-lg font-bold" oninput="updatePaymentCalc()" placeholder="R$ 0,00">
+        <div class="mt-2 flex justify-between text-sm">
+            <span class="text-gray-400">Troco:</span>
+            <span id="payTroco" class="font-bold text-lg timer-green">R$ 0,00</span>
+        </div>
+    `;
     document.getElementById('singlePaySection').classList.remove('hidden');
     document.getElementById('multiPaySection').classList.add('hidden');
     document.getElementById('multiPayList').innerHTML = '';
@@ -909,9 +1051,29 @@ window.selectPayment = function(method) {
         multiPayments = [];
         document.getElementById('multiPayList').innerHTML = '';
         addMultiPayment();
-    } else {
+    } else if (method === 'dinheiro') {
+        // DINHEIRO: mostra campo de valor e troco
         document.getElementById('singlePaySection').classList.remove('hidden');
         document.getElementById('multiPaySection').classList.add('hidden');
+        document.getElementById('singlePaySection').querySelector('.text-xs').textContent = 'Valor Recebido';
+        document.getElementById('payValorRecebido').classList.remove('hidden');
+        document.getElementById('payValorRecebido').parentElement.querySelector('.mt-2')?.classList.remove('hidden');
+        // Mostra seção inteira
+        document.getElementById('singlePaySection').style.display = '';
+    } else {
+        // PIX, CARTÃO, VALE: NÃO precisa de valor recebido
+        document.getElementById('singlePaySection').classList.remove('hidden');
+        document.getElementById('multiPaySection').classList.add('hidden');
+        // Esconde campo de valor e troco
+        const singleSection = document.getElementById('singlePaySection');
+        singleSection.innerHTML = `
+            <div class="text-xs text-gray-400 mb-2">Pagamento via ${method.toUpperCase()}</div>
+            <div class="text-center py-3">
+                <div class="text-2xl mb-1">${method === 'pix' ? '📱' : method === 'vale' ? '🎫' : '💳'}</div>
+                <p class="text-sm text-gray-400">Confirme o pagamento na maquininha/app</p>
+                <p class="text-lg font-bold neon-text mt-2">R$ ${parseFloat(document.getElementById('payTotal').textContent.replace('R$ ','').replace(',','.')).toFixed(2)}</p>
+            </div>
+        `;
     }
     updatePaymentCalc();
 };
@@ -949,12 +1111,17 @@ window.updatePaymentCalc = function() {
         const remaining = Math.max(0, finalTotal - paid);
         document.getElementById('multiRemaining').textContent = 'R$ ' + remaining.toFixed(2);
         document.getElementById('multiRemaining').className = remaining <= 0.01 ? 'font-bold timer-green' : 'font-bold timer-red';
-    } else {
-        const recebido = parseFloat(document.getElementById('payValorRecebido').value) || 0;
-        const troco = Math.max(0, recebido - finalTotal);
-        document.getElementById('payTroco').textContent = 'R$ ' + troco.toFixed(2);
-        document.getElementById('payTroco').className = troco >= 0 ? 'font-bold text-lg timer-green' : 'font-bold text-lg timer-red';
+    } else if (selectedPaymentMethod === 'dinheiro') {
+        const recebidoEl = document.getElementById('payValorRecebido');
+        const recebido = recebidoEl ? (parseFloat(recebidoEl.value) || 0) : 0;
+        const trocoEl = document.getElementById('payTroco');
+        if (trocoEl) {
+            const troco = Math.max(0, recebido - finalTotal);
+            trocoEl.textContent = 'R$ ' + troco.toFixed(2);
+            trocoEl.className = troco >= 0 ? 'font-bold text-lg timer-green' : 'font-bold text-lg timer-red';
+        }
     }
+    // PIX, cartão, vale: não precisa calcular troco
 };
 
 // ===== FINALIZE SALE =====
@@ -975,12 +1142,18 @@ window.finalizeSale = function() {
         pagamentos = multiPayments.map(mp => ({ forma: mp.method, valor: mp.valor }));
         valorRecebido = paid;
         troco = Math.max(0, paid - finalTotal);
-    } else {
-        const recebido = parseFloat(document.getElementById('payValorRecebido').value) || 0;
+    } else if (selectedPaymentMethod === 'dinheiro') {
+        const recebidoEl = document.getElementById('payValorRecebido');
+        const recebido = recebidoEl ? (parseFloat(recebidoEl.value) || 0) : 0;
         if (recebido < finalTotal - 0.01) { alert('Valor recebido insuficiente!'); return; }
         pagamentos = [{ forma: selectedPaymentMethod, valor: finalTotal }];
         valorRecebido = recebido;
         troco = Math.max(0, recebido - finalTotal);
+    } else {
+        // PIX, Crédito, Débito, Vale: não precisa de valor recebido
+        pagamentos = [{ forma: selectedPaymentMethod, valor: finalTotal }];
+        valorRecebido = finalTotal;
+        troco = 0;
     }
 
     const venda = {
