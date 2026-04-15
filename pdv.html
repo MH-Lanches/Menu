@@ -593,15 +593,35 @@
                     // Delivery orders
                     onValue(ref(db, 'pedidos'), (snapshot) => {
                         const data = snapshot.val() || {};
-                        const allOrders = Object.entries(data).map(([key, value]) => ({
-                            ...(value || {}),
-                            id: (value && value.id) ? value.id : key,
-                            tipo: 'delivery'
-                        }));
+                        const allOrders = Object.entries(data).map(([key, value]) => {
+                            const raw = value || {};
+                            const clienteObj = typeof raw.cliente === 'object' && raw.cliente !== null
+                                ? raw.cliente
+                                : {
+                                    nome: raw.cliente || raw.nomeCliente || 'Cliente',
+                                    telefone: raw.telefone || raw.clienteTelefone || '',
+                                    endereco: raw.endereco || raw.clienteEndereco || '',
+                                    complemento: raw.complemento || raw.clienteComplemento || ''
+                                };
+
+                            return {
+                                ...raw,
+                                id: raw.id || key,
+                                tipo: raw.tipo === 'mesa' ? 'mesa' : 'delivery',
+                                cliente: clienteObj,
+                                itens: Array.isArray(raw.itens) ? raw.itens : [],
+                                total: Number(raw.total || 0),
+                                subtotal: Number(raw.subtotal || 0),
+                                taxa: Number(raw.taxa || 0),
+                                desconto: Number(raw.desconto || 0),
+                                status: String(raw.status || 'novo').toLowerCase(),
+                                data: raw.data || new Date().toISOString()
+                            };
+                        });
 
                         const firebaseOrders = allOrders.filter(o => {
                             const s = (o.status || '').toLowerCase();
-                            return s === 'novo' || s === 'producao' || s === 'pronto' || s === 'saiu-entrega';
+                            return o.tipo === 'delivery' && (s === 'novo' || s === 'producao' || s === 'pronto' || s === 'saiu-entrega');
                         });
 
                         const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
@@ -1348,11 +1368,6 @@
                 </button>`;
             });
 
-            html += `<button onclick="openCustomItemModal('balcao')"
-                class="px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-semibold whitespace-nowrap text-sm transition-all hover:scale-105">
-                <i class="fas fa-edit mr-1"></i> Item Livre
-            </button>`;
-            
             container.innerHTML = html;
         }
 
@@ -1409,6 +1424,27 @@
             `}).join('');
         }
 
+        function syncBalcaoCheckout(forceOpen = false) {
+            const total = quickSaleItems.reduce((sum, i) => sum + (Number(i.preco || 0) * Number(i.quantidade || 1)), 0);
+
+            if (!quickSaleItems.length) {
+                if (checkoutData.type === 'balcao' || forceOpen) {
+                    resetCashPanel();
+                }
+                return;
+            }
+
+            activateCheckoutContext({
+                type: 'balcao',
+                items: quickSaleItems,
+                total,
+                orderId: checkoutData.type === 'balcao' && checkoutData.orderId ? checkoutData.orderId : ('BALCAO_' + Date.now()),
+                tableNumber: null,
+                sourceLabel: 'Balcão • Venda ativa',
+                openedAt: checkoutData.type === 'balcao' && checkoutData.openedAt ? checkoutData.openedAt : new Date().toISOString()
+            });
+        }
+
         function addQuickItemById(prodId) {
             const prod = allProducts.find(p => p.id === prodId);
             if (!prod) return;
@@ -1427,7 +1463,7 @@
             }
             
             renderQuickSaleItems();
-            openCheckoutModal('balcao');
+            syncBalcaoCheckout(true);
         }
 
         function renderQuickSaleItems() {
@@ -1458,19 +1494,11 @@
                     }).join('');
                 }
             }
-            const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             const totalEl = document.getElementById('quickSaleTotal');
+            const total = quickSaleItems.reduce((sum, i) => sum + (Number(i.preco || 0) * Number(i.quantidade || 1)), 0);
             if (totalEl) totalEl.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
-            if (checkoutData.type === 'balcao') {
-                activateCheckoutContext({
-                    type: 'balcao',
-                    items: quickSaleItems,
-                    total,
-                    orderId: checkoutData.orderId || ('BALCAO_' + Date.now()),
-                    tableNumber: null,
-                    sourceLabel: 'Balcão • Venda ativa',
-                    openedAt: checkoutData.openedAt || new Date().toISOString()
-                });
+            if (quickSaleItems.length || checkoutData.type === 'balcao') {
+                syncBalcaoCheckout();
             }
         }
 
@@ -1489,6 +1517,7 @@
         function clearQuickSale() {
             quickSaleItems = [];
             renderQuickSaleItems();
+            resetCashPanel();
         }
 
         // ==========================================
@@ -1524,7 +1553,7 @@
             if (customItemTarget === 'balcao') {
                 quickSaleItems.push(customItem);
                 renderQuickSaleItems();
-                openCheckoutModal('balcao');
+                syncBalcaoCheckout(true);
             } else if (customItemTarget === 'mesa' && currentTableOrder) {
                 currentTableOrder.itens.push({
                     nome: name,
@@ -1548,15 +1577,7 @@
             
             if (type === 'balcao') {
                 if (quickSaleItems.length === 0) { alert('Adicione pelo menos um item!'); return; }
-                activateCheckoutContext({
-                    type: 'balcao',
-                    items: quickSaleItems,
-                    total: quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0),
-                    orderId: checkoutData.orderId && checkoutData.type === 'balcao' ? checkoutData.orderId : ('BALCAO_' + Date.now()),
-                    tableNumber: null,
-                    sourceLabel: 'Balcão • Venda ativa',
-                    openedAt: checkoutData.openedAt && checkoutData.type === 'balcao' ? checkoutData.openedAt : new Date().toISOString()
-                });
+                syncBalcaoCheckout(true);
             } else if (type === 'mesa') {
                 if (!currentTableOrder || currentTableOrder.itens.length === 0) { alert('Comanda sem itens!'); return; }
                 activateCheckoutContext({
@@ -1789,13 +1810,14 @@
         //  MESAS - Table Orders
         // ==========================================
         async function newTableOrder() {
-            const mesaNum = prompt('Número da mesa:');
-            if (!mesaNum) return;
+            const mesaInput = prompt('Nome da mesa/comanda ou cliente:');
+            const mesaLabel = String(mesaInput || '').trim();
+            if (!mesaLabel) return;
             
             const orderId = 'MESA_' + Date.now();
             const newOrder = {
                 id: orderId,
-                mesa: parseInt(mesaNum),
+                mesa: mesaLabel,
                 itens: [],
                 status: 'aberta',
                 data: new Date().toISOString()
