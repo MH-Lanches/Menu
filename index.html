@@ -131,7 +131,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
 
-        const firebaseConfig = {
+        const defaultFirebaseConfig = {
             apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
             authDomain: "cardapiomhlanches.firebaseapp.com",
             databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
@@ -140,6 +140,16 @@
             messagingSenderId: "919725344771",
             appId: "1:919725344771:web:69be07a143162e76cf2636"
         };
+        const firebaseConfig = (() => {
+            try {
+                const saved = localStorage.getItem('mh_firebase_config');
+                if (saved) {
+                    const cfg = JSON.parse(saved);
+                    if (cfg.apiKey && cfg.projectId && cfg.appId) return cfg;
+                }
+            } catch(e) {}
+            return defaultFirebaseConfig;
+        })();
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -746,52 +756,55 @@
                         </div>
                     ` : ''}
                     
-                    <div class="flex flex-col md:flex-row">
-                        <!-- Esquerda: Informações -->
-                        <div class="flex-1 p-4 md:p-5 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-xl md:text-2xl font-bold neon-cyan mb-2">${prod.nome}</h3>
-                                <p class="text-gray-400 text-sm md:text-base mb-3 line-clamp-2">${prod.descricao || ''}</p>
-                                ${prod.tipo === 'pizza' && prod.tempoPreparo ? `<p class="text-xs text-gray-500 mb-2"><i class="fas fa-clock mr-1"></i>~${prod.tempoPreparo} min</p>` : ''}
-                            </div>
-                            
-                            <div class="flex items-center justify-between mt-3">
-                                <div>
-                                    ${prod.promocao && prod.precoOriginal ? `<p class="text-sm text-gray-500 line-through">R$ ${prod.precoOriginal.toFixed(2)}</p>` : ''}
-                                    <span class="text-2xl md:text-3xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
-                                </div>
-                                ${!isPersonalizavel ? `
-                                    <button onclick="handleAddToCart('${prod.id}', null, event)" ${isPausado ? 'disabled' : ''}
-                                        class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg">
-                                        <i class="fas fa-plus mr-2"></i>ADICIONAR
-                                    </button>
-                                ` : `
-                                    <button onclick="openCustomize('${prod.id}', event)" ${isPausado ? 'disabled' : ''}
-                                        class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg">
-                                        <i class="fas fa-sliders-h mr-2"></i>PERSONALIZAR
-                                    </button>
-                                `}
-                            </div>
-                        </div>
-                        
-                        <!-- Direita: Imagem -->
-                        <div class="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0">
-                            <img src="${imgSrc}" class="w-full h-full object-cover" onerror="this.src='${defaultImg}'">
-                            <button onclick="toggleFavorite('${prod.id}')" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform">
-                                <i class="fas fa-heart ${favoritos.includes(prod.id) ? 'text-red-500' : 'text-white'} text-lg"></i>
-                            </button>
+                    <!-- TOPO: Imagem com badges -->
+                    <div class="relative w-full h-52 md:h-56 overflow-hidden">
+                        <img src="${imgSrc}" class="w-full h-full object-cover" onerror="this.src='${defaultImg}'">
+                        <button onclick="toggleFavorite('${prod.id}')" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform z-10">
+                            <i class="fas fa-heart ${favoritos.includes(prod.id) ? 'text-red-500' : 'text-white'} text-lg"></i>
+                        </button>
+                        ${prod.promocao ? `<div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-10">🔥 PROMO</div>` : ''}
+                        ${prod.destaque && !prod.promocao ? `<div class="absolute top-3 left-3 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full z-10">⭐ DESTAQUE</div>` : ''}
+                        <!-- Texto discreto na base da imagem -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
+                            <span class="text-[10px] text-gray-300 italic">* Imagem meramente ilustrativa</span>
                         </div>
                     </div>
                     
+                    <!-- Miniaturas da galeria -->
                     ${imagens.length > 1 ? `
-                        <div class="flex gap-2 px-4 pb-4 overflow-x-auto">
+                        <div class="flex gap-2 px-4 pt-2 overflow-x-auto">
                             ${imagens.slice(0, 5).map((img, i) => `
-                                <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border ${i === 0 ? 'border-neon-cyan' : 'border-gray-700'}">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border ${i === 0 ? 'border-neon-cyan' : 'border-gray-700'} cursor-pointer hover:border-neon-pink transition-colors">
                                     <img src="${img}" class="w-full h-full object-cover">
                                 </div>
                             `).join('')}
                         </div>
                     ` : ''}
+                    
+                    <!-- ABAIXO: Informações do produto -->
+                    <div class="p-4 md:p-5 flex flex-col">
+                        <h3 class="text-xl md:text-2xl font-bold neon-cyan mb-1">${prod.nome}</h3>
+                        <p class="text-gray-400 text-sm md:text-base mb-2 line-clamp-2">${prod.descricao || ''}</p>
+                        ${prod.tipo === 'pizza' && prod.tempoPreparo ? `<p class="text-xs text-gray-500 mb-2"><i class="fas fa-clock mr-1"></i>~${prod.tempoPreparo} min de preparo</p>` : ''}
+                        
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-700/50">
+                            <div>
+                                ${prod.promocao && prod.precoOriginal ? `<p class="text-sm text-gray-500 line-through">R$ ${prod.precoOriginal.toFixed(2)}</p>` : ''}
+                                <span class="text-2xl md:text-3xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            ${!isPersonalizavel ? `
+                                <button onclick="handleAddToCart('${prod.id}', null, event)" ${isPausado ? 'disabled' : ''}
+                                    class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg text-sm">
+                                    <i class="fas fa-plus mr-1"></i>ADICIONAR
+                                </button>
+                            ` : `
+                                <button onclick="openCustomize('${prod.id}', event)" ${isPausado ? 'disabled' : ''}
+                                    class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg text-sm">
+                                    <i class="fas fa-sliders-h mr-1"></i>PERSONALIZAR
+                                </button>
+                            `}
+                        </div>
+                    </div>
                 </div>
                 `;
             }).join('');
