@@ -376,28 +376,10 @@
         let quickSaleItems = [];
         let currentQuickCategory = 'Todos';
 
-        // Mock Products for quick sale
-        let quickProducts = [
-            { id: 101, nome: "MH Classic", preco: 29.90, categoria: "Hambúrgueres", imagem: "🍔" },
-            { id: 102, nome: "Bacon Burger", preco: 34.90, categoria: "Hambúrgueres", imagem: "🍔" },
-            { id: 103, nome: "Cheese Burger", preco: 32.90, categoria: "Hambúrgueres", imagem: "🍔" },
-            { id: 104, nome: "Chicken Burger", preco: 26.90, categoria: "Hambúrgueres", imagem: "🍔" },
-            { id: 105, nome: "Batata Frita", preco: 22.90, categoria: "Porções", imagem: "🍟" },
-            { id: 106, nome: "Batata Cheddar", preco: 28.90, categoria: "Porções", imagem: "🍟" },
-            { id: 107, nome: "Anéis de Cebola", preco: 24.90, categoria: "Porções", imagem: "🧅" },
-            { id: 108, nome: "Nuggets (15un)", preco: 26.90, categoria: "Porções", imagem: "🍗" },
-            { id: 109, nome: "Coca-Cola Lata", preco: 6.00, categoria: "Bebidas", imagem: "🥤" },
-            { id: 110, nome: "Guaraná Lata", preco: 6.00, categoria: "Bebidas", imagem: "🥤" },
-            { id: 111, nome: "Suco Laranja", preco: 8.00, categoria: "Bebidas", imagem: "🍊" },
-            { id: 112, nome: "Água Mineral", preco: 4.00, categoria: "Bebidas", imagem: "💧" },
-            { id: 113, nome: "Sundae Chocolate", preco: 12.90, categoria: "Sobremesas", imagem: "🍨" },
-            { id: 114, nome: "Sorvete 3 Bolas", preco: 14.90, categoria: "Sobremesas", imagem: "🍦" },
-            { id: 115, nome: "Milk Shake", preco: 16.90, categoria: "Sobremesas", imagem: "🥛" },
-        ];
-
+        // Produtos carregados do Firebase (inicia vazio)
+        let quickProducts = [];
         let orders = [];
         let tableOrders = [];
-        let timerIntervals = {};
 
         document.addEventListener('DOMContentLoaded', () => {
             const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
@@ -429,37 +411,21 @@
                     if (window.firebaseDB.onValue) {
                         window.firebaseDB.onValue(window.firebaseDB.ref(window.firebaseDB.db, 'pedidos'), (snapshot) => {
                             const data = snapshot.val() || {};
-                            const allOrders = Object.entries(data).map(([key, value]) => ({
-                                ...(value || {}),
-                                id: (value && value.id) ? value.id : key,
-                                tipo: 'delivery'
-                            }));
+                            // Filtrar apenas pedidos NÃO finalizados
+                            const firebaseOrders = Object.entries(data)
+                                .filter(([key, value]) => value && value.status !== 'finalizado')
+                                .map(([key, value]) => ({
+                                    ...(value || {}),
+                                    id: (value && value.id) ? value.id : key,
+                                    tipo: 'delivery'
+                                }));
 
-                            // FILTRAR: pedidos finalizados/entregues/pagos NAO aparecem na lista ativa
-                            const firebaseOrders = allOrders.filter(o => {
-                                const s = (o.status || '').toLowerCase();
-                                // So mostra pedidos ativos (nao finalizados)
-                                const isActive = s === 'novo' || s === 'producao' || s === 'pronto' || s === 'saiu-entrega';
-                                return isActive;
-                            });
-
-                            // Verificar se tem pedido novo para alerta sonoro
                             const hasNewOrder = firebaseOrders.some(o => !orders.find(existing => existing.id === o.id) && o.status === 'novo');
                             if (hasNewOrder) {
                                 playAlertSound();
                             }
 
-                            // Verificar se algum pedido foi removido do Firebase (finalizado)
-                            // e limpar seus timers
-                            const currentFirebaseIds = new Set(firebaseOrders.map(o => o.id));
-                            orders.filter(o => o.fromFirebase && !currentFirebaseIds.has(o.id)).forEach(removedOrder => {
-                                if (timerIntervals[removedOrder.id]) {
-                                    clearInterval(timerIntervals[removedOrder.id]);
-                                    delete timerIntervals[removedOrder.id];
-                                }
-                            });
-
-                            // Manter pedidos locais (mesa/balcao) que nao sao do Firebase
+                            // Manter apenas pedidos locais que não são do Firebase
                             const localOrders = orders.filter(o => o.tipo !== 'delivery' || !o.fromFirebase);
                             const normalizedFirebaseOrders = firebaseOrders.map(o => ({ ...o, fromFirebase: true }));
                             orders = [...localOrders, ...normalizedFirebaseOrders];
@@ -554,54 +520,19 @@
             updateStats();
         }
 
-        function formatElapsedTime(isoDate) {
-            if (!isoDate) return '--:--';
-            const now = new Date();
-            const created = new Date(isoDate);
-            const diff = Math.floor((now - created) / 1000);
-            const h = Math.floor(diff / 3600);
-            const m = Math.floor((diff % 3600) / 60);
-            const s = diff % 60;
-            if (h > 0) return `${h}h ${m}m ${s}s`;
-            return `${m}m ${s}s`;
-        }
-
-        function getCreatedAt(isoDate) {
-            if (!isoDate) return '--:--';
-            const d = new Date(isoDate);
-            return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-
         function renderDeliveryOrders() {
             const container = document.getElementById('deliveryOrders');
-            const deliveryOrders = orders.filter(o => {
-                if (o.tipo !== 'delivery') return false;
-                const s = (o.status || '').toLowerCase();
-                return s !== 'finalizado' && s !== 'finalized';
-            });
+            const deliveryOrders = orders.filter(o => o.tipo === 'delivery' && o.status !== 'finalizado');
             
-            // Clear old timers
-            Object.keys(timerIntervals).forEach(id => {
-                if (!deliveryOrders.find(o => o.id === id)) {
-                    clearInterval(timerIntervals[id]);
-                    delete timerIntervals[id];
-                }
-            });
-
             if (deliveryOrders.length === 0) {
-                container.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-12"><i class="fas fa-inbox text-5xl mb-4 block opacity-30"></i><p class="text-lg">Nenhum pedido de delivery no momento</p></div>';
+                container.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-12">Nenhum pedido de delivery no momento</p>';
                 return;
             }
 
             container.innerHTML = deliveryOrders.map(order => `
                 <div onclick="openOrderModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-102 transition-transform ${order.status === 'novo' ? 'pulse-alert border-2 border-[#ff00ff]' : ''}">
                     <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="font-mono text-sm text-gray-400">${order.id}</span>
-                            <div class="text-xs text-gray-500 mt-1">
-                                <i class="fas fa-clock mr-1"></i>Criado: ${getCreatedAt(order.data)}
-                            </div>
-                        </div>
+                        <span class="font-mono text-sm">${order.id}</span>
                         <span class="px-3 py-1 rounded-full text-xs font-bold status-${order.status}">${getStatusName(order.status)}</span>
                     </div>
                     <h4 class="font-bold text-lg mb-1">${order.cliente.nome}</h4>
@@ -613,81 +544,32 @@
                     </div>
                     <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
                         <span class="text-sm">${order.pagamento}</span>
-                        <div class="text-right">
-                            <span class="font-bold neon-cyan block">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
-                            <span class="text-xs font-mono text-yellow-400" id="timer-${order.id}">
-                                <i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}
-                            </span>
-                        </div>
+                        <span class="font-bold neon-cyan">R$ ${order.total.toFixed(2).replace('.', ',')}</span>
                     </div>
                 </div>
             `).join('');
-
-            // Start/update timers
-            deliveryOrders.forEach(order => {
-                if (timerIntervals[order.id]) clearInterval(timerIntervals[order.id]);
-                timerIntervals[order.id] = setInterval(() => {
-                    const el = document.getElementById(`timer-${order.id}`);
-                    if (el) el.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}`;
-                }, 1000);
-            });
         }
 
         function renderTableOrders() {
             const container = document.getElementById('tableOrders');
             
-            // Filter out finalized table orders
-            tableOrders = tableOrders.filter(o => {
-                const s = (o.status || '').toLowerCase();
-                return s !== 'finalizado' && s !== 'finalized' && s !== 'fechada';
-            });
-            
-            // Clear old timers
-            Object.keys(timerIntervals).forEach(id => {
-                if (!tableOrders.find(o => o.id === id)) {
-                    clearInterval(timerIntervals[id]);
-                    delete timerIntervals[id];
-                }
-            });
-
             if (tableOrders.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-12"><i class="fas fa-chair text-5xl mb-4 block opacity-30"></i><p class="text-lg">Nenhuma comanda aberta</p></div>';
+                container.innerHTML = '<p class="col-span-3 text-center text-gray-500 py-12">Nenhuma comanda aberta</p>';
                 return;
             }
 
             container.innerHTML = tableOrders.map(order => {
                 const total = order.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
-                const isEntregue = (order.status || '').toLowerCase() === 'entregue' || (order.status || '').toLowerCase() === 'pago';
                 return `
                     <div onclick="openTableModal('${order.id}')" class="glass-card rounded-2xl p-4 cursor-pointer hover:scale-105 transition-transform border-2 ${order.status === 'aberta' ? 'border-[#00ffff]' : 'border-gray-600'}">
                         <div class="text-center mb-3">
                             <span class="text-3xl font-bold neon-cyan">MESA ${order.mesa}</span>
                         </div>
                         <p class="text-center text-gray-400 mb-2">${order.itens.length} itens</p>
-                        <p class="text-center font-bold text-xl neon-pink mb-2">R$ ${total.toFixed(2).replace('.', ',')}</p>
-                        <div class="text-center text-xs text-gray-500">
-                            <i class="fas fa-clock mr-1"></i>Criado: ${getCreatedAt(order.data)}
-                        </div>
-                        <div class="text-center">
-                            <span class="text-xs font-mono ${isEntregue ? 'text-green-400' : 'text-yellow-400'}" id="timer-${order.id}">
-                                <i class="fas ${isEntregue ? 'fa-check-circle' : 'fa-hourglass-half'} mr-1"></i>
-                                ${isEntregue ? 'Finalizada' : formatElapsedTime(order.data)}
-                            </span>
-                        </div>
+                        <p class="text-center font-bold text-xl neon-pink">R$ ${total.toFixed(2).replace('.', ',')}</p>
                     </div>
                 `;
             }).join('');
-
-            // Start timers (only for open tables)
-            tableOrders.forEach(order => {
-                const isEntregue = (order.status || '').toLowerCase() === 'entregue' || (order.status || '').toLowerCase() === 'pago';
-                if (isEntregue) return; // Don't start timer for finalized
-                if (timerIntervals[order.id]) clearInterval(timerIntervals[order.id]);
-                timerIntervals[order.id] = setInterval(() => {
-                    const el = document.getElementById(`timer-${order.id}`);
-                    if (el) el.innerHTML = `<i class="fas fa-hourglass-half mr-1"></i>${formatElapsedTime(order.data)}`;
-                }, 1000);
-            });
         }
 
         function openOrderModal(orderId) {
@@ -774,10 +656,6 @@
             if (!currentOrder) return;
 
             if (newStatus === 'finalizado') {
-                // CONFIRMAÇÃO antes de finalizar
-                if (!confirm(`⚠️ Tem certeza que deseja FINALIZAR este pedido?\n\nPedido: ${currentOrder.id}\nCliente: ${currentOrder.cliente?.nome || 'N/A'}\nTotal: R$ ${(currentOrder.total || 0).toFixed(2).replace('.', ',')}\n\nEsta ação não pode ser desfeita.`)) {
-                    return;
-                }
                 await finalizeDeliveryOrder(currentOrder);
                 return;
             }
@@ -789,36 +667,6 @@
                     window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id),
                     currentOrder
                 );
-            }
-            
-            // Quando pedido for ENTREGUE, remover do Firebase para não reaparecer
-            if (newStatus === 'entregue') {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                if (window.firebaseDB && window.firebaseDB.remove) {
-                    try {
-                        // Salvar no historico antes de remover
-                        const sale = {
-                            id: currentOrder.id,
-                            tipo: 'delivery',
-                            cliente: currentOrder.cliente,
-                            itens: currentOrder.itens,
-                            pagamento: currentOrder.pagamento,
-                            total: currentOrder.total,
-                            statusFinal: 'entregue',
-                            dataPedido: currentOrder.data,
-                            dataEntrega: new Date().toISOString()
-                        };
-                        if (window.firebaseDB.push) {
-                            await window.firebaseDB.push(
-                                window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
-                                sale
-                            );
-                        }
-                        await window.firebaseDB.remove(
-                            window.firebaseDB.ref(window.firebaseDB.db, 'pedidos/' + currentOrder.id)
-                        );
-                    } catch(e) { console.error('Erro ao arquivar pedido entregue:', e); }
-                }
             }
             
             renderAllOrders();
@@ -957,59 +805,28 @@
             renderTableOrders();
         }
 
-        async function closeTableOrder() {
+        function closeTableOrder() {
             if (!currentTableOrder) return;
             
             const total = currentTableOrder.itens.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             
-            // CONFIRMAÇÃO ANTES DE FINALIZAR (evita cliques acidentais)
-            if (!confirm(`⚠️ CONFIRMAR FECHAMENTO DE COMANDA\n\nMesa: ${currentTableOrder.mesa}\nItens: ${currentTableOrder.itens.length}\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}\n\nDeseja realmente finalizar esta comanda?`)) {
-                return;
-            }
-            
-            const orderId = currentTableOrder.id;
-            
-            const venda = {
-                id: 'mesa_' + orderId + '_' + Date.now(),
+            orders.push({
+                id: currentTableOrder.id,
                 tipo: 'mesa',
                 mesa: currentTableOrder.mesa,
                 cliente: { nome: `Mesa ${currentTableOrder.mesa}`, telefone: '-', endereco: '-' },
                 itens: [...currentTableOrder.itens],
                 pagamento: 'presencial',
                 total: total,
-                status: 'finalizado',
-                dataCriacao: currentTableOrder.data,
-                dataFinalizacao: new Date().toISOString(),
+                status: 'pago',
                 data: new Date().toISOString()
-            };
+            });
             
-            // Salvar no histórico de vendas
-            if (window.firebaseDB?.push) {
-                try {
-                    await window.firebaseDB.push(
-                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
-                        venda
-                    );
-                    // REMOVER do Firebase para não reaparecer
-                    await window.firebaseDB.remove(
-                        window.firebaseDB.ref(window.firebaseDB.db, 'pedidos_mesa/' + orderId)
-                    );
-                } catch(e) { console.error('Erro ao salvar venda mesa:', e); }
-            }
-            
-            // REMOVER da lista local de comandas abertas
-            tableOrders = tableOrders.filter(o => o.id !== orderId);
-            
-            // PARAR cronômetro
-            if (timerIntervals[orderId]) {
-                clearInterval(timerIntervals[orderId]);
-                delete timerIntervals[orderId];
-            }
+            tableOrders = tableOrders.filter(o => o.id !== currentTableOrder.id);
             
             renderAllOrders();
             updateDailySummary();
             closeTableModal();
-            showToast('Comanda finalizada com sucesso!');
         }
 
         // Quick Sale (Balcão) Functions
@@ -1095,7 +912,7 @@
             renderQuickSaleItems();
         }
 
-        async function finishQuickSale() {
+        function finishQuickSale() {
             if (quickSaleItems.length === 0) {
                 alert('Adicione pelo menos um item!');
                 return;
@@ -1103,39 +920,23 @@
             
             const total = quickSaleItems.reduce((sum, i) => sum + (i.preco * i.quantidade), 0);
             
-            // CONFIRMAÇÃO para evitar clique acidental
-            if (!confirm(`⚠️ Finalizar venda de balcão?\n\n${quickSaleItems.length} item(ns)\nTotal: R$ ${total.toFixed(2).replace('.', ',')}`)) {
-                return;
-            }
-            
-            // Salvar no histórico de vendas (Firebase)
-            const venda = {
+            orders.push({
                 id: 'BALCAO_' + Date.now(),
                 tipo: 'balcao',
                 cliente: { nome: 'Balcão', telefone: '-', endereco: '-' },
                 itens: [...quickSaleItems],
                 pagamento: 'presencial',
                 total: total,
-                status: 'finalizado',
-                dataFinalizacao: new Date().toISOString(),
+                status: 'pago',
                 data: new Date().toISOString()
-            };
+            });
             
-            if (window.firebaseDB?.push) {
-                try {
-                    await window.firebaseDB.push(
-                        window.firebaseDB.ref(window.firebaseDB.db, 'vendas'),
-                        venda
-                    );
-                } catch(e) { console.error('Erro ao salvar venda balcão:', e); }
-            }
-            
-            // NÃO adiciona na lista de pedidos abertos
             quickSaleItems = [];
             renderQuickSaleItems();
+            renderAllOrders();
             updateDailySummary();
             
-            alert('✅ Venda de balcão finalizada com sucesso!');
+            alert('Venda finalizada com sucesso!');
         }
 
         function updateDailySummary() {
