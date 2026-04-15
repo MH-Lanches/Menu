@@ -616,7 +616,7 @@
                         </label>
                         <label class="flex items-center gap-2 p-3 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700">
                             <input type="radio" name="prodTipo" value="pastel" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
-                            <span>🥟 Pastel (Especial)</span>
+                            <span>🔀 Multi-Sabor (Especial)</span>
                         </label>
                     </div>
                 </div>
@@ -695,7 +695,7 @@
                         </button>
                     </div>
                     <div id="saboresList" class="space-y-2"></div>
-                    <p class="text-xs text-gray-400 mt-2">Para pizza: cliente escolhe 2 metades. Para pastel: até 5 sabores.</p>
+                    <p class="text-xs text-gray-400 mt-2">Pizza: cliente escolhe 2 metades. Multi-Sabor: cliente escolhe até X sabores (configure abaixo).</p>
                 </div>
 
                 <!-- Opcionais -->
@@ -1177,8 +1177,8 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="moverCategoria(${idx}, -1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-up"></i></button>
-                            <button onclick="moverCategoria(${idx}, 1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-down"></i></button>
+                            <button onclick="moverCategoria(${idx}, -1)" class="p-2 hover:bg-gray-700 rounded-lg" title="Mover para esquerda"><i class="fas fa-arrow-left"></i></button>
+                            <button onclick="moverCategoria(${idx}, 1)" class="p-2 hover:bg-gray-700 rounded-lg" title="Mover para direita"><i class="fas fa-arrow-right"></i></button>
                             <button onclick="editCategoria('${c.id}')" class="p-2 hover:bg-blue-700 rounded-lg"><i class="fas fa-edit"></i></button>
                             <button onclick="deleteCategoria('${c.id}')" class="p-2 hover:bg-red-700 rounded-lg"><i class="fas fa-trash"></i></button>
                         </div>
@@ -1233,14 +1233,18 @@
 
         function populateCategoriaSelect() {
             const select = document.getElementById('prodCategoria');
-            if (!select) return;
-            // Garante que categorias tem dados
+            if (!select) {
+                console.warn('Select prodCategoria não encontrado');
+                return;
+            }
             const cats = categorias && categorias.length > 0 ? categorias : [];
-            select.innerHTML = '<option value="">Selecione...</option>' + 
-                cats.map(c => {
-                    const nome = typeof c === 'string' ? c : (c.nome || c.name || 'Categoria');
-                    return `<option value="${nome}">${nome}</option>`;
-                }).join('');
+            console.log('Populando categorias:', cats.length, cats);
+            let options = '<option value="">-- Selecione uma categoria --</option>';
+            cats.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)).forEach(c => {
+                const nome = typeof c === 'string' ? c : (c.nome || c.name || 'Categoria');
+                options += `<option value="${nome}">${nome}</option>`;
+            });
+            select.innerHTML = options;
         }
 
         function closeProductModal() {
@@ -1474,13 +1478,15 @@
         }
 
         async function toggleProdutoStatus(id) {
-            const prod = produtos.find(p => p.id === id);
+            const prod = produtos.find(p => String(p.id) === String(id));
             if (prod) {
                 prod.pausado = !prod.pausado;
                 const firebase = window.firebaseDB;
-                await firebase.set(firebase.ref(firebase.db, 'produtos/' + id), prod);
+                await firebase.set(firebase.ref(firebase.db, 'produtos/' + prod.id), prod);
                 renderProdutos();
                 showToast(prod.pausado ? 'Produto pausado' : 'Produto ativado');
+            } else {
+                console.warn('Produto não encontrado:', id, 'IDs disponíveis:', produtos.map(p => p.id));
             }
         }
 

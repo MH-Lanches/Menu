@@ -1600,11 +1600,12 @@
             // Adicionais selecionados
             const opcInputs = document.querySelectorAll('.addon-checkbox:checked');
             let extrasPreco = 0;
-            const limit = customizingProduct.gratisLimit || 0;
+            const limit = customizingProduct.opcionalMaxGratis || customizingProduct.gratisLimit || 0;
             
             opcInputs.forEach((input, index) => {
-                if (index >= limit) {
-                    extrasPreco += parseFloat(input.dataset.preco) || 0;
+                const preco = parseFloat(input.dataset.preco) || 0;
+                if (index >= limit && preco > 0) {
+                    extrasPreco += preco;
                 }
             });
             
@@ -1627,35 +1628,42 @@
             
             // Sabores (se aplicável)
             if (isPizza) {
-                const pizzas = produtos.filter(p => p.categoria === 'Pizzas' || p.tipo === 'pizza');
+                // Usar sabores cadastrados no próprio produto
+                const saboresPizza = produto.sabores && produto.sabores.length > 0 
+                    ? produto.sabores.filter(s => !s.pausado)
+                    : [{ nome: produto.nome }];
                 content += `
                     <div class="space-y-4 mb-6">
-                        <p class="text-gray-300 font-bold mb-2">🍕 Sabores da Pizza (Meia a Meia):</p>
+                        <p class="text-gray-300 font-bold mb-2">🍕 Escolha os sabores:</p>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Metade 1 (Obrigatório):</label>
                             <select id="sabor1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
-                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
+                                ${saboresPizza.map(s => `<option value="${s.nome}">${s.nome}</option>`).join('')}
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1">Metade 2 (Opcional - Inteira se vazio):</label>
                             <select id="sabor2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none">
                                 <option value="">--- Pizza Inteira ---</option>
-                                ${pizzas.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('')}
+                                ${saboresPizza.map(s => `<option value="${s.nome}">${s.nome}</option>`).join('')}
                             </select>
                         </div>
                     </div>
                 `;
             } else if (isPastel) {
-                const pasteis = produtos.filter(p => p.categoria === 'Pastéis' || p.tipo === 'pastel');
+                // Usar sabores do próprio produto (lista personalizada)
+                const saboresDisponiveis = produto.sabores && produto.sabores.length > 0 
+                    ? produto.sabores 
+                    : [{ nome: produto.nome, preco: 0 }];
+                const maxSabores = produto.maxSabores || 5;
                 content += `
                     <div class="space-y-4 mb-6">
-                        <p class="text-gray-300 font-bold mb-2">🥟 Escolha até 5 sabores para seu Pastel Especial:</p>
+                        <p class="text-gray-300 font-bold mb-2">Escolha até ${maxSabores} sabores:</p>
                         <div class="grid grid-cols-2 gap-2">
-                            ${pasteis.map(p => `
+                            ${saboresDisponiveis.filter(s => !s.pausado).map(s => `
                                 <label class="glass-card p-3 rounded-lg cursor-pointer hover:border-neon-pink transition-colors flex items-center gap-2">
-                                    <input type="checkbox" value="${p.nome}" class="pastel-sabor accent-[#ff00ff]">
-                                    <span class="text-sm">${p.nome}</span>
+                                    <input type="checkbox" value="${s.nome}" class="pastel-sabor accent-[#ff00ff]">
+                                    <span class="text-sm">${s.nome}</span>
                                 </label>
                             `).join('')}
                         </div>
@@ -1663,30 +1671,60 @@
                 `;
             }
 
-            // Opcionais/Adicionais
+            // Opcionais (itens sem custo extra)
             if (produto.opcionais && produto.opcionais.length > 0) {
-                const limite = produto.gratisLimit || 0;
+                const limite = produto.opcionalMaxGratis || 0;
                 content += `
                     <div class="mb-6">
-                        <p class="text-gray-300 font-bold mb-1">➕ Adicionais / Opcionais:</p>
-                        <p class="text-xs text-neon-cyan mb-3">Você tem direito a até ${limite} adicionais grátis/inclusos!</p>
+                        <p class="text-gray-300 font-bold mb-1">📋 Opcionais:</p>
+                        ${limite > 0 ? `<p class="text-xs text-neon-cyan mb-3">Você tem direito a até ${limite} opcionais grátis!</p>` : ''}
                         <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
                             ${produto.opcionais.map(op => {
                                 if (op.pausado) {
                                     return `
                                         <div class="flex justify-between items-center bg-gray-800/40 p-3 rounded-lg opacity-50 cursor-not-allowed">
                                             <span class="text-sm line-through">${op.nome}</span>
-                                            <span class="text-xs text-red-500 font-bold">Pausado/Falta</span>
+                                            <span class="text-xs text-red-500 font-bold">Indisponível</span>
                                         </div>
                                     `;
                                 }
                                 return `
                                     <label class="flex justify-between items-center bg-gray-800 p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
                                         <div class="flex items-center gap-2">
-                                            <input type="checkbox" data-preco="${op.preco}" value="${op.nome}" onchange="updateCustomizeTotal()" class="addon-checkbox accent-[#ff00ff] w-4 h-4">
+                                            <input type="checkbox" data-preco="${op.preco || 0}" value="${op.nome}" onchange="updateCustomizeTotal()" class="addon-checkbox accent-[#ff00ff] w-4 h-4">
                                             <span class="text-sm">${op.nome}</span>
                                         </div>
-                                        <span class="text-xs font-bold text-neon-pink">+ R$ ${op.preco.toFixed(2).replace('.', ',')}</span>
+                                        <span class="text-xs font-bold ${(op.preco || 0) > 0 ? 'text-neon-pink' : 'text-green-400'}">${(op.preco || 0) > 0 ? '+ R$ ' + op.preco.toFixed(2).replace('.', ',') : 'Grátis'}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Adicionais (itens com custo extra)
+            if (produto.adicionais && produto.adicionais.length > 0) {
+                content += `
+                    <div class="mb-6">
+                        <p class="text-gray-300 font-bold mb-1">➕ Adicionais:</p>
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                            ${produto.adicionais.map(ad => {
+                                if (ad.pausado) {
+                                    return `
+                                        <div class="flex justify-between items-center bg-gray-800/40 p-3 rounded-lg opacity-50 cursor-not-allowed">
+                                            <span class="text-sm line-through">${ad.nome}</span>
+                                            <span class="text-xs text-red-500 font-bold">Indisponível</span>
+                                        </div>
+                                    `;
+                                }
+                                return `
+                                    <label class="flex justify-between items-center bg-gray-800 p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" data-preco="${ad.preco || 0}" value="${ad.nome}" onchange="updateCustomizeTotal()" class="addon-checkbox accent-[#ff00ff] w-4 h-4">
+                                            <span class="text-sm">${ad.nome}</span>
+                                        </div>
+                                        <span class="text-xs font-bold text-neon-pink">+ R$ ${(ad.preco || 0).toFixed(2).replace('.', ',')}</span>
                                     </label>
                                 `;
                             }).join('')}
@@ -1717,12 +1755,14 @@
         function confirmCustomize(evt) {
             let customizacao = '';
             
-            // Tratar sabores
+            // Tratar sabores - Pizza (meio a meio)
             if (customizingProduct.tipo === 'pizza' || customizingProduct.meiaMeia) {
                 const sabor1 = document.getElementById('sabor1').value;
                 const sabor2 = document.getElementById('sabor2').value;
                 customizacao += `[Pizza] ${sabor2 ? `${sabor1} e ${sabor2}` : sabor1}. `;
-            } else if (customizingProduct.tipo === 'pastel' || customizingProduct.multiSabor) {
+            } 
+            // Tratar sabores - Multi-sabor (genérico: pastel, açaí, etc)
+            else if (customizingProduct.tipo === 'pastel' || customizingProduct.multiSabor) {
                 const sabores = Array.from(document.querySelectorAll('.pastel-sabor:checked')).map(cb => cb.value);
                 if (sabores.length === 0) {
                     alert('Selecione pelo menos um sabor!');
@@ -1731,24 +1771,25 @@
                 customizacao += `[Sabores] ${sabores.join(', ')}. `;
             }
 
-            // Tratar adicionais
-            const opcs = Array.from(document.querySelectorAll('.addon-checkbox:checked'));
-            if (opcs.length > 0) {
-                customizacao += `[Opcionais] ${opcs.map(i => i.value).join(', ')}. `;
+            // Tratar opcionais e adicionais juntos (todos usam .addon-checkbox)
+            const todosExtras = Array.from(document.querySelectorAll('.addon-checkbox:checked'));
+            if (todosExtras.length > 0) {
+                customizacao += `[Extras] ${todosExtras.map(i => i.value).join(', ')}. `;
             }
 
             // Tratar observação
-            const obs = document.getElementById('customObs').value.trim();
+            const obs = document.getElementById('customObs')?.value?.trim();
             if (obs) {
                 customizacao += `[Obs: ${obs}]`;
             }
 
             // Calcular preço final
             let total = customizingProduct.preco;
-            const limit = customizingProduct.gratisLimit || 0;
-            opcs.forEach((item, idx) => {
-                if (idx >= limit) {
-                    total += parseFloat(item.dataset.preco) || 0;
+            const limit = customizingProduct.opcionalMaxGratis || customizingProduct.gratisLimit || 0;
+            todosExtras.forEach((item, idx) => {
+                const preco = parseFloat(item.dataset.preco) || 0;
+                if (idx >= limit && preco > 0) {
+                    total += preco;
                 }
             });
 
