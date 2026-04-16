@@ -777,7 +777,8 @@
 
             container.innerHTML = filtrados.map(prod => {
                 const isPausado = prod.pausado;
-                const isPersonalizavel = ['pizza', 'pastel', 'meioameio', 'multiescolha'].includes(prod.tipo);
+                const hasCustomCats = Array.isArray(prod.customCategories) && prod.customCategories.length > 0;
+                const isPersonalizavel = ['pizza', 'pastel', 'meioameio', 'multiescolha'].includes(prod.tipo) || hasCustomCats;
                 
                 // Tratar imagens
                 let imagens = [];
@@ -1637,6 +1638,17 @@
             const adcMaxGratis = parseInt(customizingProduct.adicionalMaxGratis) || 0;
             subtotal += calcModuleExtra(adicionalQuantities, adcAtivos, adcMaxGratis);
             
+            // Categorias Dinâmicas (Multi-escolha)
+            if (Array.isArray(customizingProduct.customCategories)) {
+                customizingProduct.customCategories.forEach((cat, catIdx) => {
+                    const itensAtivos = (cat.itens || []).filter(i => !i.pausado && i.nome && i.nome.trim());
+                    const maxGratis = parseInt(cat.maxGratis) || 0;
+                    // Coleta quantidades desta categoria
+                    const catQtys = itensAtivos.map((item, itemIdx) => customCatQuantities[`${catIdx}_${itemIdx}`] || 0);
+                    subtotal += calcModuleExtra(catQtys, itensAtivos, maxGratis);
+                });
+            }
+            
             const btn = document.getElementById('btnConfirmCustom');
             if (btn) {
                 btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho — R$ ${subtotal.toFixed(2).replace('.', ',')}`;
@@ -1660,6 +1672,8 @@
             saborQuantities = saboresAtivos.map(() => 0);
             opcionalQuantities = opcAtivos.map(() => 0);
             adicionalQuantities = adcAtivos.map(() => 0);
+            // Resetar categorias dinâmicas
+            customCatQuantities = {};
         }
 
         function changeSaborQty(idx, delta) {
@@ -1702,6 +1716,65 @@
             document.getElementById('adicionalQty' + idx).textContent = newVal;
             updateAdicionalCounter();
             updateCustomizeTotal();
+        }
+
+        // ═══════════════════════════════════════════════
+        // CATEGORIAS DINÂMICAS (MULTI-ESCOLHA)
+        // ═══════════════════════════════════════════════
+        let customCatQuantities = {}; // { "catIdx_itemIdx": qty }
+
+        function changeCatQty(catIdx, itemIdx, delta) {
+            if (!customizingProduct) return;
+            const key = `${catIdx}_${itemIdx}`;
+            const currentQty = customCatQuantities[key] || 0;
+            const cat = customizingProduct.customCategories[catIdx];
+            if (!cat) return;
+            const itensAtivos = (cat.itens || []).filter(i => !i.pausado && i.nome && i.nome.trim());
+            const item = itensAtivos[itemIdx];
+            if (!item) return;
+            const maxRepeat = parseInt(item.maxPermitido) || 1;
+            const newVal = currentQty + delta;
+            if (newVal < 0 || newVal > maxRepeat) return;
+            customCatQuantities[key] = newVal;
+            document.getElementById('catQty' + key).textContent = newVal;
+            updateCatCounter(catIdx);
+            updateCustomizeTotal();
+        }
+
+        function updateCatCounter(catIdx) {
+            if (!customizingProduct || !customizingProduct.customCategories) return;
+            const cat = customizingProduct.customCategories[catIdx];
+            if (!cat) return;
+            const itensAtivos = (cat.itens || []).filter(i => !i.pausado && i.nome && i.nome.trim());
+            let totalSelected = 0;
+            itensAtivos.forEach((item, itemIdx) => {
+                totalSelected += customCatQuantities[`${catIdx}_${itemIdx}`] || 0;
+            });
+            const maxGratis = parseInt(cat.maxGratis) || 0;
+            const counterEl = document.getElementById('catCounter' + catIdx);
+            const warningEl = document.getElementById('catWarning' + catIdx);
+            if (!counterEl) return;
+            
+            if (totalSelected === 0) {
+                counterEl.textContent = '0 selecionados';
+                counterEl.className = counterEl.className.replace(/bg-\w+-500\/20/g, 'bg-green-500/20').replace(/text-\w+-400/g, 'text-green-400').replace(/border-\w+-500\/50/g, 'border-green-500/50');
+            } else if (totalSelected <= maxGratis) {
+                counterEl.textContent = `${totalSelected} / ${maxGratis} grátis`;
+                counterEl.className = counterEl.className.replace(/bg-\w+-500\/20/g, 'bg-green-500/20').replace(/text-\w+-400/g, 'text-green-400').replace(/border-\w+-500\/50/g, 'border-green-500/50');
+            } else {
+                const extras = totalSelected - maxGratis;
+                counterEl.textContent = `${totalSelected} (${extras} cobrado)`;
+                counterEl.className = counterEl.className.replace(/bg-\w+-500\/20/g, 'bg-yellow-500/20').replace(/text-\w+-400/g, 'text-yellow-400').replace(/border-\w+-500\/50/g, 'border-yellow-500/50');
+            }
+            
+            if (warningEl) {
+                if (totalSelected > maxGratis && maxGratis > 0) {
+                    warningEl.classList.remove('hidden');
+                    warningEl.textContent = `⚠️ ${totalSelected - maxGratis} item(ns) extra(s) será(ão) cobrado(s)!`;
+                } else {
+                    warningEl.classList.add('hidden');
+                }
+            }
         }
 
         // ═══════════════════════════════════════════════
@@ -1988,6 +2061,58 @@
                 }
             }
             
+            // ═══════════════════════════════════════════════
+            // CATEGORIAS DINÂMICAS (MULTI-ESCOLHA)
+            // ═══════════════════════════════════════════════
+            if (isMulti && Array.isArray(produto.customCategories) && produto.customCategories.length > 0) {
+                produto.customCategories.forEach((cat, catIdx) => {
+                    const itensAtivos = (cat.itens || []).filter(i => !i.pausado && i.nome && i.nome.trim());
+                    if (itensAtivos.length === 0) return;
+                    const maxGratis = parseInt(cat.maxGratis) || 0;
+                    const catName = cat.nome || 'Categoria';
+                    const colors = [
+                        { from: 'from-purple-900/20', border: 'border-purple-500/20', hover: 'hover:border-purple-500/30', text: 'text-purple-400', bg: 'bg-purple-500/20', borderBadge: 'border-purple-500/50' },
+                        { from: 'from-cyan-900/20', border: 'border-cyan-500/20', hover: 'hover:border-cyan-500/30', text: 'text-cyan-400', bg: 'bg-cyan-500/20', borderBadge: 'border-cyan-500/50' },
+                        { from: 'from-pink-900/20', border: 'border-pink-500/20', hover: 'hover:border-pink-500/30', text: 'text-pink-400', bg: 'bg-pink-500/20', borderBadge: 'border-pink-500/50' },
+                        { from: 'from-orange-900/20', border: 'border-orange-500/20', hover: 'hover:border-orange-500/30', text: 'text-orange-400', bg: 'bg-orange-500/20', borderBadge: 'border-orange-500/50' },
+                        { from: 'from-green-900/20', border: 'border-green-500/20', hover: 'hover:border-green-500/30', text: 'text-green-400', bg: 'bg-green-500/20', borderBadge: 'border-green-500/50' },
+                    ];
+                    const color = colors[catIdx % colors.length];
+                    
+                    content += `
+                        <div class="mb-8 p-5 bg-gradient-to-r ${color.from} to-transparent rounded-2xl border ${color.border}">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-xl text-white font-extrabold tracking-wide">${catName.toUpperCase()}</p>
+                                    <p class="text-xs text-gray-400">Escolha a quantidade de cada item</p>
+                                </div>
+                                <div id="catCounter${catIdx}" class="px-4 py-2 rounded-full ${color.bg} border ${color.borderBadge} ${color.text} text-sm font-bold">
+                                    0 selecionados
+                                </div>
+                            </div>
+                            ${maxGratis > 0 ? `<p class="text-sm text-green-400 mb-3">🎁 Até <strong>${maxGratis}</strong> unidades GRÁTIS — extras cobram o preço individual</p>` : '<p class="text-xs text-gray-500 mb-3">Cada item cobra seu preço individual</p>'}
+                            <div id="catWarning${catIdx}" class="hidden text-xs text-yellow-400 font-semibold mb-2 p-2 bg-yellow-500/10 rounded-lg"></div>
+                            <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                                ${itensAtivos.map((item, itemIdx) => `
+                                    <div class="flex justify-between items-center bg-gray-800/80 p-3 rounded-xl border border-transparent ${color.hover} transition-all" data-catidx="${catIdx}" data-itemidx="${itemIdx}">
+                                        <div class="flex-1">
+                                            <span class="text-sm font-semibold text-white">${item.nome}</span>
+                                            ${item.preco > 0 ? `<span class="text-xs font-bold text-neon-pink ml-2">R$ ${item.preco.toFixed(2).replace('.', ',')}</span>` : ''}
+                                            <span class="text-xs text-gray-500 ml-2">(máx ${item.maxPermitido || 1}x)</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" onclick="changeCatQty(${catIdx}, ${itemIdx}, -1)" class="w-8 h-8 rounded-lg bg-gray-700 hover:bg-red-600 text-white font-bold text-lg flex items-center justify-center transition-colors">−</button>
+                                            <span id="catQty${catIdx}_${itemIdx}" class="w-8 text-center text-white font-bold text-lg">0</span>
+                                            <button type="button" onclick="changeCatQty(${catIdx}, ${itemIdx}, 1)" class="w-8 h-8 rounded-lg bg-gray-700 hover:bg-green-600 text-white font-bold text-lg flex items-center justify-center transition-colors">+</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
             // Observações
             content += `
                 <div class="mb-6 p-4 bg-gray-900/40 rounded-2xl border border-gray-700/50">
@@ -2086,6 +2211,26 @@
                     }
                 });
                 customizacao += ` | Adicionais: ${adcTextos.join(', ')}`;
+            }
+            
+            // Categorias Dinâmicas (Multi-escolha)
+            if (Array.isArray(customizingProduct.customCategories)) {
+                customizingProduct.customCategories.forEach((cat, catIdx) => {
+                    const itensAtivos = (cat.itens || []).filter(i => !i.pausado && i.nome && i.nome.trim());
+                    const maxGratis = parseInt(cat.maxGratis) || 0;
+                    const catQtys = itensAtivos.map((item, itemIdx) => customCatQuantities[`${catIdx}_${itemIdx}`] || 0);
+                    const totalCat = catQtys.reduce((a, b) => a + b, 0);
+                    if (totalCat > 0) {
+                        total += calcModuleExtra(catQtys, itensAtivos, maxGratis);
+                        const catTextos = [];
+                        catQtys.forEach((qty, idx) => {
+                            if (qty > 0) {
+                                catTextos.push(`${itensAtivos[idx].nome}${qty > 1 ? ' (' + qty + 'x)' : ''}`);
+                            }
+                        });
+                        customizacao += ` | ${cat.nome}: ${catTextos.join(', ')}`;
+                    }
+                });
             }
             
             // Observação
