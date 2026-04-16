@@ -744,8 +744,12 @@
                         <div id="opcionaisList" class="space-y-2 mb-3"></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 p-3 bg-gray-800/50 rounded-lg">
                             <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">Máximo de opcionais GRÁTIS</label>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de opcionais GRÁTIS</label>
                                 <input type="number" id="opcionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">📏 Máximo de opcionais PERMITIDOS</label>
+                                <input type="number" id="opcionalMaxTotal" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400">💡 Itens além do limite grátis serão cobrados pelo preço individual.</p>
@@ -768,9 +772,19 @@
                         </button>
                     </div>
                     <div id="adicionaisSection" class="hidden">
+                        <div class="flex gap-4 mb-3">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de adicionais GRÁTIS</label>
+                                <input type="number" id="adicionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">📏 Máximo de adicionais PERMITIDOS</label>
+                                <input type="number" id="adicionalMaxTotal" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                            </div>
+                        </div>
                         <div id="adicionaisList" class="space-y-2"></div>
                         <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                            <p class="text-xs text-gray-400">💡 Cada adicional tem seu preço. Todos são cobrados. ON = disponível, OFF = indisponível.</p>
+                            <p class="text-xs text-gray-400">💡 Os primeiros X adicionais são grátis (definido acima). Acima disso, cobra o preço individual de cada item. ON = disponível, OFF = indisponível.</p>
                         </div>
                     </div>
                 </div>
@@ -1533,8 +1547,11 @@
                 temOpcionais: hasOpcionais,
                 opcionais: hasOpcionais ? currentOpcionais.filter(o => o.nome.trim()) : [],
                 opcionalMaxGratis: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxGratis').value) || 0) : 0,
+                opcionalMaxTotal: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxTotal').value) || 0) : 0,
                 temAdicionais: hasAdicionais,
-                adicionais: hasAdicionais ? currentAdicionais.filter(a => a.nome.trim()) : []
+                adicionais: hasAdicionais ? currentAdicionais.filter(a => a.nome.trim()) : [],
+                adicionalMaxGratis: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxGratis').value) || 0) : 0,
+                adicionalMaxTotal: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxTotal').value) || 0) : 0
             };
             
             const firebase = window.firebaseDB;
@@ -1598,10 +1615,13 @@
                     pausado: o.pausado || false
                 })) : []) : [];
                 document.getElementById('opcionalMaxGratis').value = prod.opcionalMaxGratis || 0;
+                document.getElementById('opcionalMaxTotal').value = prod.opcionalMaxTotal || 0;
                 
                 // Adicionais - verificar flag
                 const hasAdicionais = prod.temAdicionais || (Array.isArray(prod.adicionais) && prod.adicionais.length > 0);
                 document.getElementById('moduloAdicionaisAtivo').checked = hasAdicionais;
+                document.getElementById('adicionalMaxGratis').value = prod.adicionalMaxGratis || 0;
+                document.getElementById('adicionalMaxTotal').value = prod.adicionalMaxTotal || 0;
                 currentAdicionais = hasAdicionais ? (Array.isArray(prod.adicionais) ? prod.adicionais.map(a => ({
                     id: a.id || Date.now() + Math.random(),
                     nome: a.nome || '',

@@ -1644,9 +1644,14 @@
                 }
             });
             
-            // Adicionais (todos cobrados)
+            // Adicionais — RESPEITA LIMITE GRÁTIS
             const adcInputs = document.querySelectorAll('.adicional-checkbox:checked');
-            adcInputs.forEach(input => { subtotal += parseFloat(input.dataset.preco) || 0; });
+            const adcMaxGratis = customizingProduct.adicionalMaxGratis || 0;
+            adcInputs.forEach((input, index) => {
+                if (index >= adcMaxGratis) {
+                    subtotal += parseFloat(input.dataset.preco) || 0;
+                }
+            });
             
             const btn = document.getElementById('btnConfirmCustom');
             if (btn) {
@@ -1706,27 +1711,109 @@
             const counter = document.getElementById('opcionalCounter');
             const warningEl = document.getElementById('opcionalWarning');
             const maxGratis = customizingProduct.opcionalMaxGratis || 0;
+            const maxTotal = customizingProduct.opcionalMaxTotal || 0;
             const count = checks.length;
             
-            if (counter && maxGratis > 0) {
-                if (count <= maxGratis) {
+            if (counter) {
+                if (maxGratis > 0 && count <= maxGratis) {
                     counter.textContent = `${count} / ${maxGratis} grátis`;
                     counter.className = 'px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold';
-                } else {
+                } else if (maxGratis > 0 && count > maxGratis && (maxTotal === 0 || count <= maxTotal)) {
                     const extras = count - maxGratis;
-                    counter.textContent = `${count} selecionados (${extras} cobrado)`;
+                    counter.textContent = `${count} / ${maxTotal > 0 ? maxTotal : '∞'} (${extras} cobrado)`;
                     counter.className = 'px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-sm font-bold';
+                } else if (maxTotal > 0 && count >= maxTotal) {
+                    counter.textContent = `${count} / ${maxTotal} (LIMITE)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 text-sm font-bold';
+                } else {
+                    counter.textContent = `${count} selecionados`;
+                    counter.className = 'px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold';
                 }
             }
             
-            if (warningEl && maxGratis > 0) {
-                if (count > maxGratis) {
-                    warningEl.textContent = `⚠️ Próximos opcionais serão cobrados!`;
+            // Bloquear seleção se atingiu maxTotal
+            if (maxTotal > 0 && count >= maxTotal) {
+                document.querySelectorAll('.opcional-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                    cb.closest('label').classList.add('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `🚫 Limite máximo de ${maxTotal} opcionais atingido!`;
+                    warningEl.className = 'text-xs text-red-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else if (maxGratis > 0 && count > maxGratis) {
+                document.querySelectorAll('.opcional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `⚠️ Próximos opcionais serão cobrados pelo preço individual!`;
                     warningEl.className = 'text-xs text-yellow-400 font-semibold mt-1 animate-pulse';
                     warningEl.classList.remove('hidden');
-                } else {
-                    warningEl.classList.add('hidden');
                 }
+            } else {
+                document.querySelectorAll('.opcional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) warningEl.classList.add('hidden');
+            }
+        }
+
+        function updateAdicionalCounter() {
+            if (!customizingProduct) return;
+            const checks = document.querySelectorAll('.adicional-checkbox:checked');
+            const counter = document.getElementById('adicionalCounter');
+            const warningEl = document.getElementById('adicionalWarning');
+            const maxGratis = customizingProduct.adicionalMaxGratis || 0;
+            const maxTotal = customizingProduct.adicionalMaxTotal || 0;
+            const count = checks.length;
+            
+            if (counter) {
+                if (maxGratis > 0 && count <= maxGratis) {
+                    counter.textContent = `${count} / ${maxGratis} grátis`;
+                    counter.className = 'px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold';
+                } else if (maxGratis > 0 && count > maxGratis && (maxTotal === 0 || count <= maxTotal)) {
+                    const extras = count - maxGratis;
+                    counter.textContent = `${count} / ${maxTotal > 0 ? maxTotal : '∞'} (${extras} cobrado)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-sm font-bold';
+                } else if (maxTotal > 0 && count >= maxTotal) {
+                    counter.textContent = `${count} / ${maxTotal} (LIMITE)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 text-sm font-bold';
+                } else {
+                    counter.textContent = `${count} selecionados`;
+                    counter.className = 'px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold';
+                }
+            }
+            
+            // Bloquear seleção se atingiu maxTotal
+            if (maxTotal > 0 && count >= maxTotal) {
+                document.querySelectorAll('.adicional-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                    cb.closest('label').classList.add('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `🚫 Limite máximo de ${maxTotal} adicionais atingido!`;
+                    warningEl.className = 'text-xs text-red-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else if (maxGratis > 0 && count > maxGratis) {
+                document.querySelectorAll('.adicional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `⚠️ Próximos adicionais serão cobrados pelo preço individual!`;
+                    warningEl.className = 'text-xs text-yellow-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else {
+                document.querySelectorAll('.adicional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) warningEl.classList.add('hidden');
             }
         }
 
@@ -1810,6 +1897,7 @@
             if (produto.temOpcionais && produto.opcionais && produto.opcionais.length > 0) {
                 const opcAtivos = produto.opcionais.filter(o => !o.pausado && o.nome && o.nome.trim());
                 const opcMaxGratis = produto.opcionalMaxGratis || 0;
+                const opcMaxTotal = produto.opcionalMaxTotal || 0;
                 if (opcAtivos.length > 0) {
                     content += `
                         <div class="mb-8 p-5 bg-gradient-to-r from-pink-900/20 to-transparent rounded-2xl border border-pink-500/20">
@@ -1821,9 +1909,10 @@
                                         <p class="text-xs text-gray-400">Itens que podem acompanhar</p>
                                     </div>
                                 </div>
-                                ${opcMaxGratis > 0 ? `<div id="opcionalCounter" class="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold">0 / ${opcMaxGratis} grátis</div>` : ''}
+                                <div id="opcionalCounter" class="px-4 py-2 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold">0 selecionados</div>
                             </div>
-                            ${opcMaxGratis > 0 ? `<p class="text-sm text-pink-400 mb-1">🎁 Até <strong>${opcMaxGratis}</strong> opcionais GRÁTIS — extras cobrados pelo preço</p>` : `<p class="text-xs text-gray-500 mb-3">Cada opcional tem seu preço individual</p>`}
+                            ${opcMaxGratis > 0 ? `<p class="text-sm text-green-400 mb-1">🎁 Até <strong>${opcMaxGratis}</strong> opcionais GRÁTIS</p>` : ''}
+                            ${opcMaxTotal > 0 ? `<p class="text-xs text-gray-500 mb-3">Máximo de <strong>${opcMaxTotal}</strong> opcionais permitidos</p>` : ''}
                             <div id="opcionalWarning" class="hidden text-xs text-yellow-400 font-semibold mt-1"></div>
                             <div class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-3">
                                 ${opcAtivos.map(o => `
@@ -1844,6 +1933,8 @@
             // MÓDULO 3: ADICIONAIS
             if (produto.temAdicionais && produto.adicionais && produto.adicionais.length > 0) {
                 const adcAtivos = produto.adicionais.filter(a => !a.pausado && a.nome && a.nome.trim());
+                const adcMaxGratis = produto.adicionalMaxGratis || 0;
+                const adcMaxTotal = produto.adicionalMaxTotal || 0;
                 if (adcAtivos.length > 0) {
                     content += `
                         <div class="mb-8 p-5 bg-gradient-to-r from-blue-900/20 to-transparent rounded-2xl border border-cyan-500/20">
@@ -1854,12 +1945,17 @@
                                     <p class="text-xs text-gray-400">Extras que somam ao pedido</p>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500 mb-3">Todos os adicionais são cobrados pelo preço individual</p>
+                            ${adcMaxGratis > 0 ? `<p class="text-sm text-green-400 mb-1">🎁 Até ${adcMaxGratis} adicionais GRÁTIS</p>` : ''}
+                            ${adcMaxTotal > 0 ? `<p class="text-xs text-gray-500 mb-3">Máximo de ${adcMaxTotal} adicionais permitidos</p>` : '<p class="text-xs text-gray-500 mb-3">Cada adicional cobra seu preço individual</p>'}
+                            <div class="flex items-center gap-2 mb-3" id="adicionalCounterWrap">
+                                <span id="adicionalCounter" class="px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold">0 selecionados</span>
+                                <span id="adicionalWarning" class="text-xs"></span>
+                            </div>
                             <div class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-3">
                                 ${adcAtivos.map(a => `
                                     <label class="flex justify-between items-center bg-gray-800/80 p-4 rounded-xl cursor-pointer hover:bg-gray-700/80 transition-all border border-transparent hover:border-neon-cyan/40 group">
                                         <div class="flex items-center gap-3">
-                                            <input type="checkbox" data-preco="${a.preco || 0}" data-type="adicional" value="${a.nome}" onchange="updateCustomizeTotal()" class="adicional-checkbox accent-[#00ffff] w-5 h-5">
+                                            <input type="checkbox" data-preco="${a.preco || 0}" data-type="adicional" value="${a.nome}" onchange="updateAdicionalCounter(); updateCustomizeTotal()" class="adicional-checkbox accent-[#00ffff] w-5 h-5">
                                             <span class="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors">${a.nome}</span>
                                         </div>
                                         <span class="text-xs font-bold text-neon-cyan bg-cyan-500/10 px-2 py-1 rounded-lg">+ R$ ${a.preco.toFixed(2).replace('.', ',')}</span>
@@ -1887,6 +1983,9 @@
             
             document.getElementById('customizeContent').innerHTML = content;
             document.getElementById('customizeModal').classList.remove('hidden');
+            updateSaborCounter();
+            updateOpcionalCounter();
+            updateAdicionalCounter();
             updateCustomizeTotal();
         }
 
@@ -1963,11 +2062,18 @@
                 customizacao += ` | ✅ ${opcTextos.join(', ')}`;
             }
             
-            // Adicionais (todos cobrados)
+            // Adicionais — RESPEITA LIMITE GRÁTIS
             const adcs = Array.from(document.querySelectorAll('.adicional-checkbox:checked'));
+            const adcMaxGratis = customizingProduct.adicionalMaxGratis || 0;
             if (adcs.length > 0) {
-                customizacao += ` | ➕ ${adcs.map(i => i.value).join(', ')}`;
-                adcs.forEach(item => { total += parseFloat(item.dataset.preco) || 0; });
+                const adcTextos = adcs.map((item, idx) => {
+                    if (idx >= adcMaxGratis) {
+                        total += parseFloat(item.dataset.preco) || 0;
+                        return `${item.value} (+R$${parseFloat(item.dataset.preco || 0).toFixed(2)})`;
+                    }
+                    return item.value;
+                });
+                customizacao += ` | ➕ ${adcTextos.join(', ')}`;
             }
             
             // Observação
