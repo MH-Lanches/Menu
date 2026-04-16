@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">MH Lanches - Delivery</title>
+    <link id="siteFavicon" rel="icon" type="image/png" href="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff; }
+            50% { box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; }
+        }
+        @keyframes neonGlow {
+            0%, 100% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
+            50% { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; }
+        }
+        .neon-text {
+            animation: neonGlow 2s ease-in-out infinite;
+        }
+        .neon-border {
+            animation: neonPulse 2s ease-in-out infinite;
+        }
+        .glass {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+        }
+        .glass-card {
+            background: rgba(30, 30, 50, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .neon-pink {
+            color: #ff00ff;
+        }
+        .neon-cyan {
+            color: #00ffff;
+        }
+        .bg-neon-pink {
+            background-color: #ff00ff;
+        }
+        .bg-neon-cyan {
+            background-color: #00ffff;
+        }
+        .border-neon-pink {
+            border-color: #ff00ff;
+        }
+        .border-neon-cyan {
+            border-color: #00ffff;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff00ff, #00ffff);
+            border-radius: 4px;
+        }
+        .category-active {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            color: white;
+        }
+        .heart-animation {
+            animation: heartbeat 0.5s ease-in-out;
+        }
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.4); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.3); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes heartPop {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px transparent); }
+            25% { transform: scale(1.5); filter: drop-shadow(0 0 12px #ff0055); }
+            50% { transform: scale(0.9); filter: drop-shadow(0 0 8px #ff0055); }
+            75% { transform: scale(1.15); filter: drop-shadow(0 0 6px #ff0055); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px transparent); }
+        }
+        @keyframes heartParticles {
+            0% { opacity: 1; transform: scale(0.5) translate(0, 0); }
+            100% { opacity: 0; transform: scale(0) translate(var(--tx), var(--ty)); }
+        }
+        .heart-animate {
+            animation: heartPop 0.6s ease-in-out;
+        }
+        .heart-fav-active {
+            background: rgba(255, 0, 85, 0.35) !important;
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
+            border: 1px solid rgba(255, 0, 85, 0.6);
+        }
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 14px;
+            animation: heartParticles 0.8s ease-out forwards;
+        }
+        .slide-enter {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .banner-slide {
+            animation: fadeBanner 0.5s ease-in-out;
+        }
+        @keyframes fadeBanner {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes logoFloatSwing {
+            0% { transform: rotate(-2deg) scale(0.96); }
+            50% { transform: rotate(2deg) scale(1.04); }
+            100% { transform: rotate(-2deg) scale(0.96); }
+        }
+        .hero-logo-animate {
+            animation: logoFloatSwing 7s ease-in-out infinite;
+            transform-origin: center;
+        }
+        .top-icon-btn {
+            border: 1px solid rgba(120, 120, 160, 0.5);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.12);
+        }
+        .top-icon-btn:hover {
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+        }
+        @keyframes cartBump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.18); }
+            100% { transform: scale(1); }
+        }
+        .cart-bump {
+            animation: cartBump 0.45s ease-out;
+        }
+        .fly-item {
+            position: fixed;
+            z-index: 60;
+            pointer-events: none;
+            font-size: 1.4rem;
+            opacity: 0.95;
+            transition: transform 650ms cubic-bezier(0.25, 0.9, 0.2, 1), opacity 650ms ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0f0f2a] min-h-screen text-white">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, push } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-database.js";
+
+        const defaultFirebaseConfig = {
+            apiKey: "AIzaSyBXkN1UfotGkxj_ucnBnlZCBQBoGWykHZM",
+            authDomain: "cardapiomhlanches.firebaseapp.com",
+            databaseURL: "https://cardapiomhlanches-default-rtdb.firebaseio.com",
+            projectId: "cardapiomhlanches",
+            storageBucket: "cardapiomhlanches.firebasestorage.app",
+            messagingSenderId: "919725344771",
+            appId: "1:919725344771:web:69be07a143162e76cf2636"
+        };
+        const firebaseConfig = (() => {
+            try {
+                const saved = localStorage.getItem('mh_firebase_config');
+                if (saved) {
+                    const cfg = JSON.parse(saved);
+                    if (cfg.apiKey && cfg.projectId && cfg.appId) return cfg;
+                }
+            } catch(e) {}
+            return defaultFirebaseConfig;
+        })();
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        window.firebaseDB = { db, ref, set, get, push, onValue };
+    </script>
+
+    <!-- Status Bar -->
+    <div id="statusBar" class="fixed top-0 left-0 right-0 z-50 glass py-2 px-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span id="openStatus" class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
+                <span id="statusText" class="text-sm font-semibold">ABERTO</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="musicBtn" onclick="toggleMusic()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Jingle">
+                    <i class="fas fa-music neon-pink text-base"></i>
+                </button>
+                <button onclick="scrollToMenu()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Cardapio">
+                    <i class="fas fa-utensils neon-cyan text-base"></i>
+                </button>
+                <button id="topCartBtn" onclick="openCart()" class="relative glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Carrinho">
+                    <i class="fas fa-shopping-cart neon-cyan text-base"></i>
+                    <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <button id="trackingBtn" onclick="openSavedTracking()" class="glass top-icon-btn px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Status da entrega">
+                    <i class="fas fa-motorcycle neon-pink text-base"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top -->
+    <button id="backToTop" onclick="scrollToTop()" class="fixed bottom-6 right-4 z-50 glass p-3 rounded-full neon-border hover:scale-110 transition-transform opacity-0 invisible">
+        <i class="fas fa-arrow-up neon-cyan text-xl"></i>
+    </button>
+
+    <!-- Header -->
+    <header class="pt-16 pb-8 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+             <img id="heroLogo" src="https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572" 
+                 alt="MH Lanches Logo" 
+                 class="hero-logo-animate mx-auto mb-4 w-64 h-auto md:w-80"
+                 style="border: none;">
+            <h1 id="heroTitle" class="font-orbitron text-3xl md:text-5xl font-black neon-text neon-pink mb-2">MH LANCHES</h1>
+            <p id="heroSubtitle" class="text-gray-400 text-lg">Seu delivery favorito, sempre aberto para você!</p>
+        </div>
+    </header>
+
+    <!-- Banner Rotativo -->
+    <section class="px-4 mb-8">
+        <div class="max-w-4xl mx-auto">
+            <div id="bannerContainer" class="glass rounded-2xl overflow-hidden relative h-48 md:h-64">
+                <div id="bannerSlider" class="w-full h-full"></div>
+                <div id="bannerDots" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categorias -->
+    <section id="categoriesSection" class="px-4 mb-6 sticky top-12 z-40 py-4 bg-gradient-to-b from-[#0a0a1a] via-[#0a0a1a] to-transparent">
+        <div class="max-w-7xl mx-auto">
+            <div id="categoriesNav" class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            </div>
+        </div>
+    </section>
+
+    <!-- Produtos -->
+    <section class="px-4 mb-8">
+        <div class="max-w-7xl mx-auto">
+            <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre Nós -->
+    <section class="px-4 mb-8">
+        <div class="max-w-4xl mx-auto">
+            <h2 id="aboutTitle" class="font-orbitron text-2xl font-bold neon-cyan mb-6 text-center">Sobre Nós</h2>
+            <div class="glass rounded-2xl p-6">
+                <div id="aboutCarousel" class="relative">
+                    <div class="carousel-content text-center">
+                        <div id="aboutImageWrap" class="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#ff00ff] to-[#00ffff] flex items-center justify-center overflow-hidden">
+                            <i class="fas fa-hamburger text-5xl text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-4 neon-pink">Nossa História</h3>
+                        <p id="aboutText1" class="text-gray-300 leading-relaxed mb-3">
+                            Fundada em 2018, a MH Lanches nasceu do sonho de dois amigos de oferecer lanches de qualidade 
+                            com um atendimento excepcional. Hoje, somos referência em delivery na região, com mais de 
+                            50.000 pedidos entregues e uma equipe apaixonada por gastronomia.
+                        </p>
+                        <p id="aboutText2" class="text-gray-400 leading-relaxed">
+                            Atendimento rapido, ingredientes selecionados e tecnologia para deixar seu pedido mais simples.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Carrinho -->
+    <div id="cartModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCart()"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md glass slide-enter overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-orbitron text-2xl font-bold neon-pink">Seu Carrinho</h2>
+                    <button onclick="closeCart()" class="text-2xl hover:text-red-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="cartItems" class="space-y-4 mb-6"></div>
+                <div id="cartEmpty" class="text-center py-12 text-gray-400">
+                    <i class="fas fa-shopping-basket text-5xl mb-4"></i>
+                    <p>Seu carrinho está vazio</p>
+                </div>
+                <div id="cartSummary" class="hidden space-y-4">
+                    <div class="glass-card p-4 rounded-xl">
+                        <div class="flex justify-between mb-2">
+                            <span>Subtotal</span>
+                            <span id="subtotal">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between mb-2 text-green-400 hidden" id="discountRow">
+                            <span>Desconto</span>
+                            <span id="discountValue">-R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span>Taxa de Entrega</span>
+                            <span id="deliveryFee">R$ 5,00</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold neon-cyan border-t border-gray-700 pt-2">
+                            <span>Total</span>
+                            <span id="total">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <label class="block text-sm font-semibold">Tem cupom de desconto?</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="couponCodeInput" placeholder="Digite o código" class="flex-1 uppercase bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 focus:border-neon-pink focus:outline-none transition-colors">
+                            <button onclick="applyCoupon()" class="px-4 py-2 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-lg font-semibold hover:scale-105 transition-transform">Aplicar</button>
+                        </div>
+                        <p id="couponMessage" class="text-xs text-gray-400">Apenas 1 cupom por pedido.</p>
+                    </div>
+                    <button onclick="openCheckout()" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform">
+                        Finalizar Pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Checkout -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCheckout()"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md glass slide-enter overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-orbitron text-2xl font-bold neon-pink">Finalizar Pedido</h2>
+                    <button onclick="closeCheckout()" class="text-2xl hover:text-red-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="checkoutForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Nome Completo</label>
+                        <input type="text" id="clientName" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Telefone (WhatsApp)</label>
+                        <input type="tel" id="clientPhone" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors" placeholder="(00) 00000-0000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Endereço</label>
+                        <input type="text" id="clientAddress" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors" placeholder="Rua, Número, Bairro">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Complemento</label>
+                        <input type="text" id="clientComplement" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors" placeholder="Apartamento, Bloco, etc">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Forma de Pagamento</label>
+                        <select id="paymentMethod" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors">
+                            <option value="">Selecione</option>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="pix">Pix</option>
+                            <option value="cartao">Cartão</option>
+                        </select>
+                    </div>
+                    <div id="changeSection" class="hidden">
+                        <label class="block text-sm font-semibold mb-2">Troco para</label>
+                        <input type="text" id="changeFor" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-neon-pink focus:outline-none transition-colors" placeholder="R$ 0,00">
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#25D366] to-[#128C7E] rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-2xl"></i>
+                        Enviar Pedido pelo WhatsApp
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Acompanhamento de Pedido -->
+    <div id="trackingModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeTracking()"></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto glass rounded-2xl p-6 slide-enter">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-orbitron text-2xl font-bold neon-pink">Status do Pedido</h2>
+                <button onclick="closeTracking()" class="text-2xl hover:text-red-500 transition-colors" aria-label="Fechar status do pedido">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="trackingSteps" class="space-y-4">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Personalização -->
+    <div id="customizeModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCustomize()"></div>
+        <div class="absolute inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto glass rounded-2xl p-6 slide-enter max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="customizeTitle" class="font-orbitron text-xl font-bold neon-pink">Personalizar</h2>
+                <button onclick="closeCustomize()" class="text-2xl hover:text-red-500 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="customizeContent"></div>
+        </div>
+    </div>
+
+    <!-- Fallback de abertura do WhatsApp -->
+    <div id="whatsappFallbackToast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] hidden w-[92%] max-w-md">
+        <div class="glass rounded-xl p-4 border border-[#25D366]/40">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="font-semibold text-sm text-white">Nao abriu o WhatsApp?</p>
+                    <p class="text-xs text-gray-300 mt-1">Use o botao abaixo para abrir manualmente.</p>
+                </div>
+                <button type="button" onclick="hideWhatsAppFallback()" class="text-gray-400 hover:text-white" aria-label="Fechar aviso">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <a id="whatsappFallbackLink" href="#" target="_blank" rel="noopener noreferrer" onclick="hideWhatsAppFallback()" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#25D366] to-[#128C7E] font-semibold text-sm">
+                <i class="fab fa-whatsapp"></i>
+                Abrir WhatsApp Manualmente
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass py-8 px-4 mt-12">
+        <div class="max-w-7xl mx-auto text-center">
+            <h3 id="footerBrand" class="font-orbitron text-2xl font-bold neon-pink mb-4">MH LANCHES</h3>
+            <div id="footerSocialLinks" class="flex justify-center gap-6 mb-6">
+                <a href="#" class="text-2xl hover:text-[#ff00ff] transition-colors"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-2xl hover:text-[#00ffff] transition-colors"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-2xl hover:text-[#25D366] transition-colors"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <p class="text-gray-400 text-sm">
+                <span id="footerCopyright">© 2024 MH Lanches. Todos os direitos reservados.</span><br>
+                <span class="neon-cyan">Sistema ERP completo para seu comercio:</span> <span>81985770055</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Audio -->
+    <audio id="bgMusic" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-fast-food-rock-1131.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script>
+        // Dados carregados APENAS do Firebase - SEM DADOS AUTOMÁTICOS
+        let produtos = [];
+        let categorias = ["Todos"];
+        const LOCAL_CONFIG_KEY = 'mh_json_config';
+        const LOCAL_CUPONS_KEY = 'mh_json_cupons';
+
+        let siteConfig = {
+            logoUrl: "https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572",
+            favicon: "https://firebasestorage.googleapis.com/v0/b/cardapiomhlanches.firebasestorage.app/o/produtos%2FMH%20Lanches%20logo%20site.png?alt=media&token=a474e687-dd64-4560-86df-0f1bf0be4572",
+            tituloPrincipal: "MH LANCHES",
+            slogan: "Seu delivery favorito, sempre aberto para você!",
+            sobreTitulo: "Sobre Nós",
+            sobreTexto1: "Fundada em 2018, a MH Lanches nasceu do sonho de oferecer lanches de qualidade com atendimento excepcional.",
+            sobreTexto2: "Mais de 50.000 pedidos entregues com sabor e agilidade.",
+            sobreImagem: "",
+            lojaNome: "MH Lanches",
+            lojaTelefone: "(00) 00000-0000",
+            whatsapp: "https://wa.me/5500000000000",
+            valorMinimo: 15,
+            taxaEntrega: 5,
+            fechamentoAtivo: false,
+            fechamentoInicio: "",
+            fechamentoFim: "",
+            fechamentoMensagem: "Loja temporariamente fechada.",
+            horarios: [
+                { dia: "Domingo", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Segunda-feira", aberto: false, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Terça-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Quarta-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Quinta-feira", aberto: true, abertura: "18:00", fechamento: "23:00" },
+                { dia: "Sexta-feira", aberto: true, abertura: "18:00", fechamento: "00:00" },
+                { dia: "Sábado", aberto: true, abertura: "18:00", fechamento: "00:00" }
+            ],
+            instagram: "",
+            facebook: "",
+            tiktok: "",
+            twitter: "",
+            youtube: "",
+            website: "",
+            copyright: "© 2024 MH Lanches. Todos os direitos reservados.",
+            anuncios: [
+                { titulo: "NOVO! Western Burger", texto: "Experimente nosso novo hambúrguer com bacon e onion rings!", link: "", ativo: true },
+                { titulo: "PIZZA MEIA-MEIA", texto: "Monte sua pizza com 2 sabores diferentes!", link: "", ativo: true },
+                { titulo: "COMBO FAMÍLIA", texto: "2 Hambúrgueres + Batata + 2 Refrigerantes por R$ 69,90", link: "", ativo: true }
+            ]
+        };
+
+        let banners = siteConfig.anuncios;
+        let cupons = [];
+
+        // Estado do App
+        let carrinho = JSON.parse(localStorage.getItem('mh_carrinho') || '[]');
+        let favoritos = JSON.parse(localStorage.getItem('mh_favoritos') || '[]');
+        let appliedCoupon = JSON.parse(localStorage.getItem('mh_applied_coupon') || 'null');
+        let categoriaAtiva = "Todos";
+        let currentBanner = 0;
+        let musicPlaying = false;
+        let customizingProduct = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSiteConfig();
+            await loadCupons();
+            applySiteConfig();
+            
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            if (dbMode !== 'local' && window.firebaseDB) {
+                const { db, ref, onValue } = window.firebaseDB;
+                
+                // Categorias
+                onValue(ref(db, 'categorias'), (snap) => {
+                    if (snap.exists()) {
+                        const catsData = snap.val();
+                        // Extrai categorias como objetos com nome e ordem
+                        let catsArray = Object.values(catsData).map(cat => {
+                            if (typeof cat === 'string') return { nome: cat, ordem: 999 };
+                            if (cat && typeof cat === 'object') return { nome: cat.nome || cat.name || 'Categoria', ordem: cat.ordem || 999 };
+                            return { nome: 'Categoria', ordem: 999 };
+                        });
+                        // Ordena por ordem
+                        catsArray.sort((a, b) => (a.ordem || 999) - (b.ordem || 999));
+                        categorias = ['Todos', '❤️ Favoritos', ...catsArray.map(c => c.nome)];
+                        renderCategories();
+                    } else {
+                        // Firebase vazio - não cria categorias automáticas
+                        categorias = ['Todos', '❤️ Favoritos'];
+                        renderCategories();
+                    }
+                });
+                
+                // Produtos
+                onValue(ref(db, 'produtos'), (snap) => {
+                    if (snap.exists()) {
+                        const prodsData = snap.val();
+                        produtos = Object.values(prodsData).map(p => ({
+                            id: p.id || p.nome || Date.now(),
+                            nome: p.nome || 'Produto',
+                            preco: Number(p.preco || 0),
+                            descricao: p.descricao || '',
+                            categoria: p.categoria || 'Outros',
+                            tipo: p.tipo || 'simples',
+                            imagem: p.imagem || p.imagens?.[0] || '',
+                            imagens: p.imagens || p.galeria || [],
+                            pausado: p.pausado || false,
+                            promocao: p.promocao || false,
+                            precoOriginal: p.precoOriginal || 0,
+                            tempoPreparo: p.tempoPreparo || 0,
+                            sabores: p.sabores || [],
+                            opcionais: p.opcionais || [],
+                            adicionais: p.adicionais || [],
+                            disponibilidade: p.disponibilidade || [0,1,2,3,4,5,6]
+                        }));
+                        renderProducts();
+                    } else {
+                        // Firebase vazio - não cria produtos automáticos
+                        renderProducts();
+                    }
+                });
+            }
+            renderBanner();
+            checkOpenStatus();
+            loadSavedData();
+            setupCartCounter();
+            setInterval(() => {
+                const bannersAtivos = banners.filter(b => b.ativo !== false);
+                if (bannersAtivos.length > 0) {
+                    currentBanner = (currentBanner + 1) % bannersAtivos.length;
+                }
+                renderBanner();
+            }, 5000);
+            
+            window.addEventListener('scroll', () => {
+                const btn = document.getElementById('backToTop');
+                if (window.scrollY > 500) {
+                    btn.classList.remove('opacity-0', 'invisible');
+                    btn.classList.add('opacity-100', 'visible');
+                } else {
+                    btn.classList.add('opacity-0', 'invisible');
+                    btn.classList.remove('opacity-100', 'visible');
+                }
+            });
+
+            // Phone mask
+            document.getElementById('clientPhone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                }
+                e.target.value = value;
+            });
+
+            // Money mask
+            document.getElementById('changeFor').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = (value / 100).toFixed(2).replace('.', ',');
+                e.target.value = 'R$ ' + value;
+            });
+
+            document.getElementById('paymentMethod').addEventListener('change', function(e) {
+                document.getElementById('changeSection').classList.toggle('hidden', e.target.value !== 'dinheiro');
+            });
+
+            document.getElementById('checkoutForm').addEventListener('submit', handleCheckout);
+
+            // Check for active order tracking
+            const activePedidoId = localStorage.getItem('mh_pedidoId');
+            if (activePedidoId) {
+                setupOrderTracking(activePedidoId);
+            }
+
+            // Keeps a manual shortcut if WhatsApp did not open.
+            restoreWhatsAppFallback();
+        });
+
+        async function loadSiteConfig() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            try {
+                if (dbMode === 'local') {
+                    const localConfig = localStorage.getItem(LOCAL_CONFIG_KEY);
+                    if (localConfig) siteConfig = { ...siteConfig, ...JSON.parse(localConfig) };
+                } else if (window.firebaseDB) {
+                    const { db, ref, get, onValue } = window.firebaseDB;
+                    const snapshot = await get(ref(db, 'config'));
+                    if (snapshot.exists()) {
+                        siteConfig = { ...siteConfig, ...snapshot.val() };
+                    }
+
+                    onValue(ref(db, 'config'), (snap) => {
+                        if (snap.exists()) {
+                            siteConfig = { ...siteConfig, ...snap.val() };
+                            applySiteConfig();
+                            checkOpenStatus();
+                            renderBanner();
+                        }
+                    });
+                }
+            } catch (error) {
+                const fallback = localStorage.getItem('mh_site_config');
+                if (fallback) siteConfig = { ...siteConfig, ...JSON.parse(fallback) };
+            }
+
+            if (!Array.isArray(siteConfig.anuncios)) siteConfig.anuncios = [];
+            banners = siteConfig.anuncios.filter((a) => a.ativo !== false && (a.titulo || a.texto));
+            if (!banners.length) banners = [{ titulo: 'MH LANCHES', texto: 'Bem-vindo ao nosso delivery', link: '', ativo: true }];
+        }
+
+        async function loadCupons() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            try {
+                if (dbMode === 'local') {
+                    const localCupons = localStorage.getItem(LOCAL_CUPONS_KEY);
+                    cupons = localCupons ? JSON.parse(localCupons) : [];
+                } else if (window.firebaseDB) {
+                    const { db, ref, get, onValue } = window.firebaseDB;
+                    const snapshot = await get(ref(db, 'cupons'));
+                    cupons = snapshot.exists() ? Object.values(snapshot.val()) : [];
+                    onValue(ref(db, 'cupons'), (snap) => {
+                        cupons = snap.exists() ? Object.values(snap.val()) : [];
+                        if (appliedCoupon) {
+                            const atualizado = cupons.find((c) => c.codigo === appliedCoupon.codigo);
+                            if (atualizado) appliedCoupon = atualizado;
+                            renderCart();
+                        }
+                    });
+                }
+            } catch (error) {
+                const fallback = localStorage.getItem(LOCAL_CUPONS_KEY);
+                cupons = fallback ? JSON.parse(fallback) : [];
+            }
+
+            if (!Array.isArray(cupons)) cupons = [];
+            cupons = cupons.map((cupom) => ({
+                id: cupom.id || `CUP_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                codigo: (cupom.codigo || '').toUpperCase().trim(),
+                tipo: cupom.tipo || 'percentual',
+                valor: Number(cupom.valor || 0),
+                quantidadeTotal: Number(cupom.quantidadeTotal || 1),
+                minimoCompra: Number(cupom.minimoCompra || 0),
+                validade: cupom.validade || '',
+                usos: Number(cupom.usos || 0),
+                ativo: cupom.ativo !== false
+            })).filter((cupom) => cupom.codigo);
+
+            localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+        }
+
+        function applySiteConfig() {
+            document.getElementById('siteFavicon').href = siteConfig.favicon || siteConfig.logoUrl;
+            document.title = `${siteConfig.lojaNome || 'MH Lanches'} - Delivery`;
+
+            document.getElementById('heroLogo').src = siteConfig.logoUrl;
+            document.getElementById('heroTitle').textContent = siteConfig.tituloPrincipal || siteConfig.lojaNome;
+            document.getElementById('heroSubtitle').textContent = siteConfig.slogan || '';
+
+            document.getElementById('aboutTitle').textContent = siteConfig.sobreTitulo || 'Sobre Nós';
+            document.getElementById('aboutText1').textContent = siteConfig.sobreTexto1 || '';
+            document.getElementById('aboutText2').textContent = siteConfig.sobreTexto2 || '';
+
+            if (siteConfig.sobreImagem) {
+                document.getElementById('aboutImageWrap').innerHTML = `<img src="${siteConfig.sobreImagem}" alt="Sobre nós" class="w-full h-full object-cover">`;
+            }
+
+            document.getElementById('footerBrand').textContent = siteConfig.lojaNome || 'MH LANCHES';
+            document.getElementById('footerCopyright').textContent = siteConfig.copyright || '';
+            renderSocialLinks();
+        }
+
+        function renderSocialLinks() {
+            const links = [
+                { key: 'instagram', icon: 'fab fa-instagram', color: 'hover:text-[#ff00ff]' },
+                { key: 'facebook', icon: 'fab fa-facebook', color: 'hover:text-[#00ffff]' },
+                { key: 'whatsapp', icon: 'fab fa-whatsapp', color: 'hover:text-[#25D366]' },
+                { key: 'tiktok', icon: 'fab fa-tiktok', color: 'hover:text-white' },
+                { key: 'website', icon: 'fas fa-globe', color: 'hover:text-[#00ffff]' }
+            ];
+
+            const html = links
+                .filter((item) => siteConfig[item.key])
+                .map((item) => `<a href="${siteConfig[item.key]}" target="_blank" rel="noopener" class="text-2xl transition-colors ${item.color}"><i class="${item.icon}"></i></a>`)
+                .join('');
+
+            document.getElementById('footerSocialLinks').innerHTML = html || '<span class="text-sm text-gray-500">Configure as redes sociais no painel admin.</span>';
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesNav');
+            container.innerHTML = categorias.map(cat => {
+                let label = cat;
+                if (cat === "❤️ Favoritos" && favoritos.length > 0) {
+                    label = `❤️ Favoritos <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">${favoritos.length}</span>`;
+                }
+                return `
+                <button onclick="filterCategory('${cat}')" 
+                    class="px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${categoriaAtiva === cat ? 'category-active' : 'glass-card hover:border-neon-pink'}">
+                    ${label}
+                </button>
+                `;
+            }).join('');
+        }
+
+        function filterCategory(categoria) {
+            categoriaAtiva = categoria;
+            renderCategories();
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsGrid');
+            let filtrados;
+            if (categoriaAtiva === "Todos") {
+                filtrados = produtos;
+            } else if (categoriaAtiva === "❤️ Favoritos") {
+                filtrados = produtos.filter(p => favoritos.includes(String(p.id)));
+            } else {
+                filtrados = produtos.filter(p => p.categoria === categoriaAtiva);
+            }
+            
+            // Placeholder image
+            const defaultImg = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=60';
+
+            container.innerHTML = filtrados.map(prod => {
+                const isPausado = prod.pausado;
+                const isPersonalizavel = ['pizza', 'pastel', 'meioameio', 'multiescolha'].includes(prod.tipo);
+                
+                // Tratar imagens
+                let imagens = [];
+                if (Array.isArray(prod.imagens) && prod.imagens.length > 0) {
+                    imagens = prod.imagens;
+                } else if (prod.imagem) {
+                    imagens = [prod.imagem];
+                } else if (Array.isArray(prod.galeria) && prod.galeria.length > 0) {
+                    imagens = prod.galeria;
+                } else {
+                    imagens = [defaultImg];
+                }
+                
+                const imgSrc = imagens[0] && imagens[0].startsWith('http') ? imagens[0] : defaultImg;
+
+                return `
+                <div class="glass-card rounded-2xl p-0 overflow-hidden transition-all duration-300 ${isPausado ? 'opacity-60 grayscale relative' : 'hover:scale-[1.02]'}">
+                    ${isPausado ? `
+                        <div class="absolute inset-0 bg-black/70 z-20 flex items-center justify-center">
+                            <span class="bg-red-600 text-white font-black px-6 py-3 rounded-xl text-2xl tracking-wider shadow-lg border-2 border-white rotate-[-10deg]">
+                                INDISPONÍVEL
+                            </span>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- TOPO: Imagem com badges -->
+                    <div class="relative w-full h-52 md:h-56 overflow-hidden">
+                        <img src="${imgSrc}" class="w-full h-full object-cover" onerror="this.src='${defaultImg}'">
+                        <button onclick="toggleFavorite('${prod.id}', event)" class="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-transform z-10 ${favoritos.includes(String(prod.id)) ? 'heart-fav-active' : ''}">
+                            <i class="fas fa-heart ${favoritos.includes(String(prod.id)) ? 'text-red-500' : 'text-white/80'} text-lg transition-all duration-300"></i>
+                        </button>
+                        ${prod.promocao ? `<div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full z-10">🔥 PROMO</div>` : ''}
+                        ${prod.destaque && !prod.promocao ? `<div class="absolute top-3 left-3 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full z-10">⭐ DESTAQUE</div>` : ''}
+                        <!-- Texto discreto na base da imagem -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
+                            <span class="text-[10px] text-gray-300 italic">* Imagem meramente ilustrativa</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Miniaturas da galeria -->
+                    ${imagens.length > 1 ? `
+                        <div class="flex gap-2 px-4 pt-2 overflow-x-auto">
+                            ${imagens.slice(0, 5).map((img, i) => `
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border ${i === 0 ? 'border-neon-cyan' : 'border-gray-700'} cursor-pointer hover:border-neon-pink transition-colors">
+                                    <img src="${img}" class="w-full h-full object-cover">
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- ABAIXO: Informações do produto -->
+                    <div class="p-4 md:p-5 flex flex-col">
+                        <h3 class="text-xl md:text-2xl font-bold neon-cyan mb-1">${prod.nome}</h3>
+                        <p class="text-gray-400 text-sm md:text-base mb-2 line-clamp-2">${prod.descricao || ''}</p>
+                        ${['pizza', 'meioameio'].includes(prod.tipo) && prod.tempoPreparo ? `<p class="text-xs text-gray-500 mb-2"><i class="fas fa-clock mr-1"></i>~${prod.tempoPreparo} min de preparo</p>` : ''}
+                        
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-700/50">
+                            <div>
+                                ${prod.promocao && prod.precoOriginal ? `<p class="text-sm text-gray-500 line-through">R$ ${prod.precoOriginal.toFixed(2)}</p>` : ''}
+                                <span class="text-2xl md:text-3xl font-bold neon-pink">R$ ${prod.preco.toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            ${!isPersonalizavel ? `
+                                <button onclick="handleAddToCart('${prod.id}', null, event)" ${isPausado ? 'disabled' : ''}
+                                    class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg text-sm">
+                                    <i class="fas fa-plus mr-1"></i>ADICIONAR
+                                </button>
+                            ` : `
+                                <button onclick="openCustomize('${prod.id}', event)" ${isPausado ? 'disabled' : ''}
+                                    class="px-5 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform shadow-lg text-sm">
+                                    <i class="fas fa-sliders-h mr-1"></i>PERSONALIZAR
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            // Estado vazio
+            if (filtrados.length === 0) {
+                if (categoriaAtiva === "❤️ Favoritos") {
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                            <i class="fas fa-heart text-6xl text-gray-600 mb-4"></i>
+                            <h3 class="text-2xl font-bold text-gray-400 mb-2">Nenhum favorito ainda</h3>
+                            <p class="text-gray-500 max-w-md">Toque no ❤️ dos produtos que você gosta para salvá-los aqui. Seus favoritos ficam salvos apenas no seu celular!</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                            <i class="fas fa-box-open text-6xl text-gray-600 mb-4"></i>
+                            <h3 class="text-2xl font-bold text-gray-400 mb-2">Nenhum produto encontrado</h3>
+                            <p class="text-gray-500">Nenhum produto nesta categoria no momento.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function renderBanner() {
+            const container = document.getElementById('bannerSlider');
+            const dotsContainer = document.getElementById('bannerDots');
+            
+            // Garante que banners existe e tem conteudo
+            if (!banners || !Array.isArray(banners) || banners.length === 0) {
+                banners = [
+                    { titulo: 'BEM-VINDO AO MH LANCHES', texto: 'Os melhores lanches da região!', link: '', ativo: true },
+                    { titulo: 'PIZZA MEIA-MEIA', texto: 'Monte sua pizza com 2 sabores!', link: '', ativo: true },
+                    { titulo: 'DELIVERY RÁPIDO', texto: 'Entrega em até 40 minutos', link: '', ativo: true }
+                ];
+            }
+            
+            // Filtra apenas banners ativos
+            const bannersAtivos = banners.filter(b => b.ativo !== false);
+            if (bannersAtivos.length === 0) {
+                bannersAtivos.push({ titulo: 'MH LANCHES', texto: 'Bem-vindo ao nosso delivery', link: '', ativo: true });
+            }
+            
+            // Ajusta currentBanner se estiver fora do range
+            if (currentBanner >= bannersAtivos.length) {
+                currentBanner = 0;
+            }
+            
+            const banner = bannersAtivos[currentBanner];
+            
+            container.innerHTML = `
+                <a href="${banner.link || '#'}" ${banner.link ? 'target="_blank" rel="noopener"' : ''} class="w-full h-full block">
+                    <div class="w-full h-full bg-gradient-to-r from-[#ff00ff] to-[#00ffff] flex flex-col justify-center items-center p-8 banner-slide">
+                        <h3 class="font-orbitron text-2xl md:text-4xl font-black text-white mb-2 text-center">${banner.titulo || ''}</h3>
+                        <p class="text-white/90 text-center text-lg">${banner.texto || ''}</p>
+                    </div>
+                </a>
+            `;
+            
+            dotsContainer.innerHTML = bannersAtivos.map((_, i) => `
+                <button class="banner-dot w-3 h-3 rounded-full cursor-pointer ${i === currentBanner ? 'bg-white' : 'bg-gray-500'}" onclick="setBanner(${i})"></button>
+            `).join('');
+        }
+
+        function setBanner(index) {
+            currentBanner = index;
+            renderBanner();
+        }
+
+        function checkOpenStatus() {
+            const now = new Date();
+            const diaSemana = now.getDay();
+            const horario = (siteConfig.horarios || [])[diaSemana];
+            const horaAtual = now.getHours() * 60 + now.getMinutes();
+
+            if (!horario) return;
+
+            if (siteConfig.fechamentoAtivo && siteConfig.fechamentoInicio && siteConfig.fechamentoFim) {
+                const inicio = new Date(siteConfig.fechamentoInicio);
+                const fim = new Date(siteConfig.fechamentoFim);
+                if (now >= inicio && now <= fim) {
+                    document.getElementById('openStatus').className = 'w-3 h-3 rounded-full bg-red-500';
+                    document.getElementById('statusText').textContent = 'FECHADO';
+                    document.getElementById('statusText').className = 'text-sm font-semibold text-red-500';
+                    return;
+                }
+            }
+            
+            const abertura = parseInt(horario.abertura.split(':')[0]) * 60 + parseInt(horario.abertura.split(':')[1]);
+            const fechamento = parseInt(horario.fechamento.split(':')[0]) * 60 + parseInt(horario.fechamento.split(':')[1]);
+            
+            const cruzaMeiaNoite = fechamento <= abertura;
+            const dentroHorario = cruzaMeiaNoite
+                ? (horaAtual >= abertura || horaAtual < fechamento)
+                : (horaAtual >= abertura && horaAtual < fechamento);
+            const estaAberto = horario.aberto && dentroHorario;
+            
+            const statusEl = document.getElementById('openStatus');
+            const textEl = document.getElementById('statusText');
+            
+            if (estaAberto) {
+                statusEl.className = 'w-3 h-3 rounded-full bg-green-500 animate-pulse';
+                textEl.textContent = 'ABERTO';
+                textEl.className = 'text-sm font-semibold text-green-500';
+            } else {
+                statusEl.className = 'w-3 h-3 rounded-full bg-red-500';
+                textEl.textContent = 'FECHADO';
+                textEl.className = 'text-sm font-semibold text-red-500';
+            }
+        }
+
+        function toggleFavorite(id, event) {
+            const idStr = String(id);
+            const btn = event?.currentTarget || event?.target?.closest('button');
+            
+            if (favoritos.includes(idStr)) {
+                favoritos = favoritos.filter(f => String(f) !== idStr);
+            } else {
+                favoritos.push(idStr);
+                // Animação ao favoritar
+                if (btn) {
+                    btn.classList.add('heart-animate');
+                    btn.addEventListener('animationend', () => btn.classList.remove('heart-animate'), { once: true });
+                    
+                    // Partículas de coração
+                    const rect = btn.getBoundingClientRect();
+                    const emojis = ['❤️', '💖', '💕', '✨'];
+                    for (let i = 0; i < 6; i++) {
+                        const particle = document.createElement('span');
+                        particle.className = 'heart-particle';
+                        particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        particle.style.left = rect.left + rect.width / 2 + 'px';
+                        particle.style.top = rect.top + rect.height / 2 + 'px';
+                        particle.style.position = 'fixed';
+                        particle.style.zIndex = '9999';
+                        const angle = (Math.PI * 2 / 6) * i;
+                        const dist = 30 + Math.random() * 25;
+                        particle.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                        particle.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                        document.body.appendChild(particle);
+                        setTimeout(() => particle.remove(), 900);
+                    }
+                }
+            }
+            localStorage.setItem('mh_favoritos', JSON.stringify(favoritos));
+            renderCategories();
+            renderProducts();
+        }
+
+        function handleAddToCart(id, customizacao = null, evt = null) {
+            const produto = produtos.find(p => String(p.id) === String(id));
+            const itemExistente = carrinho.find(item => item.id === id && JSON.stringify(item.customizacao) === JSON.stringify(customizacao));
+            const btn = evt?.currentTarget || evt?.target || null;
+            
+            if (itemExistente) {
+                itemExistente.quantidade++;
+            } else {
+                carrinho.push({
+                    id: produto.id,
+                    nome: produto.nome,
+                    preco: produto.preco,
+                    quantidade: 1,
+                    customizacao: customizacao
+                });
+            }
+            
+            saveCart();
+            setupCartCounter();
+            animateProductToCart(btn, produto);
+            
+            if (btn && btn.innerHTML.includes('fa-plus')) {
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-plus"></i>';
+                }, 1000);
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('mh_carrinho', JSON.stringify(carrinho));
+        }
+
+        function setupCartCounter() {
+            const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
+            document.getElementById('cartCount').textContent = totalItens;
+        }
+
+        function getCartTotals() {
+            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+            const entregaOriginal = Number(siteConfig.taxaEntrega || 0);
+            let entrega = entregaOriginal;
+            let desconto = 0;
+
+            if (appliedCoupon && validateCoupon(appliedCoupon, subtotal).valid) {
+                if (appliedCoupon.tipo === 'percentual') {
+                    desconto = subtotal * (Number(appliedCoupon.valor || 0) / 100);
+                } else if (appliedCoupon.tipo === 'fixo') {
+                    desconto = Number(appliedCoupon.valor || 0);
+                } else if (appliedCoupon.tipo === 'frete_gratis') {
+                    entrega = 0;
+                }
+            }
+
+            desconto = Math.min(desconto, subtotal);
+            const total = Math.max(0, (subtotal - desconto) + entrega);
+            return { subtotal, entrega, entregaOriginal, desconto, total };
+        }
+
+        function validateCoupon(cupom, subtotal) {
+            if (!cupom) return { valid: false, reason: 'Cupom inexistente.' };
+            if (cupom.ativo === false) return { valid: false, reason: 'Cupom desativado.' };
+            if ((cupom.usos || 0) >= (cupom.quantidadeTotal || 0)) return { valid: false, reason: 'Cupom sem usos disponíveis.' };
+            if (cupom.validade) {
+                const fimValidade = new Date(`${cupom.validade}T23:59:59`);
+                if (new Date() > fimValidade) return { valid: false, reason: 'Cupom expirado.' };
+            }
+            if (subtotal < Number(cupom.minimoCompra || 0)) {
+                return { valid: false, reason: `Pedido mínimo para o cupom: R$ ${Number(cupom.minimoCompra).toFixed(2).replace('.', ',')}.` };
+            }
+            return { valid: true, reason: '' };
+        }
+
+        function applyCoupon() {
+            const input = document.getElementById('couponCodeInput');
+            const msg = document.getElementById('couponMessage');
+            if (!input || !msg) return;
+
+            const codigo = input.value.trim().toUpperCase();
+            if (!codigo) {
+                msg.className = 'text-xs text-red-400';
+                msg.textContent = 'Digite um código para aplicar.';
+                return;
+            }
+
+            const cupom = cupons.find((item) => item.codigo === codigo);
+            const subtotal = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+            const result = validateCoupon(cupom, subtotal);
+
+            if (!result.valid) {
+                appliedCoupon = null;
+                localStorage.removeItem('mh_applied_coupon');
+                msg.className = 'text-xs text-red-400';
+                msg.textContent = result.reason;
+                renderCart();
+                return;
+            }
+
+            appliedCoupon = cupom;
+            localStorage.setItem('mh_applied_coupon', JSON.stringify(appliedCoupon));
+            msg.className = 'text-xs text-green-400';
+            msg.textContent = `Cupom ${cupom.codigo} aplicado com sucesso.`;
+            renderCart();
+        }
+
+        function clearCoupon() {
+            appliedCoupon = null;
+            localStorage.removeItem('mh_applied_coupon');
+            const msg = document.getElementById('couponMessage');
+            const input = document.getElementById('couponCodeInput');
+            if (input) input.value = '';
+            if (msg) {
+                msg.className = 'text-xs text-gray-400';
+                msg.textContent = 'Apenas 1 cupom por pedido.';
+            }
+        }
+
+        async function persistCupons() {
+            const dbMode = localStorage.getItem('mh_db_mode') || 'firebase';
+            if (dbMode === 'local') {
+                localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+                return;
+            }
+
+            if (window.firebaseDB) {
+                const { db, ref, set } = window.firebaseDB;
+                const cuponsMap = cupons.reduce((acc, cupom) => {
+                    acc[cupom.id] = cupom;
+                    return acc;
+                }, {});
+                await set(ref(db, 'cupons'), cuponsMap);
+                localStorage.setItem(LOCAL_CUPONS_KEY, JSON.stringify(cupons));
+            }
+        }
+
+        async function registerCouponUsage(codigo) {
+            if (!codigo) return;
+            const idx = cupons.findIndex((cupom) => cupom.codigo === codigo);
+            if (idx === -1) return;
+            cupons[idx].usos = Number(cupons[idx].usos || 0) + 1;
+            await persistCupons();
+        }
+
+        function animateProductToCart(sourceBtn, produto) {
+            const cartBtn = document.getElementById('topCartBtn');
+            if (!cartBtn) return;
+
+            const startRect = sourceBtn?.getBoundingClientRect?.();
+            const endRect = cartBtn.getBoundingClientRect();
+
+            if (!startRect) {
+                cartBtn.classList.remove('cart-bump');
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add('cart-bump');
+                return;
+            }
+
+            const fly = document.createElement('div');
+            fly.className = 'fly-item';
+            fly.textContent = produto?.imagem || '•';
+            fly.style.left = `${startRect.left + startRect.width / 2}px`;
+            fly.style.top = `${startRect.top + startRect.height / 2}px`;
+            document.body.appendChild(fly);
+
+            const deltaX = endRect.left + endRect.width / 2 - (startRect.left + startRect.width / 2);
+            const deltaY = endRect.top + endRect.height / 2 - (startRect.top + startRect.height / 2);
+
+            requestAnimationFrame(() => {
+                fly.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.35)`;
+                fly.style.opacity = '0.15';
+            });
+
+            setTimeout(() => {
+                fly.remove();
+                cartBtn.classList.remove('cart-bump');
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add('cart-bump');
+            }, 680);
+        }
+
+        function openCart() {
+            document.getElementById('cartModal').classList.remove('hidden');
+            renderCart();
+        }
+
+        function closeCart() {
+            document.getElementById('cartModal').classList.add('hidden');
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            const emptyEl = document.getElementById('cartEmpty');
+            const summaryEl = document.getElementById('cartSummary');
+            const discountRow = document.getElementById('discountRow');
+            const discountValue = document.getElementById('discountValue');
+            const couponInput = document.getElementById('couponCodeInput');
+            const couponMessage = document.getElementById('couponMessage');
+            
+            if (carrinho.length === 0) {
+                container.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                summaryEl.classList.add('hidden');
+                clearCoupon();
+                return;
+            }
+            
+            emptyEl.classList.add('hidden');
+            summaryEl.classList.remove('hidden');
+            
+            container.innerHTML = carrinho.map((item, index) => `
+                <div class="glass-card p-4 rounded-xl flex items-center gap-4">
+                    <div class="flex-1">
+                        <h4 class="font-bold">${item.nome}</h4>
+                        ${item.customizacao ? `<p class="text-xs text-gray-400">${item.customizacao}</p>` : ''}
+                        <p class="neon-pink font-semibold">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="updateQuantity(${index}, -1)" class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center">
+                            <i class="fas fa-minus text-sm"></i>
+                        </button>
+                        <span class="w-8 text-center font-bold">${item.quantidade}</span>
+                        <button onclick="updateQuantity(${index}, 1)" class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                    <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-400">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            const totals = getCartTotals();
+            document.getElementById('subtotal').textContent = 'R$ ' + totals.subtotal.toFixed(2).replace('.', ',');
+            document.getElementById('deliveryFee').textContent = 'R$ ' + totals.entrega.toFixed(2).replace('.', ',');
+            document.getElementById('total').textContent = 'R$ ' + totals.total.toFixed(2).replace('.', ',');
+
+            if (totals.desconto > 0) {
+                discountRow.classList.remove('hidden');
+                discountValue.textContent = '-R$ ' + totals.desconto.toFixed(2).replace('.', ',');
+            } else {
+                discountRow.classList.add('hidden');
+                discountValue.textContent = '-R$ 0,00';
+            }
+
+            if (appliedCoupon) {
+                const validation = validateCoupon(appliedCoupon, totals.subtotal);
+                couponInput.value = appliedCoupon.codigo;
+                if (validation.valid) {
+                    couponMessage.className = 'text-xs text-green-400';
+                    couponMessage.textContent = `Cupom ${appliedCoupon.codigo} aplicado.`;
+                } else {
+                    couponMessage.className = 'text-xs text-yellow-400';
+                    couponMessage.textContent = `Cupom salvo, mas não aplicado agora: ${validation.reason}`;
+                }
+            }
+        }
+
+        function updateQuantity(index, delta) {
+            carrinho[index].quantidade += delta;
+            if (carrinho[index].quantidade <= 0) {
+                carrinho.splice(index, 1);
+            }
+            saveCart();
+            setupCartCounter();
+            renderCart();
+        }
+
+        function removeItem(index) {
+            carrinho.splice(index, 1);
+            saveCart();
+            setupCartCounter();
+            renderCart();
+        }
+
+        function openCheckout() {
+            closeCart();
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        function loadSavedData() {
+            const savedName = localStorage.getItem('mh_clientName');
+            const savedPhone = localStorage.getItem('mh_clientPhone');
+            const savedAddress = localStorage.getItem('mh_clientAddress');
+            
+            if (savedName) document.getElementById('clientName').value = savedName;
+            if (savedPhone) document.getElementById('clientPhone').value = savedPhone;
+            if (savedAddress) document.getElementById('clientAddress').value = savedAddress;
+        }
+
+        function getWhatsAppPhoneNumber(rawValue) {
+            const source = decodeURIComponent(String(rawValue || ''));
+            const phoneParamMatch = source.match(/phone=(\d{10,15})/i);
+            if (phoneParamMatch) return phoneParamMatch[1];
+
+            const digits = source.replace(/\D/g, '');
+            if (!digits) return '5500000000000';
+            if (digits.startsWith('55')) return digits;
+            if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+            return digits;
+        }
+
+        function buildWhatsAppUrl(message) {
+            const phone = getWhatsAppPhoneNumber(siteConfig.whatsapp);
+            return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        }
+
+        function showWhatsAppFallback(whatsappUrl) {
+            const toast = document.getElementById('whatsappFallbackToast');
+            const link = document.getElementById('whatsappFallbackLink');
+            if (!toast || !link) return;
+
+            link.href = whatsappUrl;
+            toast.classList.remove('hidden');
+            localStorage.setItem('mh_whatsapp_fallback', JSON.stringify({ url: whatsappUrl, ts: Date.now() }));
+        }
+
+        function hideWhatsAppFallback() {
+            const toast = document.getElementById('whatsappFallbackToast');
+            if (toast) toast.classList.add('hidden');
+            localStorage.removeItem('mh_whatsapp_fallback');
+        }
+
+        function restoreWhatsAppFallback() {
+            try {
+                const raw = localStorage.getItem('mh_whatsapp_fallback');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                const hasValidTs = Number.isFinite(Number(data?.ts));
+                const isFresh = hasValidTs && (Date.now() - Number(data.ts) < 15 * 60 * 1000);
+                if (!isFresh || !data?.url) {
+                    localStorage.removeItem('mh_whatsapp_fallback');
+                    return;
+                }
+
+                const toast = document.getElementById('whatsappFallbackToast');
+                const link = document.getElementById('whatsappFallbackLink');
+                if (toast && link) {
+                    link.href = data.url;
+                    toast.classList.remove('hidden');
+                }
+            } catch (_) {
+                localStorage.removeItem('mh_whatsapp_fallback');
+            }
+        }
+
+        function openWhatsAppSafely(whatsappUrl) {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+            // iOS Safari is strict with popups; prefer same-tab navigation when needed.
+            if (isIOS) {
+                window.location.href = whatsappUrl;
+                return;
+            }
+
+            const popup = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            if (!popup) {
+                window.location.href = whatsappUrl;
+            }
+        }
+
+        async function handleCheckout(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('clientName').value;
+            const telefone = document.getElementById('clientPhone').value;
+            const endereco = document.getElementById('clientAddress').value;
+            const complemento = document.getElementById('clientComplement').value;
+            const pagamento = document.getElementById('paymentMethod').value;
+            const trocoPara = document.getElementById('changeFor').value;
+            
+            // Save to localStorage
+            localStorage.setItem('mh_clientName', nome);
+            localStorage.setItem('mh_clientPhone', telefone);
+            localStorage.setItem('mh_clientAddress', endereco);
+            
+            // Calculate totals
+            const totals = getCartTotals();
+            const subtotal = totals.subtotal;
+            const entrega = totals.entrega;
+            const desconto = totals.desconto;
+            const total = totals.total;
+
+            let cupomAplicadoNoPedido = null;
+            if (appliedCoupon) {
+                const couponCheck = validateCoupon(appliedCoupon, subtotal);
+                if (couponCheck.valid) {
+                    cupomAplicadoNoPedido = appliedCoupon;
+                }
+            }
+
+            if (total < Number(siteConfig.valorMinimo || 0)) {
+                alert(`Pedido minimo de R$ ${Number(siteConfig.valorMinimo).toFixed(2).replace('.', ',')}`);
+                return;
+            }
+            
+            // Build message
+            let mensagem = `🍔 *PEDIDO MH LANCHES* 🍔\n\n`;
+            mensagem += `👤 *Cliente:* ${nome}\n`;
+            mensagem += `📱 *Telefone:* ${telefone}\n`;
+            mensagem += `📍 *Endereço:* ${endereco}\n`;
+            if (complemento) mensagem += `✏️ *Complemento:* ${complemento}\n`;
+            mensagem += `💳 *Pagamento:* ${pagamento}\n`;
+            if (pagamento === 'dinheiro' && trocoPara) mensagem += `💰 *Troco para:* ${trocoPara}\n`;
+            mensagem += `\n📋 *Itens do Pedido:*\n`;
+            
+            carrinho.forEach(item => {
+                mensagem += `• ${item.quantidade}x ${item.nome}`;
+                if (item.customizacao) mensagem += ` (${item.customizacao})`;
+                mensagem += ` - R$ ${(item.preco * item.quantidade).toFixed(2).replace('.', ',')}\n`;
+            });
+            
+            mensagem += `\n💰 *Subtotal:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+            if (desconto > 0) {
+                mensagem += `🎟️ *Desconto:* -R$ ${desconto.toFixed(2).replace('.', ',')}`;
+                if (cupomAplicadoNoPedido) mensagem += ` (Cupom ${cupomAplicadoNoPedido.codigo})`;
+                mensagem += `\n`;
+            }
+            mensagem += `🚚 *Entrega:* R$ ${entrega.toFixed(2).replace('.', ',')}\n`;
+            mensagem += `✨ *TOTAL:* R$ ${total.toFixed(2).replace('.', ',')}`;
+            
+            // Generate order ID
+            const pedidoId = 'PED_' + Date.now();
+            localStorage.setItem('mh_pedidoId', pedidoId);
+
+            // Open WhatsApp immediately after the user click to avoid iOS popup blocking.
+            const whatsappUrl = buildWhatsAppUrl(mensagem);
+            showWhatsAppFallback(whatsappUrl);
+            openWhatsAppSafely(whatsappUrl);
+            
+            // Save to Firebase if available
+            if (window.firebaseDB) {
+                try {
+                    const { db, ref, set } = window.firebaseDB;
+                    set(ref(db, 'pedidos/' + pedidoId), {
+                        id: pedidoId,
+                        cliente: { nome, telefone, endereco, complemento },
+                        itens: carrinho,
+                        pagamento,
+                        trocoPara,
+                        total,
+                        subtotal,
+                        desconto,
+                        cupom: cupomAplicadoNoPedido ? {
+                            codigo: cupomAplicadoNoPedido.codigo,
+                            tipo: cupomAplicadoNoPedido.tipo,
+                            valor: cupomAplicadoNoPedido.valor
+                        } : null,
+                        status: 'novo',
+                        data: new Date().toISOString(),
+                        tipo: 'delivery'
+                    }).catch((err) => {
+                        console.log('Firebase save error:', err);
+                    });
+                } catch (err) {
+                    console.log('Firebase save error:', err);
+                }
+            }
+            
+            // Setup tracking
+            setupOrderTracking(pedidoId);
+
+            if (cupomAplicadoNoPedido) {
+                registerCouponUsage(cupomAplicadoNoPedido.codigo).catch((error) => {
+                    console.log('Erro ao registrar uso de cupom:', error);
+                });
+            }
+            
+            // Clear cart
+            carrinho = [];
+            saveCart();
+            setupCartCounter();
+            clearCoupon();
+            closeCheckout();
+            
+            // Show tracking
+            openTracking();
+        }
+
+        function setupOrderTracking(pedidoId) {
+            if (window.firebaseDB) {
+                const { db, ref, onValue } = window.firebaseDB;
+                onValue(ref(db, 'pedidos/' + pedidoId), (snapshot) => {
+                    const dados = snapshot.val();
+                    if (dados) {
+                        renderTracking(dados.status || 'novo');
+                        // Notificar mudança de status
+                        if (dados.status === 'cancelado') {
+                            if (Notification.permission === 'granted') {
+                                new Notification('MH Lanches', { body: '❌ Seu pedido foi cancelado.' });
+                            }
+                        }
+                    } else {
+                        // Pedido removido (pode ter sido cancelado e movido para histórico)
+                        // Verificar no histórico de vendas
+                        const { db: db2, ref: ref2, onValue: onValue2 } = window.firebaseDB;
+                        onValue2(ref2(db2, 'vendas'), (snap2) => {
+                            const vendas = snap2.val() || {};
+                            const vendaCancelada = Object.values(vendas).find(v => v.id === pedidoId && v.status === 'cancelado');
+                            if (vendaCancelada) {
+                                renderTracking('cancelado');
+                            }
+                        }, { onlyOnce: true });
+                    }
+                });
+            }
+        }
+
+        function renderTracking(status) {
+            const container = document.getElementById('trackingSteps');
+            const modalContent = container.closest('.glass');
+            
+            // STATUS CANCELADO - Tela especial
+            if (status === 'cancelado') {
+                if (modalContent) {
+                    modalContent.style.background = 'rgba(30, 30, 30, 0.95)';
+                    modalContent.style.borderColor = 'rgba(255, 68, 68, 0.3)';
+                }
+                container.innerHTML = `
+                    <div class="text-center py-6">
+                        <div class="mb-6">
+                            <i class="fas fa-times-circle text-6xl text-red-500 mb-4" style="filter: drop-shadow(0 0 20px rgba(255,0,0,0.5));"></i>
+                        </div>
+                        <h3 class="text-3xl font-black text-red-500 mb-4" style="text-shadow: 0 0 20px rgba(255,0,0,0.4);">
+                            Pedido Cancelado!
+                        </h3>
+                        <div class="w-20 h-1 bg-red-500 mx-auto mb-4 rounded-full" style="box-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
+                        <p class="text-gray-300 text-sm leading-relaxed max-w-sm mx-auto">
+                            Caso não esteja ciente do motivo que levou ao cancelamento, favor entrar em contato com a nossa equipe.
+                        </p>
+                        <p class="text-gray-400 text-sm mt-3">
+                            Aguardamos seu próximo pedido!
+                        </p>
+                        <button onclick="closeTracking(); localStorage.removeItem('mh_pedidoId');" class="mt-6 px-6 py-3 rounded-xl font-bold text-sm border border-red-500 text-red-400 hover:bg-red-500/10 transition-all">
+                            Fechar
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Restaurar visual normal
+            if (modalContent) {
+                modalContent.style.background = '';
+                modalContent.style.borderColor = '';
+            }
+            
+            const statuses = [
+                { id: 'novo', label: 'Pedido Recebido', icon: 'fa-clock' },
+                { id: 'producao', label: 'Em Produção', icon: 'fa-fire' },
+                { id: 'pronto', label: 'Pronto', icon: 'fa-check-circle' },
+                { id: 'saiu-entrega', label: 'Saiu para Entrega', icon: 'fa-motorcycle' },
+                { id: 'entregue', label: 'Entregue', icon: 'fa-home' },
+                { id: 'pago', label: 'Pago', icon: 'fa-dollar-sign' }
+            ];
+            
+            const currentIndex = statuses.findIndex(s => s.id === status);
+            
+            container.innerHTML = statuses.map((s, i) => `
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center ${i <= currentIndex ? 'bg-gradient-to-r from-[#ff00ff] to-[#00ffff]' : 'bg-gray-700'}">
+                        <i class="fas ${s.icon} text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold ${i <= currentIndex ? 'neon-cyan' : 'text-gray-500'}">${s.label}</p>
+                        ${i === currentIndex ? '<p class="text-sm neon-pink">Status atual</p>' : ''}
+                    </div>
+                    ${i <= currentIndex ? '<i class="fas fa-check text-green-500 text-xl"></i>' : ''}
+                </div>
+                ${i < statuses.length - 1 ? `<div class="ml-6 w-0.5 h-8 ${i < currentIndex ? 'bg-gradient-to-b from-[#ff00ff] to-[#00ffff]' : 'bg-gray-700'}"></div>` : ''}
+            `).join('');
+        }
+
+        function openTracking() {
+            document.getElementById('trackingModal').classList.remove('hidden');
+        }
+
+        function openSavedTracking() {
+            const pedidoId = localStorage.getItem('mh_pedidoId');
+            if (!pedidoId) {
+                alert('Voce ainda nao possui um pedido ativo para acompanhamento.');
+                return;
+            }
+            setupOrderTracking(pedidoId);
+            openTracking();
+        }
+
+        function closeTracking() {
+            document.getElementById('trackingModal').classList.add('hidden');
+        }
+
+        function updateCustomizeTotal() {
+            if (!customizingProduct) return;
+            let subtotal = customizingProduct.preco;
+            const tipo = customizingProduct.tipo || 'simples';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            
+            // Sabores Meio a Meio
+            if (isMeio) {
+                const s1El = document.getElementById('sabor1');
+                const s2El = document.getElementById('sabor2');
+                if (s1El) {
+                    const s1Opt = s1El.options[s1El.selectedIndex];
+                    subtotal += parseFloat(s1Opt?.dataset?.preco) || 0;
+                }
+                if (s2El && s2El.value) {
+                    const s2Opt = s2El.options[s2El.selectedIndex];
+                    subtotal += parseFloat(s2Opt?.dataset?.preco) || 0;
+                }
+            }
+            
+            // Sabores Multi-escolha — RESPEITA LIMITE GRÁTIS
+            if (isMulti) {
+                const saborChecks = document.querySelectorAll('.sabor-checkbox:checked');
+                const saborMaxGratis = customizingProduct.saborMaxGratis || 0;
+                const saborPrecos = {};
+                (customizingProduct.sabores || []).forEach(s => { saborPrecos[s.nome] = s.preco || 0; });
+                
+                // Ordena por preço (mais caros primeiro) para cobrar os mais caros quando passar do limite
+                const selectedPrecos = Array.from(saborChecks).map(cb => ({
+                    nome: cb.value,
+                    preco: saborPrecos[cb.value] || 0
+                }));
+                
+                // Os primeiros N (maxGratis) são grátis, o resto cobra
+                selectedPrecos.forEach((item, idx) => {
+                    if (idx >= saborMaxGratis) {
+                        subtotal += item.preco;
+                    }
+                });
+            }
+            
+            // Opcionais — RESPEITA LIMITE GRÁTIS
+            const opcInputs = document.querySelectorAll('.opcional-checkbox:checked');
+            const opcMaxGratis = customizingProduct.opcionalMaxGratis || 0;
+            opcInputs.forEach((input, index) => {
+                if (index >= opcMaxGratis) {
+                    subtotal += parseFloat(input.dataset.preco) || 0;
+                }
+            });
+            
+            // Adicionais — RESPEITA LIMITE GRÁTIS
+            const adcInputs = document.querySelectorAll('.adicional-checkbox:checked');
+            const adcMaxGratis = customizingProduct.adicionalMaxGratis || 0;
+            adcInputs.forEach((input, index) => {
+                if (index >= adcMaxGratis) {
+                    subtotal += parseFloat(input.dataset.preco) || 0;
+                }
+            });
+            
+            const btn = document.getElementById('btnConfirmCustom');
+            if (btn) {
+                btn.innerHTML = `<i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho — R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            }
+        }
+
+        function updateSaborCounter() {
+            if (!customizingProduct) return;
+            const checks = document.querySelectorAll('.sabor-checkbox:checked');
+            const counter = document.getElementById('saborCounter');
+            const warningEl = document.getElementById('saborWarning');
+            const maxGratis = customizingProduct.saborMaxGratis || 0;
+            const maxTotal = customizingProduct.saborMaxTotal || 5;
+            const count = checks.length;
+            
+            if (counter) {
+                if (count <= maxGratis) {
+                    counter.textContent = `${count} / ${maxGratis} grátis`;
+                    counter.className = 'px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold';
+                } else if (count <= maxTotal) {
+                    const extras = count - maxGratis;
+                    counter.textContent = `${count} / ${maxTotal} (${extras} cobrado)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-sm font-bold';
+                } else {
+                    counter.textContent = `${count} / ${maxTotal} (LIMITE)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 text-sm font-bold';
+                }
+            }
+            
+            // Aviso visual
+            if (warningEl) {
+                if (count > maxGratis && count <= maxTotal) {
+                    warningEl.textContent = `⚠️ Próximos itens serão cobrados pelo preço individual!`;
+                    warningEl.className = 'text-xs text-yellow-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                } else if (count >= maxTotal) {
+                    warningEl.textContent = `🚫 Limite máximo de ${maxTotal} sabores atingido!`;
+                    warningEl.className = 'text-xs text-red-400 font-semibold mt-1';
+                    warningEl.classList.remove('hidden');
+                } else {
+                    warningEl.classList.add('hidden');
+                }
+            }
+            
+            // Desabilitar checkboxes quando atingir limite total
+            if (count >= maxTotal) {
+                document.querySelectorAll('.sabor-checkbox:not(:checked)').forEach(cb => cb.disabled = true);
+            } else {
+                document.querySelectorAll('.sabor-checkbox').forEach(cb => cb.disabled = false);
+            }
+        }
+
+        function updateOpcionalCounter() {
+            if (!customizingProduct) return;
+            const checks = document.querySelectorAll('.opcional-checkbox:checked');
+            const counter = document.getElementById('opcionalCounter');
+            const warningEl = document.getElementById('opcionalWarning');
+            const maxGratis = customizingProduct.opcionalMaxGratis || 0;
+            const maxTotal = customizingProduct.opcionalMaxTotal || 0;
+            const count = checks.length;
+            
+            if (counter) {
+                if (maxGratis > 0 && count <= maxGratis) {
+                    counter.textContent = `${count} / ${maxGratis} grátis`;
+                    counter.className = 'px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold';
+                } else if (maxGratis > 0 && count > maxGratis && (maxTotal === 0 || count <= maxTotal)) {
+                    const extras = count - maxGratis;
+                    counter.textContent = `${count} / ${maxTotal > 0 ? maxTotal : '∞'} (${extras} cobrado)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-sm font-bold';
+                } else if (maxTotal > 0 && count >= maxTotal) {
+                    counter.textContent = `${count} / ${maxTotal} (LIMITE)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 text-sm font-bold';
+                } else {
+                    counter.textContent = `${count} selecionados`;
+                    counter.className = 'px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold';
+                }
+            }
+            
+            // Bloquear seleção se atingiu maxTotal
+            if (maxTotal > 0 && count >= maxTotal) {
+                document.querySelectorAll('.opcional-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                    cb.closest('label').classList.add('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `🚫 Limite máximo de ${maxTotal} opcionais atingido!`;
+                    warningEl.className = 'text-xs text-red-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else if (maxGratis > 0 && count > maxGratis) {
+                document.querySelectorAll('.opcional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `⚠️ Próximos opcionais serão cobrados pelo preço individual!`;
+                    warningEl.className = 'text-xs text-yellow-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else {
+                document.querySelectorAll('.opcional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) warningEl.classList.add('hidden');
+            }
+        }
+
+        function updateAdicionalCounter() {
+            if (!customizingProduct) return;
+            const checks = document.querySelectorAll('.adicional-checkbox:checked');
+            const counter = document.getElementById('adicionalCounter');
+            const warningEl = document.getElementById('adicionalWarning');
+            const maxGratis = customizingProduct.adicionalMaxGratis || 0;
+            const maxTotal = customizingProduct.adicionalMaxTotal || 0;
+            const count = checks.length;
+            
+            if (counter) {
+                if (maxGratis > 0 && count <= maxGratis) {
+                    counter.textContent = `${count} / ${maxGratis} grátis`;
+                    counter.className = 'px-3 py-1 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold';
+                } else if (maxGratis > 0 && count > maxGratis && (maxTotal === 0 || count <= maxTotal)) {
+                    const extras = count - maxGratis;
+                    counter.textContent = `${count} / ${maxTotal > 0 ? maxTotal : '∞'} (${extras} cobrado)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-sm font-bold';
+                } else if (maxTotal > 0 && count >= maxTotal) {
+                    counter.textContent = `${count} / ${maxTotal} (LIMITE)`;
+                    counter.className = 'px-3 py-1 rounded-full bg-red-500/20 border border-red-500/50 text-red-400 text-sm font-bold';
+                } else {
+                    counter.textContent = `${count} selecionados`;
+                    counter.className = 'px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold';
+                }
+            }
+            
+            // Bloquear seleção se atingiu maxTotal
+            if (maxTotal > 0 && count >= maxTotal) {
+                document.querySelectorAll('.adicional-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                    cb.closest('label').classList.add('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `🚫 Limite máximo de ${maxTotal} adicionais atingido!`;
+                    warningEl.className = 'text-xs text-red-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else if (maxGratis > 0 && count > maxGratis) {
+                document.querySelectorAll('.adicional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) {
+                    warningEl.textContent = `⚠️ Próximos adicionais serão cobrados pelo preço individual!`;
+                    warningEl.className = 'text-xs text-yellow-400 font-semibold mt-1 animate-pulse';
+                    warningEl.classList.remove('hidden');
+                }
+            } else {
+                document.querySelectorAll('.adicional-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                    cb.closest('label').classList.remove('opacity-40', 'cursor-not-allowed');
+                });
+                if (warningEl) warningEl.classList.add('hidden');
+            }
+        }
+
+        function openCustomize(id, evt) {
+            const produto = produtos.find(p => String(p.id) === String(id));
+            customizingProduct = produto;
+            
+            document.getElementById('customizeTitle').textContent = produto.nome;
+            
+            let content = '';
+            const tipo = produto.tipo || 'simples';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            
+            const saboresAtivos = (produto.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim());
+            
+            // MÓDULO 1: SABORES (Meio a Meio)
+            if (isMeio && saboresAtivos.length > 0) {
+                content += `
+                    <div class="mb-8 p-5 bg-gradient-to-r from-orange-900/20 to-transparent rounded-2xl border border-orange-500/20">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">🍕</span>
+                            <div>
+                                <p class="text-xl text-white font-extrabold tracking-wide">SABORES</p>
+                                <p class="text-xs text-gray-400">Escolha até 2 sabores para sua pizza</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-orange-400">🔸 Metade 1 (Obrigatório):</label>
+                                <select id="sabor1" onchange="updateCustomizeTotal()" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:border-neon-pink focus:outline-none text-white">
+                                    ${saboresAtivos.map(s => `<option value="${s.nome}" data-preco="${s.preco || 0}">${s.nome}${s.preco > 0 ? ' (+ R$ ' + s.preco.toFixed(2).replace('.', ',') + ')' : ''}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-orange-400">🔸 Metade 2 (Opcional):</label>
+                                <select id="sabor2" onchange="updateCustomizeTotal()" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:border-neon-pink focus:outline-none text-white">
+                                    <option value="" data-preco="0">— Inteira (1 sabor só) —</option>
+                                    ${saboresAtivos.map(s => `<option value="${s.nome}" data-preco="${s.preco || 0}">${s.nome}${s.preco > 0 ? ' (+ R$ ' + s.preco.toFixed(2).replace('.', ',') + ')' : ''}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (isMulti && saboresAtivos.length > 0) {
+                const maxGratis = produto.saborMaxGratis || 0;
+                const maxTotal = produto.saborMaxTotal || 5;
+                content += `
+                    <div class="mb-8 p-5 bg-gradient-to-r from-cyan-900/20 to-transparent rounded-2xl border border-cyan-500/20">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl">🎛️</span>
+                                <div>
+                                    <p class="text-xl text-white font-extrabold tracking-wide">SABORES</p>
+                                    <p class="text-xs text-gray-400">Escolha seus sabores preferidos</p>
+                                </div>
+                            </div>
+                            <div id="saborCounter" class="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/50 text-green-400 text-sm font-bold">
+                                0 / ${maxGratis} grátis
+                            </div>
+                        </div>
+                        ${maxGratis > 0 ? `<p class="text-sm text-cyan-400 mb-1">🎁 Até <strong>${maxGratis}</strong> sabores GRÁTIS — extras cobrados pelo preço individual</p>` : ''}
+                        <p class="text-xs text-gray-500 mb-3">Máximo de ${maxTotal} sabores por unidade</p>
+                        <div id="saborWarning" class="hidden text-xs text-yellow-400 font-semibold mt-1"></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${saboresAtivos.map(s => `
+                                <label class="glass-card p-3 rounded-xl cursor-pointer hover:border-neon-pink transition-all flex items-center gap-3 group">
+                                    <input type="checkbox" value="${s.nome}" data-preco="${s.preco || 0}" class="sabor-checkbox accent-[#ff00ff] w-5 h-5" onchange="updateSaborCounter(); updateCustomizeTotal()">
+                                    <div class="flex-1">
+                                        <span class="text-sm font-semibold text-white group-hover:text-neon-pink transition-colors">${s.nome}</span>
+                                    </div>
+                                    ${s.preco > 0 ? `<span class="text-xs font-bold text-neon-pink bg-pink-500/10 px-2 py-1 rounded-lg">+ R$ ${s.preco.toFixed(2).replace('.', ',')}</span>` : `<span class="text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded-lg">GRÁTIS</span>`}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // MÓDULO 2: OPCIONAIS
+            if (produto.temOpcionais && produto.opcionais && produto.opcionais.length > 0) {
+                const opcAtivos = produto.opcionais.filter(o => !o.pausado && o.nome && o.nome.trim());
+                const opcMaxGratis = produto.opcionalMaxGratis || 0;
+                const opcMaxTotal = produto.opcionalMaxTotal || 0;
+                if (opcAtivos.length > 0) {
+                    content += `
+                        <div class="mb-8 p-5 bg-gradient-to-r from-pink-900/20 to-transparent rounded-2xl border border-pink-500/20">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl">✅</span>
+                                    <div>
+                                        <p class="text-xl text-white font-extrabold tracking-wide">OPCIONAIS</p>
+                                        <p class="text-xs text-gray-400">Itens que podem acompanhar</p>
+                                    </div>
+                                </div>
+                                <div id="opcionalCounter" class="px-4 py-2 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold">0 selecionados</div>
+                            </div>
+                            ${opcMaxGratis > 0 ? `<p class="text-sm text-green-400 mb-1">🎁 Até <strong>${opcMaxGratis}</strong> opcionais GRÁTIS</p>` : ''}
+                            ${opcMaxTotal > 0 ? `<p class="text-xs text-gray-500 mb-3">Máximo de <strong>${opcMaxTotal}</strong> opcionais permitidos</p>` : ''}
+                            <div id="opcionalWarning" class="hidden text-xs text-yellow-400 font-semibold mt-1"></div>
+                            <div class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-3">
+                                ${opcAtivos.map(o => `
+                                    <label class="flex justify-between items-center bg-gray-800/80 p-4 rounded-xl cursor-pointer hover:bg-gray-700/80 transition-all border border-transparent hover:border-neon-pink/40 group">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" data-preco="${o.preco || 0}" data-type="opcional" value="${o.nome}" onchange="updateOpcionalCounter(); updateCustomizeTotal()" class="opcional-checkbox accent-[#ff00ff] w-5 h-5">
+                                            <span class="text-sm font-medium text-white group-hover:text-neon-pink transition-colors">${o.nome}</span>
+                                        </div>
+                                        <span class="text-xs font-bold ${o.preco > 0 ? 'text-neon-pink bg-pink-500/10 px-2 py-1 rounded-lg' : 'text-green-400 bg-green-500/10 px-2 py-1 rounded-lg'}">${o.preco > 0 ? '+ R$ ' + o.preco.toFixed(2).replace('.', ',') : 'GRÁTIS'}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // MÓDULO 3: ADICIONAIS
+            if (produto.temAdicionais && produto.adicionais && produto.adicionais.length > 0) {
+                const adcAtivos = produto.adicionais.filter(a => !a.pausado && a.nome && a.nome.trim());
+                const adcMaxGratis = produto.adicionalMaxGratis || 0;
+                const adcMaxTotal = produto.adicionalMaxTotal || 0;
+                if (adcAtivos.length > 0) {
+                    content += `
+                        <div class="mb-8 p-5 bg-gradient-to-r from-blue-900/20 to-transparent rounded-2xl border border-cyan-500/20">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-3xl">➕</span>
+                                <div>
+                                    <p class="text-xl text-white font-extrabold tracking-wide">ADICIONAIS</p>
+                                    <p class="text-xs text-gray-400">Extras que somam ao pedido</p>
+                                </div>
+                            </div>
+                            ${adcMaxGratis > 0 ? `<p class="text-sm text-green-400 mb-1">🎁 Até ${adcMaxGratis} adicionais GRÁTIS</p>` : ''}
+                            ${adcMaxTotal > 0 ? `<p class="text-xs text-gray-500 mb-3">Máximo de ${adcMaxTotal} adicionais permitidos</p>` : '<p class="text-xs text-gray-500 mb-3">Cada adicional cobra seu preço individual</p>'}
+                            <div class="flex items-center gap-2 mb-3" id="adicionalCounterWrap">
+                                <span id="adicionalCounter" class="px-3 py-1 rounded-full bg-gray-700/50 border border-gray-600/50 text-gray-400 text-sm font-bold">0 selecionados</span>
+                                <span id="adicionalWarning" class="text-xs"></span>
+                            </div>
+                            <div class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-3">
+                                ${adcAtivos.map(a => `
+                                    <label class="flex justify-between items-center bg-gray-800/80 p-4 rounded-xl cursor-pointer hover:bg-gray-700/80 transition-all border border-transparent hover:border-neon-cyan/40 group">
+                                        <div class="flex items-center gap-3">
+                                            <input type="checkbox" data-preco="${a.preco || 0}" data-type="adicional" value="${a.nome}" onchange="updateAdicionalCounter(); updateCustomizeTotal()" class="adicional-checkbox accent-[#00ffff] w-5 h-5">
+                                            <span class="text-sm font-medium text-white group-hover:text-cyan-400 transition-colors">${a.nome}</span>
+                                        </div>
+                                        <span class="text-xs font-bold text-neon-cyan bg-cyan-500/10 px-2 py-1 rounded-lg">+ R$ ${a.preco.toFixed(2).replace('.', ',')}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Observações
+            content += `
+                <div class="mb-6 p-4 bg-gray-900/40 rounded-2xl border border-gray-700/50">
+                    <label class="block text-sm font-bold mb-2 text-gray-300">📝 Observações</label>
+                    <textarea id="customObs" placeholder="Ex: Sem cebola, borda recheada, bem passado..." rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:border-neon-pink focus:outline-none text-white"></textarea>
+                </div>
+            `;
+            
+            content += `
+                <button id="btnConfirmCustom" onclick="confirmCustomize(event)" class="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho — R$ ${produto.preco.toFixed(2).replace('.', ',')}
+                </button>
+            `;
+            
+            document.getElementById('customizeContent').innerHTML = content;
+            document.getElementById('customizeModal').classList.remove('hidden');
+            updateSaborCounter();
+            updateOpcionalCounter();
+            updateAdicionalCounter();
+            updateCustomizeTotal();
+        }
+
+        function confirmCustomize(evt) {
+            const tipo = customizingProduct.tipo || 'simples';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            let customizacao = '';
+            let total = customizingProduct.preco;
+            
+            // Sabores Meio a Meio
+            if (isMeio) {
+                const s1El = document.getElementById('sabor1');
+                const s2El = document.getElementById('sabor2');
+                if (s1El) {
+                    const sabor1 = s1El.value;
+                    const sabor2 = s2El ? s2El.value : '';
+                    const s1Opt = s1El.options[s1El.selectedIndex];
+                    const s2Opt = s2El ? s2El.options[s2El.selectedIndex] : null;
+                    const precoS1 = parseFloat(s1Opt?.dataset?.preco) || 0;
+                    const precoS2 = parseFloat(s2Opt?.dataset?.preco) || 0;
+                    total += precoS1;
+                    if (sabor2) total += precoS2;
+                    customizacao += `🍕 ${sabor2 ? sabor1 + ' e ' + sabor2 : sabor1}`;
+                }
+            }
+            
+            // Sabores Multi-escolha — RESPEITA LIMITE GRÁTIS
+            if (isMulti) {
+                const saborChecks = Array.from(document.querySelectorAll('.sabor-checkbox:checked'));
+                const sabores = saborChecks.map(cb => cb.value);
+                if (sabores.length === 0 && (customizingProduct.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim()).length > 0) {
+                    alert('Selecione pelo menos um sabor!');
+                    return;
+                }
+                if (sabores.length > 0) {
+                    const saborMaxGratis = customizingProduct.saborMaxGratis || 0;
+                    const saborPrecos = {};
+                    (customizingProduct.sabores || []).forEach(s => { saborPrecos[s.nome] = s.preco || 0; });
+                    
+                    // Monta lista com preços para cobrar apenas os que passam do limite grátis
+                    const selectedPrecos = saborChecks.map(cb => ({
+                        nome: cb.value,
+                        preco: saborPrecos[cb.value] || 0
+                    }));
+                    
+                    // Os primeiros N (maxGratis) são grátis, o resto cobra
+                    selectedPrecos.forEach((item, idx) => {
+                        if (idx >= saborMaxGratis) {
+                            total += item.preco;
+                        }
+                    });
+                    
+                    // Monta texto com indicação de grátis/cobrado
+                    const saborTextos = selectedPrecos.map((item, idx) => {
+                        if (idx < saborMaxGratis) return item.nome;
+                        return `${item.nome} (+R$${item.preco.toFixed(2)})`;
+                    });
+                    customizacao += `🎛️ Sabores: ${saborTextos.join(', ')}`;
+                }
+            }
+            
+            // Opcionais — RESPEITA LIMITE GRÁTIS
+            const opcs = Array.from(document.querySelectorAll('.opcional-checkbox:checked'));
+            const opcMaxGratis = customizingProduct.opcionalMaxGratis || 0;
+            if (opcs.length > 0) {
+                const opcTextos = opcs.map((item, idx) => {
+                    if (idx >= opcMaxGratis) {
+                        total += parseFloat(item.dataset.preco) || 0;
+                        return `${item.value} (+R$${parseFloat(item.dataset.preco || 0).toFixed(2)})`;
+                    }
+                    return item.value;
+                });
+                customizacao += ` | ✅ ${opcTextos.join(', ')}`;
+            }
+            
+            // Adicionais — RESPEITA LIMITE GRÁTIS
+            const adcs = Array.from(document.querySelectorAll('.adicional-checkbox:checked'));
+            const adcMaxGratis = customizingProduct.adicionalMaxGratis || 0;
+            if (adcs.length > 0) {
+                const adcTextos = adcs.map((item, idx) => {
+                    if (idx >= adcMaxGratis) {
+                        total += parseFloat(item.dataset.preco) || 0;
+                        return `${item.value} (+R$${parseFloat(item.dataset.preco || 0).toFixed(2)})`;
+                    }
+                    return item.value;
+                });
+                customizacao += ` | ➕ ${adcTextos.join(', ')}`;
+            }
+            
+            // Observação
+            const obs = document.getElementById('customObs')?.value?.trim();
+            if (obs) customizacao += ` | 📝 ${obs}`;
+            
+            const carrinhoItem = {
+                id: customizingProduct.id + '_' + Date.now(),
+                nome: customizingProduct.nome,
+                preco: total,
+                detalhes: customizacao,
+                quantidade: 1
+            };
+            
+            carrinho.push(carrinhoItem);
+            salvarCarrinho();
+            renderCarrinho();
+            closeCustomize();
+        }
+
+        function scrollToMenu() {
+            const el = document.getElementById('categoriesSection');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function closeCustomize() {
+            document.getElementById('customizeModal').classList.add('hidden');
+            customizingProduct = null;
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('bgMusic');
+            const btn = document.getElementById('musicBtn');
+            
+            if (musicPlaying) {
+                audio.pause();
+                btn.innerHTML = '<i class="fas fa-music neon-pink text-xl"></i>';
+            } else {
+                audio.play().catch(() => {});
+                btn.innerHTML = '<i class="fas fa-volume-up neon-cyan text-xl"></i>';
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
