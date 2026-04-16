@@ -721,11 +721,11 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold mb-1 text-gray-400">📏 Máximo de sabores permitidos</label>
-                                <input type="number" id="saborMaxTotal" value="5" min="1" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
-                                <p class="text-xs text-gray-500 mt-1">Limite total de escolhas</p>
+                                <input type="number" id="saborMaxTotal" value="0" min="0" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
+                                <p class="text-xs text-gray-500 mt-1">0 = ilimitado</p>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2">💡 Ex: Se limite grátis = 3 e total = 5, os primeiros 3 são grátis, o 4º e 5º cobram o preço individual do sabor.</p>
+                        <p class="text-xs text-gray-400 mt-2">💡 0 no máximo grátis = todos inclusos no preço base. 0 no máximo total = sem limite de escolhas.</p>
                     </div>
                     <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
                         <p class="text-xs text-gray-400">💡 Cada sabor pode ter preço individual. ON = disponível, OFF = indisponível (some do cardápio).</p>
@@ -950,7 +950,16 @@
             
             // Carregar categorias
             const catSnap = await firebase.get(firebase.ref(firebase.db, 'categorias'));
-            categorias = catSnap.exists() ? Object.values(catSnap.val()) : [];
+            if (catSnap.exists()) {
+                categorias = [];
+                catSnap.forEach((child) => {
+                    const cat = child.val();
+                    if (!cat.id) cat.id = child.key;
+                    categorias.push(cat);
+                });
+            } else {
+                categorias = [];
+            }
             
             // Carregar pedidos
             const pedSnap = await firebase.get(firebase.ref(firebase.db, 'pedidos'));
@@ -1552,7 +1561,7 @@
                 // Módulos
                 sabores: hasSabores ? currentSabores.filter(s => s.nome.trim()) : [],
                 saborMaxGratis: hasSabores ? (parseInt(document.getElementById('saborMaxGratis').value) || 0) : 0,
-                saborMaxTotal: hasSabores ? (parseInt(document.getElementById('saborMaxTotal').value) || 5) : 5,
+                saborMaxTotal: hasSabores ? (parseInt(document.getElementById('saborMaxTotal').value) || 0) : 0,
                 temOpcionais: hasOpcionais,
                 opcionais: hasOpcionais ? currentOpcionais.filter(o => o.nome.trim()) : [],
                 opcionalMaxGratis: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxGratis').value) || 0) : 0,
@@ -1613,7 +1622,7 @@
                     pausado: s.pausado || false
                 })) : [];
                 document.getElementById('saborMaxGratis').value = prod.saborMaxGratis || 0;
-                document.getElementById('saborMaxTotal').value = prod.saborMaxTotal || 5;
+                document.getElementById('saborMaxTotal').value = prod.saborMaxTotal || 0;
                 
                 // Opcionais - verificar flag
                 const hasOpcionais = prod.temOpcionais || (Array.isArray(prod.opcionais) && prod.opcionais.length > 0);
@@ -1683,11 +1692,14 @@
             
             if (catId) {
                 // Modo edição
-                const cat = categorias.find(c => c.id === catId);
+                const cat = categorias.find(c => String(c.id) === String(catId));
                 if (cat) {
                     document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-edit mr-2"></i> Editar Categoria';
                     document.getElementById('catNome').value = cat.nome || '';
                     document.getElementById('catIcone').value = cat.icone || '';
+                } else {
+                    alert('Categoria não encontrada!');
+                    return;
                 }
             } else {
                 // Modo criação
@@ -1710,7 +1722,7 @@
             
             if (editingCategoryId) {
                 // MODO EDIÇÃO - atualizar categoria existente
-                const cat = categorias.find(c => c.id === editingCategoryId);
+                const cat = categorias.find(c => String(c.id) === String(editingCategoryId));
                 if (!cat) { alert('Categoria não encontrada!'); return; }
                 
                 const novoId = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
@@ -1732,7 +1744,7 @@
                 const id = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
                 
                 // Verificar se já existe
-                if (categorias.find(c => c.id === id)) {
+                if (categorias.find(c => String(c.id) === String(id))) {
                     alert('Já existe uma categoria com esse nome!');
                     return;
                 }
@@ -1751,6 +1763,7 @@
             
             closeCategoryModal();
             renderCategorias();
+            populateCategoriaSelect();
         }
 
         async function moverCategoria(idx, dir) {
@@ -1788,21 +1801,28 @@
         }
 
         async function deleteCategoria(id) {
-            const cat = categorias.find(c => c.id === id);
+            if (!id) { alert('ID da categoria não encontrado!'); return; }
+            const cat = categorias.find(c => String(c.id) === String(id));
             const nome = cat ? cat.nome : id;
             const prodCount = produtos.filter(p => p.categoria === nome).length;
             
-            let msg = `⚠️ Excluir a categoria "${nome}"?`;
+            let msg = `Excluir a categoria "${nome}"?`;
             if (prodCount > 0) {
-                msg += `\n\n⚠️ ATENÇÃO: Existem ${prodCount} produto(s) nesta categoria!\nEles ficarão sem categoria.`;
+                msg += `\n\nATENÇÃO: Existem ${prodCount} produto(s) nesta categoria!\nEles ficarão sem categoria.`;
             }
             
             if (confirm(msg)) {
-                const firebase = window.firebaseDB;
-                await firebase.remove(firebase.ref(firebase.db, 'categorias/' + id));
-                categorias = categorias.filter(c => c.id !== id);
-                renderCategorias();
-                showToast('Categoria excluída!');
+                try {
+                    const firebase = window.firebaseDB;
+                    await firebase.remove(firebase.ref(firebase.db, 'categorias/' + id));
+                    categorias = categorias.filter(c => String(c.id) !== String(id));
+                    renderCategorias();
+                    populateCategoriaSelect();
+                    showToast('Categoria excluída!');
+                } catch(err) {
+                    console.error('Erro ao excluir categoria:', err);
+                    alert('Erro ao excluir: ' + err.message);
+                }
             }
         }
 
