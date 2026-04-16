@@ -817,7 +817,7 @@
         <div class="absolute inset-0 bg-black/70 min-h-screen" onclick="closeCategoryModal()"></div>
         <div class="relative max-w-md mx-auto my-8 glass rounded-2xl p-6 z-10 border border-[#ff00ff]/30 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold neon-pink"><i class="fas fa-tag mr-2"></i> Nova Categoria</h2>
+                <h2 id="categoryModalTitle" class="text-2xl font-bold neon-pink"><i class="fas fa-tag mr-2"></i> Nova Categoria</h2>
                 <button onclick="closeCategoryModal()" class="text-2xl hover:text-red-500 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
@@ -860,6 +860,7 @@
         let pedidos = [];
         let siteConfig = {};
         let editingProductId = null;
+        let editingCategoryId = null;
         let currentGaleria = [];
         let currentSabores = [];
         let currentOpcionais = [];
@@ -1676,61 +1677,143 @@
         }
 
         // Categorias
-        function openCategoryModal() {
+        function openCategoryModal(catId) {
+            editingCategoryId = catId || null;
             document.getElementById('categoryForm').reset();
+            
+            if (catId) {
+                // Modo edição
+                const cat = categorias.find(c => c.id === catId);
+                if (cat) {
+                    document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-edit mr-2"></i> Editar Categoria';
+                    document.getElementById('catNome').value = cat.nome || '';
+                    document.getElementById('catIcone').value = cat.icone || '';
+                }
+            } else {
+                // Modo criação
+                document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-tag mr-2"></i> Nova Categoria';
+            }
+            
             document.getElementById('categoryModal').classList.remove('hidden');
         }
 
         function closeCategoryModal() {
+            editingCategoryId = null;
             document.getElementById('categoryModal').classList.add('hidden');
         }
 
         async function saveCategory(e) {
             e.preventDefault();
             const firebase = window.firebaseDB;
-            const id = document.getElementById('catNome').value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
-            const categoria = {
-                id: id,
-                nome: document.getElementById('catNome').value,
-                icone: document.getElementById('catIcone').value || '📁',
-                ordem: categorias.length + 1
-            };
+            const nome = document.getElementById('catNome').value.trim();
+            if (!nome) { alert('Digite o nome da categoria!'); return; }
             
-            await firebase.set(firebase.ref(firebase.db, 'categorias/' + id), categoria);
-            categorias.push(categoria);
+            if (editingCategoryId) {
+                // MODO EDIÇÃO - atualizar categoria existente
+                const cat = categorias.find(c => c.id === editingCategoryId);
+                if (!cat) { alert('Categoria não encontrada!'); return; }
+                
+                const novoId = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
+                const icone = document.getElementById('catIcone').value || '📁';
+                
+                // Se mudou o ID, precisa remover o antigo e criar o novo
+                if (novoId !== editingCategoryId) {
+                    await firebase.remove(firebase.ref(firebase.db, 'categorias/' + editingCategoryId));
+                    cat.id = novoId;
+                }
+                
+                cat.nome = nome;
+                cat.icone = icone;
+                
+                await firebase.set(firebase.ref(firebase.db, 'categorias/' + cat.id), cat);
+                showToast('Categoria atualizada!');
+            } else {
+                // MODO CRIAÇÃO - nova categoria
+                const id = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
+                
+                // Verificar se já existe
+                if (categorias.find(c => c.id === id)) {
+                    alert('Já existe uma categoria com esse nome!');
+                    return;
+                }
+                
+                const categoria = {
+                    id: id,
+                    nome: nome,
+                    icone: document.getElementById('catIcone').value || '📁',
+                    ordem: categorias.length + 1
+                };
+                
+                await firebase.set(firebase.ref(firebase.db, 'categorias/' + id), categoria);
+                categorias.push(categoria);
+                showToast('Categoria criada!');
+            }
+            
             closeCategoryModal();
             renderCategorias();
-            showToast('Categoria salva!');
         }
 
         async function moverCategoria(idx, dir) {
+            // categorias já está ordenada por ordem no renderCategorias
+            const sorted = [...categorias].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
             const newIdx = idx + dir;
-            if (newIdx < 0 || newIdx >= categorias.length) return;
-            [categorias[idx], categorias[newIdx]] = [categorias[newIdx], categorias[idx]];
-            categorias.forEach((c, i) => c.ordem = i + 1);
+            if (newIdx < 0 || newIdx >= sorted.length) return;
             
-            // Salvar nova ordem no Firebase
+            // Trocar posições
+            [sorted[idx], sorted[newIdx]] = [sorted[newIdx], sorted[idx]];
+            
+            // Atualizar ordem
+            sorted.forEach((c, i) => c.ordem = i + 1);
+            
+            // Atualizar array global
+            categorias = sorted;
+            
+            // Salvar nova ordem no Firebase (atômico)
             const firebase = window.firebaseDB;
             if (firebase && firebase.db) {
                 const updates = {};
-                categorias.forEach((c) => {
+                sorted.forEach((c) => {
                     updates['categorias/' + c.id + '/ordem'] = c.ordem;
                 });
-                await firebase.update(firebase.db, updates);
+                try {
+                    await firebase.update(firebase.db, updates);
+                    showToast('Ordem das categorias atualizada!');
+                } catch(err) {
+                    console.error('Erro ao salvar ordem:', err);
+                    showToast('Erro ao salvar ordem!');
+                }
             }
             
             renderCategorias();
-            showToast('Ordem das categorias atualizada!');
         }
 
         async function deleteCategoria(id) {
-            if (confirm('Excluir esta categoria?')) {
+            const cat = categorias.find(c => c.id === id);
+            const nome = cat ? cat.nome : id;
+            const prodCount = produtos.filter(p => p.categoria === nome).length;
+            
+            let msg = `⚠️ Excluir a categoria "${nome}"?`;
+            if (prodCount > 0) {
+                msg += `\n\n⚠️ ATENÇÃO: Existem ${prodCount} produto(s) nesta categoria!\nEles ficarão sem categoria.`;
+            }
+            
+            if (confirm(msg)) {
                 const firebase = window.firebaseDB;
                 await firebase.remove(firebase.ref(firebase.db, 'categorias/' + id));
                 categorias = categorias.filter(c => c.id !== id);
                 renderCategorias();
+                showToast('Categoria excluída!');
             }
         }
+
+        window.editCategoria = function(id) {
+            openCategoryModal(id);
+        };
+        window.deleteCategoria = deleteCategoria;
+        window.moverCategoria = moverCategoria;
+        window.openCategoryModal = openCategoryModal;
+        window.closeCategoryModal = closeCategoryModal;
+        window.saveCategory = saveCategory;
 
         // Filtros
         function setupFiltros() {

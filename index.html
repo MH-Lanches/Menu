@@ -1597,8 +1597,10 @@
             if (!customizingProduct) return;
             let subtotal = customizingProduct.preco;
             const tipo = customizingProduct.tipo || 'simples';
-            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
-            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza' || tipo === 'meio_a_meio';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel' || tipo === 'multi_escolha' || tipo === 'especial';
+            const hasSabores = (customizingProduct.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim()).length > 0;
+            const effectiveMulti = isMulti || (!isMeio && hasSabores);
             
             // Sabores Meio a Meio
             if (isMeio) {
@@ -1615,7 +1617,7 @@
             }
             
             // Sabores Multi-escolha — RESPEITA LIMITE GRÁTIS
-            if (isMulti) {
+            if (effectiveMulti) {
                 const saborChecks = document.querySelectorAll('.sabor-checkbox:checked');
                 const saborMaxGratis = customizingProduct.saborMaxGratis || 0;
                 const saborPrecos = {};
@@ -1825,8 +1827,11 @@
             
             let content = '';
             const tipo = produto.tipo || 'simples';
-            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
-            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza' || tipo === 'meio_a_meio';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel' || tipo === 'multi_escolha' || tipo === 'especial';
+            // Se tem sabores cadastrados mas tipo é simples, tratar como multi-escolha
+            const hasSabores = (produto.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim()).length > 0;
+            const effectiveMulti = isMulti || (!isMeio && hasSabores);
             
             const saboresAtivos = (produto.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim());
             
@@ -1858,7 +1863,7 @@
                         </div>
                     </div>
                 `;
-            } else if (isMulti && saboresAtivos.length > 0) {
+            } else if (effectiveMulti && saboresAtivos.length > 0) {
                 const maxGratis = produto.saborMaxGratis || 0;
                 const maxTotal = produto.saborMaxTotal || 5;
                 content += `
@@ -1894,7 +1899,8 @@
             }
             
             // MÓDULO 2: OPCIONAIS
-            if (produto.temOpcionais && produto.opcionais && produto.opcionais.length > 0) {
+            const temOpc = produto.temOpcionais || (Array.isArray(produto.opcionais) && produto.opcionais.length > 0);
+            if (temOpc && produto.opcionais && produto.opcionais.length > 0) {
                 const opcAtivos = produto.opcionais.filter(o => !o.pausado && o.nome && o.nome.trim());
                 const opcMaxGratis = produto.opcionalMaxGratis || 0;
                 const opcMaxTotal = produto.opcionalMaxTotal || 0;
@@ -1931,7 +1937,8 @@
             }
             
             // MÓDULO 3: ADICIONAIS
-            if (produto.temAdicionais && produto.adicionais && produto.adicionais.length > 0) {
+            const temAdc = produto.temAdicionais || (Array.isArray(produto.adicionais) && produto.adicionais.length > 0);
+            if (temAdc && produto.adicionais && produto.adicionais.length > 0) {
                 const adcAtivos = produto.adicionais.filter(a => !a.pausado && a.nome && a.nome.trim());
                 const adcMaxGratis = produto.adicionalMaxGratis || 0;
                 const adcMaxTotal = produto.adicionalMaxTotal || 0;
@@ -1991,8 +1998,10 @@
 
         function confirmCustomize(evt) {
             const tipo = customizingProduct.tipo || 'simples';
-            const isMeio = tipo === 'meioameio' || tipo === 'pizza';
-            const isMulti = tipo === 'multiescolha' || tipo === 'pastel';
+            const isMeio = tipo === 'meioameio' || tipo === 'pizza' || tipo === 'meio_a_meio';
+            const isMulti = tipo === 'multiescolha' || tipo === 'pastel' || tipo === 'multi_escolha' || tipo === 'especial';
+            const hasSabores = (customizingProduct.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim()).length > 0;
+            const effectiveMulti = isMulti || (!isMeio && hasSabores);
             let customizacao = '';
             let total = customizingProduct.preco;
             
@@ -2014,7 +2023,7 @@
             }
             
             // Sabores Multi-escolha — RESPEITA LIMITE GRÁTIS
-            if (isMulti) {
+            if (effectiveMulti) {
                 const saborChecks = Array.from(document.querySelectorAll('.sabor-checkbox:checked'));
                 const sabores = saborChecks.map(cb => cb.value);
                 if (sabores.length === 0 && (customizingProduct.sabores || []).filter(s => !s.pausado && s.nome && s.nome.trim()).length > 0) {

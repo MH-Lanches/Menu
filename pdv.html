@@ -39,6 +39,7 @@
         .status-entregue{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.5);color:rgba(0,255,136,0.8)}
         .status-pago{background:rgba(0,255,136,0.2);border:1px solid var(--neon-green);color:var(--neon-green)}
         .status-cancelado{background:rgba(255,68,68,0.2);border:1px solid var(--neon-red);color:var(--neon-red)}
+        .status-finalizado{background:rgba(100,100,120,0.2);border:1px solid rgba(150,150,170,0.5);color:rgba(150,150,170,0.8)}
         .cat-btn{padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-secondary);cursor:pointer;transition:all .2s;font-size:13px;white-space:nowrap}
         .cat-btn.active{background:rgba(0,255,136,0.15);border-color:var(--neon-green);color:var(--neon-green)}
         .product-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;cursor:pointer;transition:all .2s}
@@ -169,6 +170,7 @@
                         <option value="entregue">📦 Entregue</option>
                         <option value="pago">💰 Pago</option>
                         <option value="cancelado">❌ Cancelado</option>
+                        <option value="finalizado">🏁 Finalizado</option>
                     </select>
                 </div>
             </div>
@@ -655,12 +657,12 @@ function renderOrdersList() {
 }
 
 function getStatusClass(status) {
-    const map = { 'novo': 'status-novo', 'producao': 'status-producao', 'pronto': 'status-pronto', 'saiu-entrega': 'status-entrega', 'entregue': 'status-entregue', 'pago': 'status-pago', 'cancelado': 'status-cancelado' };
+    const map = { 'novo': 'status-novo', 'producao': 'status-producao', 'pronto': 'status-pronto', 'saiu-entrega': 'status-entrega', 'entregue': 'status-entregue', 'pago': 'status-pago', 'cancelado': 'status-cancelado', 'finalizado': 'status-finalizado' };
     return map[status] || 'status-novo';
 }
 
 function getStatusLabel(status) {
-    const map = { 'novo': '🆕 Novo', 'producao': '🔥 Produção', 'pronto': '✅ Pronto', 'saiu-entrega': '🛵 Entrega', 'entregue': '📦 Entregue', 'pago': '💰 Pago', 'cancelado': '❌ Cancelado' };
+    const map = { 'novo': '🆕 Novo', 'producao': '🔥 Produção', 'pronto': '✅ Pronto', 'saiu-entrega': '🛵 Entrega', 'entregue': '📦 Entregue', 'pago': '💰 Pago', 'cancelado': '❌ Cancelado', 'finalizado': '🏁 Finalizado' };
     return map[status] || status;
 }
 
@@ -699,6 +701,7 @@ function getOrderActions(order) {
     }
     if (status === 'saiu-entrega') actions.push(`<button onclick="event.stopPropagation();updateOrderStatus('${order.id}','entregue')" class="badge status-entregue cursor-pointer">📦 Entregue</button>`);
     if (status === 'entregue') actions.push(`<button onclick="event.stopPropagation();selectOrderForPay('${order.id}')" class="badge status-pago cursor-pointer">💰 Pagar</button>`);
+    if (status === 'pago' && currentTab === 'delivery') actions.push(`<button onclick="event.stopPropagation();finalizeOrderFromList('${order.id}')" class="badge status-finalizado cursor-pointer">🏁 Finalizar</button>`);
     // Botão cancelar em qualquer status (exceto já cancelado/pago/finalizado)
     if (!['cancelado', 'pago', 'finalizado'].includes(status)) {
         actions.push(`<button onclick="event.stopPropagation();cancelOrderFromList('${order.id}')" class="badge status-cancelado cursor-pointer">❌</button>`);
@@ -795,7 +798,8 @@ function renderCartDeliveryStatus() {
         'saiu-entrega': '🛵 Saiu p/ Entrega',
         'entregue': '📦 Entregue',
         'pago': '💰 Pago',
-        'cancelado': '❌ Cancelado'
+        'cancelado': '❌ Cancelado',
+        'finalizado': '🏁 Finalizado'
     };
     const statusClasses = {
         'novo': 'status-novo',
@@ -804,7 +808,8 @@ function renderCartDeliveryStatus() {
         'saiu-entrega': 'status-entrega',
         'entregue': 'status-entregue',
         'pago': 'status-pago',
-        'cancelado': 'status-cancelado'
+        'cancelado': 'status-cancelado',
+        'finalizado': 'status-finalizado'
     };
     
     badge.textContent = statusLabels[status] || status;
