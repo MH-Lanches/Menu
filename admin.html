@@ -608,19 +608,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <label class="flex flex-col items-center gap-2 p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 border-2 border-transparent has-[:checked]:border-[#ff00ff] transition-all">
                             <input type="radio" name="prodTipo" value="simples" checked onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
-                            <span class="text-3xl">📦</span>
                             <span class="font-bold text-sm">SIMPLES</span>
                             <span class="text-xs text-gray-400 text-center">Cliente clica e adiciona direto</span>
                         </label>
                         <label class="flex flex-col items-center gap-2 p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 border-2 border-transparent has-[:checked]:border-[#ff00ff] transition-all">
                             <input type="radio" name="prodTipo" value="meioameio" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
-                            <span class="text-3xl">🍕</span>
                             <span class="font-bold text-sm">MEIO A MEIO</span>
                             <span class="text-xs text-gray-400 text-center">Cliente escolhe 2 sabores</span>
                         </label>
                         <label class="flex flex-col items-center gap-2 p-4 bg-gray-800 rounded-xl cursor-pointer hover:bg-gray-700 border-2 border-transparent has-[:checked]:border-[#ff00ff] transition-all">
                             <input type="radio" name="prodTipo" value="multiescolha" onclick="toggleProdTypeFields()" class="accent-[#ff00ff]">
-                            <span class="text-3xl">🎛️</span>
                             <span class="font-bold text-sm">MULTI-ESCOLHA</span>
                             <span class="text-xs text-gray-400 text-center">Lista com regras de grátis/extra</span>
                         </label>
@@ -704,6 +701,14 @@
                         <button type="button" onclick="addSabor()" class="px-4 py-2 bg-[#ff00ff] rounded-lg text-sm font-bold hover:scale-105 transition-transform">
                             <i class="fas fa-plus mr-1"></i> Adicionar Sabor
                         </button>
+                    </div>
+                    <div class="flex gap-2 items-center mb-2 px-8 text-xs font-bold text-gray-500">
+                        <span class="w-6 text-center">#</span>
+                        <span class="flex-1">Nome</span>
+                        <span class="w-24">Preço (R$)</span>
+                        <span class="w-20">Máx.</span>
+                        <span class="w-20 text-center">Status</span>
+                        <span class="w-10"></span>
                     </div>
                     <div id="saboresList" class="space-y-2"></div>
                     <!-- LIMITE GRÁTIS PARA MULTI-ESCOLHA -->
@@ -1267,13 +1272,13 @@
 
         function getTipoLabel(tipo) {
             const labels = {
-                'simples': '📦 Simples',
-                'meioameio': '🍕 Meio a Meio',
-                'multiescolha': '🎛️ Multi-escolha',
-                'pizza': '🍕 Meio a Meio',
-                'pastel': '🎛️ Multi-escolha'
+                'simples': 'Simples',
+                'meioameio': 'Meio a Meio',
+                'multiescolha': 'Multi-escolha',
+                'pizza': 'Meio a Meio',
+                'pastel': 'Multi-escolha'
             };
-            return labels[tipo] || '📦 Simples';
+            return labels[tipo] || 'Simples';
         }
 
         function getStatusClass(status) {
@@ -1450,7 +1455,7 @@
 
         function addSabor() {
             const id = Date.now();
-            currentSabores.push({ id, nome: '', preco: 0, pausado: false });
+            currentSabores.push({ id, nome: '', preco: 0, maxPermitido: 1, pausado: false });
             renderSabores();
         }
 
@@ -1459,8 +1464,9 @@
             container.innerHTML = currentSabores.map((s, idx) => `
                 <div class="flex gap-2 items-center ${s.pausado ? 'opacity-50' : ''}">
                     <span class="text-xs text-gray-500 w-6 text-center">${idx + 1}</span>
-                    <input type="text" value="${s.nome}" onchange="currentSabores[${idx}].nome=this.value" placeholder="Nome do sabor" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                    <input type="number" step="0.01" value="${s.preco || 0}" onchange="currentSabores[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço individual do sabor">
+                    <input type="text" value="${s.nome}" onchange="currentSabores[${idx}].nome=this.value" placeholder="Nome" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <input type="number" step="0.01" value="${s.preco || 0}" onchange="currentSabores[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço individual">
+                    <input type="number" value="${s.maxPermitido || 1}" min="1" onchange="currentSabores[${idx}].maxPermitido=parseInt(this.value)||1" class="w-20 bg-gray-800/50 border border-gray-700 rounded-lg px-2 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Máx. permitido por item">
                     <button type="button" onclick="currentSabores[${idx}].pausado=!currentSabores[${idx}].pausado; renderSabores()" class="p-2 rounded-lg ${s.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80" title="${s.pausado ? 'Ativar' : 'Pausar'}">
                         <i class="fas fa-${s.pausado ? 'pause' : 'check'}"></i>
                     </button>
@@ -1473,7 +1479,7 @@
 
         function addOpcional() {
             const id = Date.now();
-            currentOpcionais.push({ id, nome: '', preco: 0, pausado: false });
+            currentOpcionais.push({ id, nome: '', preco: 0, maxPermitido: 1, pausado: false });
             renderOpcionais();
         }
 
@@ -1482,8 +1488,9 @@
             container.innerHTML = currentOpcionais.map((o, idx) => `
                 <div class="flex gap-2 items-center ${o.pausado ? 'opacity-50' : ''}">
                     <span class="text-xs text-gray-500 w-6 text-center">${idx + 1}</span>
-                    <input type="text" value="${o.nome}" onchange="currentOpcionais[${idx}].nome=this.value" placeholder="Nome do opcional" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                    <input type="number" step="0.01" value="${o.preco || 0}" onchange="currentOpcionais[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço se ultrapassar o limite grátis">
+                    <input type="text" value="${o.nome}" onchange="currentOpcionais[${idx}].nome=this.value" placeholder="Nome" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <input type="number" step="0.01" value="${o.preco || 0}" onchange="currentOpcionais[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço individual">
+                    <input type="number" value="${o.maxPermitido || 1}" min="1" onchange="currentOpcionais[${idx}].maxPermitido=parseInt(this.value)||1" class="w-20 bg-gray-800/50 border border-gray-700 rounded-lg px-2 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Máx. permitido por item">
                     <button type="button" onclick="currentOpcionais[${idx}].pausado=!currentOpcionais[${idx}].pausado; renderOpcionais()" class="p-2 rounded-lg ${o.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80" title="${o.pausado ? 'Ativar' : 'Pausar'}">
                         <i class="fas fa-${o.pausado ? 'pause' : 'check'}"></i>
                     </button>
@@ -1496,7 +1503,7 @@
 
         function addAdicional() {
             const id = Date.now();
-            currentAdicionais.push({ id, nome: '', preco: 0, pausado: false });
+            currentAdicionais.push({ id, nome: '', preco: 0, maxPermitido: 1, pausado: false });
             renderAdicionais();
         }
 
@@ -1505,8 +1512,9 @@
             container.innerHTML = currentAdicionais.map((a, idx) => `
                 <div class="flex gap-2 items-center ${a.pausado ? 'opacity-50' : ''}">
                     <span class="text-xs text-gray-500 w-6 text-center">${idx + 1}</span>
-                    <input type="text" value="${a.nome}" onchange="currentAdicionais[${idx}].nome=this.value" placeholder="Nome do adicional" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                    <input type="number" step="0.01" value="${a.preco || 0}" onchange="currentAdicionais[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço do adicional">
+                    <input type="text" value="${a.nome}" onchange="currentAdicionais[${idx}].nome=this.value" placeholder="Nome" class="flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
+                    <input type="number" step="0.01" value="${a.preco || 0}" onchange="currentAdicionais[${idx}].preco=parseFloat(this.value)||0" placeholder="R$" class="w-24 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Preço individual">
+                    <input type="number" value="${a.maxPermitido || 1}" min="1" onchange="currentAdicionais[${idx}].maxPermitido=parseInt(this.value)||1" class="w-20 bg-gray-800/50 border border-gray-700 rounded-lg px-2 py-2 text-sm focus:border-[#ff00ff] focus:outline-none" title="Máx. permitido por item">
                     <button type="button" onclick="currentAdicionais[${idx}].pausado=!currentAdicionais[${idx}].pausado; renderAdicionais()" class="p-2 rounded-lg ${a.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80" title="${a.pausado ? 'Ativar' : 'Pausar'}">
                         <i class="fas fa-${a.pausado ? 'pause' : 'check'}"></i>
                     </button>
@@ -1600,6 +1608,7 @@
                     id: s.id || Date.now() + Math.random(),
                     nome: s.nome || '',
                     preco: s.preco || 0,
+                    maxPermitido: s.maxPermitido || 1,
                     pausado: s.pausado || false
                 })) : [];
                 document.getElementById('saborMaxGratis').value = prod.saborMaxGratis || 0;
@@ -1612,6 +1621,7 @@
                     id: o.id || Date.now() + Math.random(),
                     nome: o.nome || '',
                     preco: o.preco || 0,
+                    maxPermitido: o.maxPermitido || 1,
                     pausado: o.pausado || false
                 })) : []) : [];
                 document.getElementById('opcionalMaxGratis').value = prod.opcionalMaxGratis || 0;
@@ -1626,6 +1636,7 @@
                     id: a.id || Date.now() + Math.random(),
                     nome: a.nome || '',
                     preco: a.preco || 0,
+                    maxPermitido: a.maxPermitido || 1,
                     pausado: a.pausado || false
                 })) : []) : [];
                 
