@@ -690,12 +690,12 @@
                 </div>
 
                 <!-- ═══════════════════════════════════════════════ -->
-                <!-- MÓDULO 1: SABORES (Meio a Meio + Multi-escolha) -->
+                <!-- MÓDULO 1: SABORES (apenas para MEIO A MEIO) -->
                 <!-- ═══════════════════════════════════════════════ -->
                 <div id="saboresSection" class="hidden p-5 bg-gray-900/40 rounded-xl border border-gray-700">
                     <div class="flex justify-between items-center mb-4">
                         <div>
-                            <label class="block text-sm font-bold neon-cyan"><i class="fas fa-pizza-slice mr-1"></i> MÓDULO 1: SABORES</label>
+                            <label class="block text-sm font-bold neon-cyan"><i class="fas fa-pizza-slice mr-1"></i> SABORES (Meio a Meio)</label>
                             <p class="text-xs text-gray-400 mt-1" id="saboresHint">Cliente escolhe 2 sabores desta lista</p>
                         </div>
                         <button type="button" onclick="addSabor()" class="px-4 py-2 bg-[#ff00ff] rounded-lg text-sm font-bold hover:scale-105 transition-transform">
@@ -711,67 +711,28 @@
                         <span class="w-10"></span>
                     </div>
                     <div id="saboresList" class="space-y-2"></div>
-                    <!-- LIMITE GRÁTIS PARA SABORES -->
-                    <div id="saborMaxGratisSection" class="mt-4 p-4 bg-gray-800/60 rounded-lg border border-cyan-500/30">
-                        <div>
-                            <label class="block text-xs font-bold mb-1 text-cyan-400">🎁 Máximo de unidades GRÁTIS (Sabores)</label>
-                            <input type="number" id="saborMaxGratis" value="0" min="0" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
-                            <p class="text-xs text-gray-500 mt-1">Primeiras X unidades escolhidas são grátis. Acima disso, cobra o preço individual de cada sabor.</p>
-                        </div>
-                    </div>
                     <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                        <p class="text-xs text-gray-400">💡 Cada sabor tem: Preço individual | Máx. repetições | ON/OFF. Cliente escolhe quantidade com botões (- 0 +).</p>
+                        <p class="text-xs text-gray-400">💡 Para Pizza Meio a Meio: cliente escolhe 2 sabores da lista.</p>
                     </div>
                 </div>
 
                 <!-- ═══════════════════════════════════════════════ -->
-                <!-- MÓDULO 2: OPCIONAIS (Independente - Ativar/Desativar) -->
+                <!-- MULTI-ESCOLHA: CATEGORIAS DINÂMICAS -->
                 <!-- ═══════════════════════════════════════════════ -->
-                <div class="p-5 bg-gray-900/40 rounded-xl border border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" id="moduloOpcionaisAtivo" onchange="toggleModuloOpcionais()" class="w-5 h-5 accent-[#ff00ff]">
-                            <label class="block text-sm font-bold neon-pink"><i class="fas fa-check-circle mr-1"></i> MÓDULO 2: OPCIONAIS</label>
-                        </div>
-                        <button type="button" id="btnAddOpcional" onclick="addOpcional()" class="px-4 py-2 bg-[#ff00ff] rounded-lg text-sm font-bold hover:scale-105 transition-transform hidden">
-                            <i class="fas fa-plus mr-1"></i> Adicionar Opcional
-                        </button>
-                    </div>
-                    <div id="opcionaisSection" class="hidden">
-                        <div id="opcionaisList" class="space-y-2 mb-3"></div>
-                        <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
+                <div id="customCategoriesSection" class="hidden">
+                    <div class="p-5 bg-gray-900/40 rounded-xl border border-purple-500/40">
+                        <div class="flex justify-between items-center mb-3">
                             <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de unidades GRÁTIS (Opcionais)</label>
-                                <input type="number" id="opcionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                                <p class="text-xs text-gray-400 mt-1">💡 Primeiras X unidades são grátis. Acima disso, cobra o preço individual de cada opcional.</p>
+                                <label class="block text-sm font-bold" style="color:#b388ff;">
+                                    <i class="fas fa-layer-group mr-1"></i> CATEGORIAS DE PERSONALIZAÇÃO
+                                </label>
+                                <p class="text-xs text-gray-400 mt-1">Crie categorias com nomes personalizados (Sabores, Bordas, Adicionais, Massas...)</p>
                             </div>
+                            <button type="button" onclick="addCustomCategory()" class="px-4 py-2 rounded-lg text-sm font-bold hover:scale-105 transition-transform" style="background:linear-gradient(135deg,#b388ff,#7c4dff);">
+                                <i class="fas fa-plus mr-1"></i> Adicionar Categoria
+                            </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- ═══════════════════════════════════════════════ -->
-                <!-- MÓDULO 3: ADICIONAIS (Independente - Ativar/Desativar) -->
-                <!-- ═══════════════════════════════════════════════ -->
-                <div class="p-5 bg-gray-900/40 rounded-xl border border-gray-700">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" id="moduloAdicionaisAtivo" onchange="toggleModuloAdicionais()" class="w-5 h-5 accent-[#00ffff]">
-                            <label class="block text-sm font-bold neon-cyan"><i class="fas fa-plus-circle mr-1"></i> MÓDULO 3: ADICIONAIS</label>
-                        </div>
-                        <button type="button" id="btnAddAdicional" onclick="addAdicional()" class="px-4 py-2 bg-[#00ffff] text-black rounded-lg text-sm font-bold hover:scale-105 transition-transform hidden">
-                            <i class="fas fa-plus mr-1"></i> Adicionar Adicional
-                        </button>
-                    </div>
-                    <div id="adicionaisSection" class="hidden">
-                        <div class="mb-3 p-3 bg-gray-800/50 rounded-lg">
-                            <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de unidades GRÁTIS (Adicionais)</label>
-                            <input type="number" id="adicionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
-                            <p class="text-xs text-gray-400 mt-1">💡 Primeiras X unidades são grátis. Acima disso, cobra o preço individual de cada adicional.</p>
-                        </div>
-                        <div id="adicionaisList" class="space-y-2"></div>
-                        <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                            <p class="text-xs text-gray-400">💡 Cada adicional tem: Preço individual | Máx. repetições | ON/OFF. Cliente escolhe quantidade com botões (- 0 +).</p>
-                        </div>
+                        <div id="customCategoriesList" class="space-y-4"></div>
                     </div>
                 </div>
 
@@ -1289,6 +1250,7 @@
             currentSabores = [];
             currentOpcionais = [];
             currentAdicionais = [];
+            currentCustomCategories = [];
             document.getElementById('galleryPreviewContainer').innerHTML = '';
             document.getElementById('saboresList').innerHTML = '';
             document.getElementById('opcionaisList').innerHTML = '';
@@ -1300,6 +1262,7 @@
             document.getElementById('adicionaisSection').classList.add('hidden');
             document.getElementById('btnAddOpcional').classList.add('hidden');
             document.getElementById('btnAddAdicional').classList.add('hidden');
+            renderCustomCategories();
             toggleProdTypeFields();
             populateCategoriaSelect();
             document.getElementById('productModal').classList.remove('hidden');
@@ -1325,28 +1288,25 @@
             const tipo = document.querySelector('input[name="prodTipo"]:checked').value;
             const isMeio = tipo === 'meioameio';
             const isMulti = tipo === 'multiescolha';
-            const hasSabores = isMeio || isMulti;
             
             // Tempo de preparo só para meio a meio (pizza)
             document.getElementById('tempoPreparoField').classList.toggle('hidden', !isMeio);
             
-            // Sabores: mostra para meio a meio e multi-escolha
-            document.getElementById('saboresSection').classList.toggle('hidden', !hasSabores);
+            // Sabores: APENAS para MEIO A MEIO
+            document.getElementById('saboresSection').classList.toggle('hidden', !isMeio);
             
-            // Hint de sabores
-            const hint = document.getElementById('saboresHint');
-            if (hint) {
-                hint.textContent = isMeio ? 'Cliente escolhe 2 sabores desta lista (meio a meio)' : 'Cliente escolhe quantos quiser (até o limite definido)';
+            // Categorias dinâmicas: APENAS para MULTI-ESCOLHA
+            document.getElementById('customCategoriesSection').classList.toggle('hidden', !isMulti);
+            
+            // Esconde módulos antigos (opcionais/adicionais) para multi-escolha
+            if (isMulti) {
+                document.getElementById('moduloOpcionaisAtivo').checked = false;
+                document.getElementById('moduloAdicionaisAtivo').checked = false;
+                document.getElementById('opcionaisSection').classList.add('hidden');
+                document.getElementById('adicionaisSection').classList.add('hidden');
+                document.getElementById('btnAddOpcional').classList.add('hidden');
+                document.getElementById('btnAddAdicional').classList.add('hidden');
             }
-            
-            // Limite grátis de sabores: só para multi-escolha
-            const saborGratisSection = document.getElementById('saborMaxGratisSection');
-            if (saborGratisSection) {
-                saborGratisSection.classList.toggle('hidden', !isMulti);
-            }
-            
-            // Opcionais e Adicionais: controlados por checkbox independente
-            // Não esconde automaticamente - usuário ativa/desativa
         }
 
         function toggleModuloOpcionais() {
@@ -1511,6 +1471,114 @@
             `).join('');
         }
 
+        // ═══════════════════════════════════════════════
+        // CATEGORIAS DINÂMICAS (MULTI-ESCOLHA)
+        // ═══════════════════════════════════════════════
+        let currentCustomCategories = [];
+
+        function addCustomCategory() {
+            currentCustomCategories.push({
+                id: Date.now(),
+                nome: '',
+                maxGratis: 0,
+                itens: []
+            });
+            renderCustomCategories();
+        }
+
+        function removeCustomCategory(idx) {
+            if (confirm('Excluir esta categoria e todos os itens?')) {
+                currentCustomCategories.splice(idx, 1);
+                renderCustomCategories();
+            }
+        }
+
+        function addCustomItem(catIdx) {
+            currentCustomCategories[catIdx].itens.push({
+                id: Date.now(),
+                nome: '',
+                preco: 0,
+                maxPermitido: 1,
+                pausado: false
+            });
+            renderCustomCategories();
+        }
+
+        function renderCustomCategories() {
+            const container = document.getElementById('customCategoriesList');
+            if (!currentCustomCategories.length) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-6 text-sm">Nenhuma categoria criada. Clique em "Adicionar Categoria" para começar.</p>';
+                return;
+            }
+            container.innerHTML = currentCustomCategories.map((cat, catIdx) => `
+                <div class="p-4 bg-gray-800/60 rounded-xl border border-purple-500/20">
+                    <!-- Cabeçalho da Categoria -->
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3 flex-1">
+                            <span class="text-lg font-bold" style="color:#b388ff;">📂</span>
+                            <input type="text" value="${cat.nome}" onchange="currentCustomCategories[${catIdx}].nome=this.value" 
+                                placeholder="Nome da categoria (ex: Sabores, Bordas, Adicionais...)" 
+                                class="flex-1 bg-gray-900/50 border border-purple-500/30 rounded-lg px-3 py-2 text-sm font-semibold focus:border-[#b388ff] focus:outline-none text-white">
+                        </div>
+                        <button type="button" onclick="removeCustomCategory(${catIdx})" class="ml-2 p-2 bg-red-600/80 rounded-lg hover:bg-red-600 text-xs">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Limite Grátis -->
+                    <div class="mb-3 p-3 bg-gray-900/40 rounded-lg border border-purple-500/20">
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-bold text-purple-300 whitespace-nowrap">🎁 Limite Grátis:</label>
+                            <input type="number" value="${cat.maxGratis}" min="0" 
+                                onchange="currentCustomCategories[${catIdx}].maxGratis=parseInt(this.value)||0" 
+                                class="w-20 bg-gray-800 border border-purple-500/30 rounded-lg px-3 py-1.5 text-sm focus:border-[#b388ff] focus:outline-none text-center">
+                            <span class="text-xs text-gray-400">unidades grátis nesta categoria</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Itens da Categoria -->
+                    <div class="mb-2">
+                        <div class="flex gap-2 items-center mb-2 px-2 text-xs font-bold text-gray-500">
+                            <span class="w-6 text-center">#</span>
+                            <span class="flex-1">Nome do Item</span>
+                            <span class="w-20">Preço (R$)</span>
+                            <span class="w-16">Máx. Rep.</span>
+                            <span class="w-16 text-center">Status</span>
+                            <span class="w-8"></span>
+                        </div>
+                        ${cat.itens.map((item, itemIdx) => `
+                            <div class="flex gap-2 items-center mb-1 ${item.pausado ? 'opacity-40' : ''}">
+                                <span class="text-xs text-gray-500 w-6 text-center">${itemIdx + 1}</span>
+                                <input type="text" value="${item.nome}" onchange="currentCustomCategories[${catIdx}].itens[${itemIdx}].nome=this.value" 
+                                    placeholder="Nome do item" 
+                                    class="flex-1 bg-gray-900/40 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:border-[#b388ff] focus:outline-none">
+                                <input type="number" step="0.50" value="${item.preco || 0}" min="0"
+                                    onchange="currentCustomCategories[${catIdx}].itens[${itemIdx}].preco=parseFloat(this.value)||0" 
+                                    placeholder="R$" 
+                                    class="w-20 bg-gray-900/40 border border-gray-700 rounded-lg px-2 py-1.5 text-sm focus:border-[#b388ff] focus:outline-none text-center" title="Preço individual">
+                                <input type="number" value="${item.maxPermitido || 1}" min="1"
+                                    onchange="currentCustomCategories[${catIdx}].itens[${itemIdx}].maxPermitido=parseInt(this.value)||1" 
+                                    class="w-16 bg-gray-900/40 border border-gray-700 rounded-lg px-2 py-1.5 text-sm focus:border-[#b388ff] focus:outline-none text-center" title="Máx. repetições">
+                                <button type="button" onclick="currentCustomCategories[${catIdx}].itens[${itemIdx}].pausado=!currentCustomCategories[${catIdx}].itens[${itemIdx}].pausado; renderCustomCategories()" 
+                                    class="p-1.5 rounded-lg ${item.pausado ? 'bg-red-600' : 'bg-green-600'} hover:opacity-80 text-xs" title="${item.pausado ? 'Ativar' : 'Pausar'}">
+                                    <i class="fas fa-${item.pausado ? 'pause' : 'check'}"></i>
+                                </button>
+                                <button type="button" onclick="currentCustomCategories[${catIdx}].itens.splice(${itemIdx}, 1); renderCustomCategories()" 
+                                    class="p-1.5 bg-red-600/60 rounded-lg hover:bg-red-600 text-xs">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Botão Adicionar Item -->
+                    <button type="button" onclick="addCustomItem(${catIdx})" class="w-full py-2 border-2 border-dashed border-purple-500/30 rounded-lg text-sm text-purple-400 hover:border-purple-500 hover:text-purple-300 transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Adicionar Item
+                    </button>
+                </div>
+            `).join('');
+        }
+
         async function saveProduct(e) {
             e.preventDefault();
             
@@ -1542,7 +1610,12 @@
                 opcionalMaxGratis: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxGratis').value) || 0) : 0,
                 temAdicionais: hasAdicionais,
                 adicionais: hasAdicionais ? currentAdicionais.filter(a => a.nome.trim()) : [],
-                adicionalMaxGratis: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxGratis').value) || 0) : 0
+                adicionalMaxGratis: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxGratis').value) || 0) : 0,
+                // Categorias dinâmicas (multi-escolha)
+                customCategories: isMulti ? currentCustomCategories.filter(c => c.nome.trim()).map(c => ({
+                    ...c,
+                    itens: c.itens.filter(i => i.nome.trim())
+                })) : []
             };
             
             const firebase = window.firebaseDB;
@@ -1620,10 +1693,25 @@
                     pausado: a.pausado || false
                 })) : []) : [];
                 
+                // Categorias dinâmicas (multi-escolha)
+                currentCustomCategories = Array.isArray(prod.customCategories) ? prod.customCategories.map(c => ({
+                    id: c.id || Date.now() + Math.random(),
+                    nome: c.nome || '',
+                    maxGratis: c.maxGratis || 0,
+                    itens: Array.isArray(c.itens) ? c.itens.map(i => ({
+                        id: i.id || Date.now() + Math.random(),
+                        nome: i.nome || '',
+                        preco: i.preco || 0,
+                        maxPermitido: i.maxPermitido || 1,
+                        pausado: i.pausado || false
+                    })) : []
+                })) : [];
+                
                 renderGalleryPreview();
                 renderSabores();
                 renderOpcionais();
                 renderAdicionais();
+                renderCustomCategories();
                 toggleProdTypeFields();
                 toggleModuloOpcionais();
                 toggleModuloAdicionais();
