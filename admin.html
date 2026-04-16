@@ -704,31 +704,23 @@
                     </div>
                     <div class="flex gap-2 items-center mb-2 px-8 text-xs font-bold text-gray-500">
                         <span class="w-6 text-center">#</span>
-                        <span class="flex-1">Nome</span>
+                        <span class="flex-1">Nome do Sabor</span>
                         <span class="w-24">Preço (R$)</span>
-                        <span class="w-20">Máx.</span>
+                        <span class="w-20">Máx. Repetir</span>
                         <span class="w-20 text-center">Status</span>
                         <span class="w-10"></span>
                     </div>
                     <div id="saboresList" class="space-y-2"></div>
-                    <!-- LIMITE GRÁTIS PARA MULTI-ESCOLHA -->
+                    <!-- LIMITE GRÁTIS PARA SABORES -->
                     <div id="saborMaxGratisSection" class="mt-4 p-4 bg-gray-800/60 rounded-lg border border-cyan-500/30">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold mb-1 text-cyan-400">🎁 Máximo de sabores GRÁTIS</label>
-                                <input type="number" id="saborMaxGratis" value="0" min="0" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
-                                <p class="text-xs text-gray-500 mt-1">Até X sabores sem custo extra</p>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold mb-1 text-gray-400">📏 Máximo de sabores permitidos</label>
-                                <input type="number" id="saborMaxTotal" value="0" min="0" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
-                                <p class="text-xs text-gray-500 mt-1">0 = ilimitado</p>
-                            </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-cyan-400">🎁 Máximo de unidades GRÁTIS (Sabores)</label>
+                            <input type="number" id="saborMaxGratis" value="0" min="0" class="w-28 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-1">Primeiras X unidades escolhidas são grátis. Acima disso, cobra o preço individual de cada sabor.</p>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2">💡 0 no máximo grátis = todos inclusos no preço base. 0 no máximo total = sem limite de escolhas.</p>
                     </div>
                     <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                        <p class="text-xs text-gray-400">💡 Cada sabor pode ter preço individual. ON = disponível, OFF = indisponível (some do cardápio).</p>
+                        <p class="text-xs text-gray-400">💡 Cada sabor tem: Preço individual | Máx. repetições | ON/OFF. Cliente escolhe quantidade com botões (- 0 +).</p>
                     </div>
                 </div>
 
@@ -747,17 +739,11 @@
                     </div>
                     <div id="opcionaisSection" class="hidden">
                         <div id="opcionaisList" class="space-y-2 mb-3"></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 p-3 bg-gray-800/50 rounded-lg">
+                        <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
                             <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de opcionais GRÁTIS</label>
+                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de unidades GRÁTIS (Opcionais)</label>
                                 <input type="number" id="opcionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">📏 Máximo de opcionais PERMITIDOS</label>
-                                <input type="number" id="opcionalMaxTotal" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-400">💡 Itens além do limite grátis serão cobrados pelo preço individual.</p>
+                                <p class="text-xs text-gray-400 mt-1">💡 Primeiras X unidades são grátis. Acima disso, cobra o preço individual de cada opcional.</p>
                             </div>
                         </div>
                     </div>
@@ -777,19 +763,14 @@
                         </button>
                     </div>
                     <div id="adicionaisSection" class="hidden">
-                        <div class="flex gap-4 mb-3">
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de adicionais GRÁTIS</label>
-                                <input type="number" id="adicionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-gray-400">📏 Máximo de adicionais PERMITIDOS</label>
-                                <input type="number" id="adicionalMaxTotal" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#ff00ff] focus:outline-none">
-                            </div>
+                        <div class="mb-3 p-3 bg-gray-800/50 rounded-lg">
+                            <label class="block text-xs font-semibold mb-1 text-gray-400">🎁 Máximo de unidades GRÁTIS (Adicionais)</label>
+                            <input type="number" id="adicionalMaxGratis" value="0" min="0" class="w-24 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-[#00ffff] focus:outline-none">
+                            <p class="text-xs text-gray-400 mt-1">💡 Primeiras X unidades são grátis. Acima disso, cobra o preço individual de cada adicional.</p>
                         </div>
                         <div id="adicionaisList" class="space-y-2"></div>
                         <div class="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                            <p class="text-xs text-gray-400">💡 Os primeiros X adicionais são grátis (definido acima). Acima disso, cobra o preço individual de cada item. ON = disponível, OFF = indisponível.</p>
+                            <p class="text-xs text-gray-400">💡 Cada adicional tem: Preço individual | Máx. repetições | ON/OFF. Cliente escolhe quantidade com botões (- 0 +).</p>
                         </div>
                     </div>
                 </div>
@@ -826,10 +807,6 @@
                 <div>
                     <label class="block text-sm font-semibold mb-2">Nome da Categoria *</label>
                     <input type="text" id="catNome" required class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-2">Ícone (emoji)</label>
-                    <input type="text" id="catIcone" placeholder="🍔" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 focus:border-[#ff00ff] focus:outline-none">
                 </div>
                 <div class="flex gap-4 pt-4">
                     <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-[#ff00ff] to-[#00ffff] rounded-xl font-bold hover:scale-105 transition-transform">
@@ -1250,15 +1227,14 @@
                 <div class="glass-card rounded-2xl p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <span class="text-3xl">${c.icone || '📁'}</span>
                             <div>
                                 <h3 class="font-bold">${c.nome}</h3>
                                 <p class="text-xs text-gray-400">${produtos.filter(p => p.categoria === c.nome).length} produtos</p>
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="moverCategoria(${idx}, -1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-up"></i></button>
-                            <button onclick="moverCategoria(${idx}, 1)" class="p-2 hover:bg-gray-700 rounded-lg"><i class="fas fa-arrow-down"></i></button>
+                            <button onclick="moverCategoria(${idx}, -1)" class="p-2 hover:bg-gray-700 rounded-lg" title="Mover para esquerda"><i class="fas fa-arrow-left"></i></button>
+                            <button onclick="moverCategoria(${idx}, 1)" class="p-2 hover:bg-gray-700 rounded-lg" title="Mover para direita"><i class="fas fa-arrow-right"></i></button>
                             <button onclick="editCategoria('${c.id}')" class="p-2 hover:bg-blue-700 rounded-lg"><i class="fas fa-edit"></i></button>
                             <button onclick="deleteCategoria('${c.id}')" class="p-2 hover:bg-red-700 rounded-lg"><i class="fas fa-trash"></i></button>
                         </div>
@@ -1561,15 +1537,12 @@
                 // Módulos
                 sabores: hasSabores ? currentSabores.filter(s => s.nome.trim()) : [],
                 saborMaxGratis: hasSabores ? (parseInt(document.getElementById('saborMaxGratis').value) || 0) : 0,
-                saborMaxTotal: hasSabores ? (parseInt(document.getElementById('saborMaxTotal').value) || 0) : 0,
                 temOpcionais: hasOpcionais,
                 opcionais: hasOpcionais ? currentOpcionais.filter(o => o.nome.trim()) : [],
                 opcionalMaxGratis: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxGratis').value) || 0) : 0,
-                opcionalMaxTotal: hasOpcionais ? (parseInt(document.getElementById('opcionalMaxTotal').value) || 0) : 0,
                 temAdicionais: hasAdicionais,
                 adicionais: hasAdicionais ? currentAdicionais.filter(a => a.nome.trim()) : [],
-                adicionalMaxGratis: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxGratis').value) || 0) : 0,
-                adicionalMaxTotal: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxTotal').value) || 0) : 0
+                adicionalMaxGratis: hasAdicionais ? (parseInt(document.getElementById('adicionalMaxGratis').value) || 0) : 0
             };
             
             const firebase = window.firebaseDB;
@@ -1622,7 +1595,6 @@
                     pausado: s.pausado || false
                 })) : [];
                 document.getElementById('saborMaxGratis').value = prod.saborMaxGratis || 0;
-                document.getElementById('saborMaxTotal').value = prod.saborMaxTotal || 0;
                 
                 // Opcionais - verificar flag
                 const hasOpcionais = prod.temOpcionais || (Array.isArray(prod.opcionais) && prod.opcionais.length > 0);
@@ -1635,13 +1607,11 @@
                     pausado: o.pausado || false
                 })) : []) : [];
                 document.getElementById('opcionalMaxGratis').value = prod.opcionalMaxGratis || 0;
-                document.getElementById('opcionalMaxTotal').value = prod.opcionalMaxTotal || 0;
                 
                 // Adicionais - verificar flag
                 const hasAdicionais = prod.temAdicionais || (Array.isArray(prod.adicionais) && prod.adicionais.length > 0);
                 document.getElementById('moduloAdicionaisAtivo').checked = hasAdicionais;
                 document.getElementById('adicionalMaxGratis').value = prod.adicionalMaxGratis || 0;
-                document.getElementById('adicionalMaxTotal').value = prod.adicionalMaxTotal || 0;
                 currentAdicionais = hasAdicionais ? (Array.isArray(prod.adicionais) ? prod.adicionais.map(a => ({
                     id: a.id || Date.now() + Math.random(),
                     nome: a.nome || '',
@@ -1696,7 +1666,6 @@
                 if (cat) {
                     document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-edit mr-2"></i> Editar Categoria';
                     document.getElementById('catNome').value = cat.nome || '';
-                    document.getElementById('catIcone').value = cat.icone || '';
                 } else {
                     alert('Categoria não encontrada!');
                     return;
@@ -1726,7 +1695,7 @@
                 if (!cat) { alert('Categoria não encontrada!'); return; }
                 
                 const novoId = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-');
-                const icone = document.getElementById('catIcone').value || '📁';
+
                 
                 // Se mudou o ID, precisa remover o antigo e criar o novo
                 if (novoId !== editingCategoryId) {
@@ -1735,7 +1704,6 @@
                 }
                 
                 cat.nome = nome;
-                cat.icone = icone;
                 
                 await firebase.set(firebase.ref(firebase.db, 'categorias/' + cat.id), cat);
                 showToast('Categoria atualizada!');
@@ -1752,7 +1720,6 @@
                 const categoria = {
                     id: id,
                     nome: nome,
-                    icone: document.getElementById('catIcone').value || '📁',
                     ordem: categorias.length + 1
                 };
                 
