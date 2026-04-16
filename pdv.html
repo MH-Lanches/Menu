@@ -142,53 +142,58 @@
             <div id="productsGrid" class="flex-1 scroll-area p-3 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 content-start"></div>
         </div>
 
-        <!-- RIGHT: Cart + Payment (FIXO) -->
-        <div id="panelCart" class="w-[420px] shrink-0 flex flex-col border-l" style="border-color:rgba(255,255,255,0.05)">
-            <!-- Cart Header -->
-            <div class="p-3 shrink-0 flex items-center justify-between" style="background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.05)">
-                <div>
-                    <h3 id="cartTitle" class="text-sm font-bold text-gray-300">🛒 Carrinho</h3>
-                    <span id="cartInfo" class="text-xs text-gray-500">Selecione um pedido ou inicie venda</span>
+        <!-- RIGHT: Cart + Payment LADO A LADO (FIXO) -->
+        <div class="flex shrink-0">
+            <!-- CART PANEL -->
+            <div id="panelCart" class="w-[340px] flex flex-col border-l" style="border-color:rgba(255,255,255,0.05)">
+                <!-- Cart Header -->
+                <div class="p-3 shrink-0 flex items-center justify-between" style="background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.05)">
+                    <div>
+                        <h3 id="cartTitle" class="text-sm font-bold text-gray-300">🛒 Carrinho</h3>
+                        <span id="cartInfo" class="text-xs text-gray-500">Selecione um pedido ou inicie venda</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="printTableSummary()" id="btnPrintSummary" class="btn-blue text-xs hidden" title="Imprimir Resumo">🖨️</button>
+                        <button onclick="clearCart()" class="btn-danger text-xs">🗑️</button>
+                    </div>
                 </div>
-                <div class="flex gap-1">
-                    <button onclick="printTableSummary()" id="btnPrintSummary" class="btn-blue text-xs hidden" title="Imprimir Resumo">🖨️</button>
-                    <button onclick="clearCart()" class="btn-danger text-xs">🗑️</button>
+
+                <!-- Status do Delivery -->
+                <div id="cartDeliveryStatus" class="p-3 shrink-0 hidden" style="background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(0,212,255,0.1)">
+                    <div class="text-xs text-gray-400 mb-2">📦 Status do Pedido</div>
+                    <div id="cartStatusBadge" class="badge status-novo mb-2 inline-block">Novo</div>
+                    <div class="mt-2">
+                        <label class="text-xs text-gray-400 mb-1 block">Alterar status:</label>
+                        <select id="cartStatusSelect" onchange="updateCartOrderStatus(this.value)" class="w-full text-sm" style="background:rgba(20,20,35,0.95);border:1px solid rgba(255,255,255,0.15);color:var(--text-primary);border-radius:8px;padding:8px 12px;outline:none;cursor:pointer">
+                            <option value="novo">🆕 Novo</option>
+                            <option value="producao">🔥 Em Produção</option>
+                            <option value="pronto">✅ Pronto</option>
+                            <option value="saiu-entrega">🛵 Saiu para Entrega</option>
+                            <option value="entregue">📦 Entregue</option>
+                            <option value="pago">💰 Pago</option>
+                            <option value="cancelado">❌ Cancelado</option>
+                            <option value="finalizado">🏁 Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cart Items -->
+                <div id="cartItems" class="flex-1 scroll-area p-3 space-y-1" style="min-height:0"></div>
+
+                <!-- Totals -->
+                <div class="p-3 shrink-0 space-y-1" style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)">
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">Subtotal</span><span id="cartSubtotal" class="font-bold">R$ 0,00</span></div>
+                    <div id="cartDescontoRow" class="flex justify-between text-sm hidden"><span class="text-gray-400">Desconto</span><span id="cartDesconto" class="text-red-400">- R$ 0,00</span></div>
+                    <div class="flex justify-between text-lg font-bold"><span class="neon-text">TOTAL</span><span id="cartTotal" class="neon-text">R$ 0,00</span></div>
                 </div>
             </div>
 
-            <!-- Status do Delivery -->
-            <div id="cartDeliveryStatus" class="p-3 shrink-0 hidden" style="background:rgba(0,212,255,0.05);border-bottom:1px solid rgba(0,212,255,0.1)">
-                <div class="text-xs text-gray-400 mb-2">📦 Status do Pedido</div>
-                <div id="cartStatusBadge" class="badge status-novo mb-2 inline-block">Novo</div>
-                <div class="mt-2">
-                    <label class="text-xs text-gray-400 mb-1 block">Alterar status:</label>
-                    <select id="cartStatusSelect" onchange="updateCartOrderStatus(this.value)" class="w-full text-sm" style="background:rgba(20,20,35,0.95);border:1px solid rgba(255,255,255,0.15);color:var(--text-primary);border-radius:8px;padding:8px 12px;outline:none;cursor:pointer">
-                        <option value="novo">🆕 Novo</option>
-                        <option value="producao">🔥 Em Produção</option>
-                        <option value="pronto">✅ Pronto</option>
-                        <option value="saiu-entrega">🛵 Saiu para Entrega</option>
-                        <option value="entregue">📦 Entregue</option>
-                        <option value="pago">💰 Pago</option>
-                        <option value="cancelado">❌ Cancelado</option>
-                        <option value="finalizado">🏁 Finalizado</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Cart Items -->
-            <div id="cartItems" class="flex-1 scroll-area p-3 space-y-1" style="min-height:0"></div>
-
-            <!-- Totals -->
-            <div class="p-3 shrink-0 space-y-1" style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,255,255,0.05)">
-                <div class="flex justify-between text-sm"><span class="text-gray-400">Subtotal</span><span id="cartSubtotal" class="font-bold">R$ 0,00</span></div>
-                <div id="cartDescontoRow" class="flex justify-between text-sm hidden"><span class="text-gray-400">Desconto</span><span id="cartDesconto" class="text-red-400">- R$ 0,00</span></div>
-                <div class="flex justify-between text-lg font-bold"><span class="neon-text">TOTAL</span><span id="cartTotal" class="neon-text">R$ 0,00</span></div>
-            </div>
-
-            <!-- PAYMENT SECTION (FIXO - SEMPRE VISÍVEL) -->
-            <div id="paymentSection" class="shrink-0 scroll-area" style="max-height:320px;border-top:2px solid var(--neon-green);background:rgba(0,255,136,0.02)">
-                <div class="p-3 space-y-3">
+            <!-- PAYMENT PANEL (FIXO - LADO DIREITO) -->
+            <div id="panelPayment" class="w-[340px] flex flex-col border-l" style="border-color:rgba(0,255,136,0.15);background:rgba(0,255,136,0.02)">
+                <div class="p-3 shrink-0 flex items-center" style="background:rgba(0,255,136,0.05);border-bottom:1px solid rgba(0,255,136,0.1)">
                     <h3 class="text-sm font-bold neon-text">💰 PAGAMENTO</h3>
+                </div>
+                <div class="flex-1 scroll-area p-3 space-y-3" style="min-height:0">
 
                     <!-- Discount -->
                     <div>
@@ -242,11 +247,14 @@
                         <div class="text-xs text-gray-400 mb-1">Observações</div>
                         <textarea id="payObs" rows="1" class="w-full text-xs resize-none py-1" placeholder="Opcional"></textarea>
                     </div>
+                </div>
 
-                    <!-- Finalize Button -->
-                    <button onclick="finalizeSale()" id="btnFinalize" class="btn-neon w-full py-2 text-sm font-bold" disabled>✅ FINALIZAR VENDA</button>
+                <!-- Finalize Button (FIXO NO RODAPÉ) -->
+                <div class="p-3 shrink-0" style="background:rgba(0,0,0,0.3);border-top:1px solid rgba(0,255,136,0.1)">
+                    <button onclick="finalizeSale()" id="btnFinalize" class="btn-neon w-full py-3 text-sm font-bold" disabled>✅ FINALIZAR VENDA</button>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </div>
