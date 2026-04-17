@@ -7,8 +7,12 @@ export default function Site() {
   const { config, categorias, produtos, cupons, setCupons, pedidos, setPedidos, proximoNumero } = useStore();
   const [favoritos, setFavoritos] = useState<string[]>(() => JSON.parse(localStorage.getItem("mh_fav") || "[]"));
   const [carrinho, setCarrinho] = useState<CarrinhoItem[]>([]);
+  const irParaCardapio = () => {
+    const el = document.getElementById("cardapio");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const [catAtiva, setCatAtiva] = useState<string>("todos");
-  const [busca, setBusca] = useState("");
+
   const [aberto, setAberto] = useState<Produto | null>(null);
   const [mostrarCarrinho, setMostrarCarrinho] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -53,9 +57,9 @@ export default function Site() {
     let arr = produtos.filter(p => !p.pausado);
     if (catAtiva === "favoritos") arr = arr.filter(p => favoritos.includes(p.id));
     else if (catAtiva !== "todos") arr = arr.filter(p => p.categoriaId === catAtiva);
-    if (busca.trim()) arr = arr.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()));
+
     return arr.sort((a, b) => a.ordem - b.ordem);
-  }, [produtos, catAtiva, busca, favoritos]);
+  }, [produtos, catAtiva, favoritos]);
 
   const totals = useMemo(() => {
     const sub = carrinho.reduce((s, i) => s + (i.precoBase + i.precoExtras) * i.qtd, 0);
@@ -152,18 +156,24 @@ export default function Site() {
         ))}
       </div>
 
-      {/* HEADER */}
-      <header className="relative z-30 glass-strong mx-3 mt-3 px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex-1 max-w-md">
-          <input className="input" placeholder="🔎 Buscar produtos..." value={busca} onChange={e => setBusca(e.target.value)} />
-        </div>
+      {/* HEADER FIXO */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between gap-2 bg-[rgba(10,10,15,0.92)] backdrop-blur-2xl border-b border-white/10 shadow-lg shadow-black/40"
+      >
+        <span className={"pill flex items-center gap-1 shrink-0 " + (lojaAberta ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300")}>
+          <span className={"w-2 h-2 rounded-full " + (lojaAberta ? "bg-green-400 dot-live" : "bg-red-400")} />
+          {lojaAberta ? "Aberto" : "Fechado"}
+        </span>
         <div className="flex items-center gap-2">
-          <span className={"pill flex items-center gap-1 " + (lojaAberta ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300")}>
-            <span className={"w-2 h-2 rounded-full " + (lojaAberta ? "bg-green-400 dot-live" : "bg-red-400")} />
-            {lojaAberta ? "Aberto" : "Fechado"}
-          </span>
           <button
-            className="btn-ghost relative flex items-center gap-1 text-xl"
+            className="btn-ghost relative flex items-center gap-1 text-lg h-9"
+            onClick={irParaCardapio}
+            title="Ir para o cardápio"
+          >
+            🍔 <span className="hidden sm:inline text-sm font-semibold">Cardápio</span>
+          </button>
+          <button
+            className="btn-ghost relative flex items-center gap-1 text-lg h-9"
             onClick={() => setStatusModalAberto(true)}
             title="Acompanhar status do meu pedido"
           >
@@ -172,12 +182,15 @@ export default function Site() {
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-400 dot-live shadow-[0_0_8px_#00ff9d]" />
             )}
           </button>
-          <button ref={cartIconRef} className="btn-neon relative" onClick={() => setMostrarCarrinho(true)}>
+          <button ref={cartIconRef} className="btn-neon relative h-9 flex items-center" onClick={() => setMostrarCarrinho(true)}>
             🛒 <span className="hidden sm:inline">Carrinho</span>
             {carrinho.length > 0 && <span className="absolute -top-2 -right-2 bg-white text-[#ff6b35] text-xs font-extrabold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">{carrinho.length}</span>}
           </button>
         </div>
       </header>
+
+      {/* Spacer para o header fixo */}
+      <div className="h-[60px]" />
 
       {/* LOGO HERO — animada (cabe inteira na tela do celular) */}
       {config.visual?.logoUrl && (
@@ -214,10 +227,7 @@ export default function Site() {
         </div>
       </section>
 
-      {/* MOBILE search */}
-      <div className="md:hidden mx-3 mt-3">
-        <input className="input" placeholder="🔎 Buscar..." value={busca} onChange={e => setBusca(e.target.value)} />
-      </div>
+
 
       {/* CATEGORIAS */}
       <nav className="sticky top-0 z-20 mx-3 mt-3 glass-strong px-3 py-2 overflow-x-auto">
@@ -231,7 +241,7 @@ export default function Site() {
       </nav>
 
       {/* PRODUTOS GRID */}
-      <main className="relative z-10 mx-3 mt-4 mb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <main id="cardapio" className="relative z-10 mx-3 mt-4 mb-24 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 scroll-mt-20">
         {produtosFiltrados.map(p => (
           <ProdutoCard key={p.id} p={p}
             fav={favoritos.includes(p.id)}
