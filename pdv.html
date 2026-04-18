@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDV - MH LANCHES</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <style>
+    * { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .neon-glow { box-shadow: 0 0 20px currentColor; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+    const { motion, AnimatePresence } = window.Motion;
+    const { 
+      ShoppingCart, Utensils, Store, Clock, CheckCircle, X, Plus, Minus,
+      Trash2, Search, CreditCard, DollarSign, QrCode, Printer, Home,
+      AlertCircle, ChevronLeft, ChevronRight, Timer, Phone, MapPin,
+      Settings, LogOut, Menu, Package, TrendingUp, Bell, BellOff
+    } = lucide;
+
+    const defaultConfig = {
+      firebase: {},
+      store: { name: 'MH LANCHES', phone: '', address: '' },
+      visual: {
+        primaryColor: '#6B21A8',
+        secondaryColor: '#FCD34D',
+        bgColor: '#0f0f1a',
+        cardColor: '#1a1a2e',
+        textColor: '#ffffff',
+        highlightColor: '#FCD34D',
+        dangerColor: '#ef4444',
+        successColor: '#22c55e'
+      },
+      delivery: { fee: 5.00, minimumOrder: 15.00 },
+      hours: {
+        monday: { open: '18:00', close: '23:00', closed: false },
+        tuesday: { open: '18:00', close: '23:00', closed: false },
+        wednesday: { open: '18:00', close: '23:00', closed: false },
+        thursday: { open: '18:00', close: '23:00', closed: false },
+        friday: { open: '18:00', close: '00:00', closed: false },
+        saturday: { open: '18:00', close: '00:00', closed: false },
+        sunday: { open: '18:00', close: '23:00', closed: false }
+      }
+    };
+
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    };
+
+    const formatTime = (seconds) => {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    const getStatusColor = (status) => {
+      const colors = {
+        novo: '#3b82f6',
+        producao: '#eab308',
+        pronto: '#a855f7',
+        saida: '#f97316',
+        entregue: '#22c55e',
+        pago: '#06b6d4',
+        finalizado: '#10b981',
+        cancelado: '#ef4444'
+      };
+      return colors[status] || '#6b7280';
+    };
+
+    const statusLabels = {
+      novo: 'Novo',
+      producao: 'Produção',
+      pronto: 'Pronto',
+      saida: 'Saiu',
+      entregue: 'Entregue',
+      pago: 'Pago',
+      finalizado: 'Finalizado',
+      cancelado: 'Cancelado'
+    };
+
+    const statusOrder = ['novo', 'producao', 'pronto', 'saida', 'entregue', 'pago', 'finalizado'];
+
+    // Login Component
+    function Login({ onLogin }) {
+      const [username, setUsername] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if ((username === 'admin' && password === 'admin123') || 
+            (username === 'func' && password === 'func123')) {
+          const role = username === 'admin' ? 'admin' : 'funcionario';
+          localStorage.setItem('mh_pdv_auth', JSON.stringify({ role, loginTime: Date.now() }));
+          onLogin(role);
+        } else {
+          setError('Credenciais inválidas');
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#0f0f1a' }}>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-gray-800 rounded-2xl p-8 w-full max-w-md"
+          >
+            <div className="text-center mb-8">
+              <div className="w-24 h-24 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-bold" style={{ backgroundColor: '#6B21A8' }}>
+                MH
+              </div>
+              <h1 className="text-2xl font-bold mb-2">MH LANCHES</h1>
+              <p className="text-gray-400">Ponto de Venda</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block mb-2 font-semibold">Usuário</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:border-purple-500"
+                  placeholder="admin ou func"
+                />
+              </div>
+              <div>
+                <label className="block mb-2 font-semibold">Senha</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:border-purple-500"
+                  placeholder="Sua senha"
+                />
+              </div>
+              
+              {error && <div className="text-red-400 text-sm flex items-center gap-2"><AlertCircle size={16} />{error}</div>}
+
+              <button type="submit" className="w-full py-3 rounded-lg font-bold" style={{ backgroundColor: '#6B21A8' }}>
+                Entrar
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Timer Component
+    function OrderTimer({ startTime }) {
+      const [seconds, setSeconds] = useState(0);
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setSeconds(Math.floor((Date.now() - startTime) / 1000));
+        }, 1000);
+        return () => clearInterval(interval);
+      }, [startTime]);
+
+      const getColor = () => {
+        if (seconds < 900) return '#22c55e'; // 15 min
+        if (seconds < 1800) return '#eab308'; // 30 min
+        return '#ef4444';
+      };
+
+      return (
+        <div className="flex items-center gap-2" style={{ color: getColor() }}>
+          <Timer size={16} />
+          <span className="font-mono font-bold">{formatTime(seconds)}</span>
+        </div>
+      );
+    }
+
+    // Product Modal for PDV
+    function ProductModal({ product, colors, onClose, onAddToCart }) {
+      const [quantity, setQuantity] = useState(1);
+      const [observations, setObservations] = useState('');
+
+      const handleAdd = () => {
+        onAddToCart({
+          ...product,
+          id: Date.now().toString(),
+          quantity,
+          observations,
+          totalPrice: product.price * quantity
+        });
+        onClose();
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="bg-gray-800 rounded-2xl p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">{product.name}</h3>
+              <button onClick={onClose}><X size={24} /></button>
+            </div>
+            
+            <p className="text-gray-400 mb-4">{product.description}</p>
+            <div className="text-2xl font-bold mb-4" style={{ color: colors.highlightColor }}>
+              {formatCurrency(product.price)}
+            </div>
+
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 rounded-lg bg-gray-700">
+                  <Minus size={20} />
+                </button>
+                <span className="text-xl font-bold">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="p-2 rounded-lg bg-gray-700">
+                  <Plus size={20} />
+                </button>
+              </div>
+              <span className="text-xl font-bold">{formatCurrency(product.price * quantity)}</span>
+            </div>
+
+            <textarea
+              value={observations}
+              onChange={(e) => setObservations(e.target.value)}
+              placeholder="Observações..."
+              className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 mb-4"
+              rows={2}
+            />
+
+            <button onClick={handleAdd} className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" style={{ backgroundColor: colors.successColor }}>
+              <Plus size={20} />
+              Adicionar ao Pedido
+            </button>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Payment Modal
+    function PaymentModal({ total, colors, onClose, onConfirm }) {
+      const [paymentMethod, setPaymentMethod] = useState('');
+      const [received, setReceived] = useState('');
+
+      const change = paymentMethod === 'dinheiro' && received ? parseFloat(received) - total : 0;
+
+      return (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="bg-gray-800 rounded-2xl p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4">Pagamento</h3>
+            <div className="text-3xl font-bold mb-6 text-center" style={{ color: colors.highlightColor }}>
+              {formatCurrency(total)}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {['dinheiro', 'cartao_credito', 'cartao_debito', 'pix', 'multiple'].map(method => (
+                <button
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  className={`p-4 rounded-lg font-semibold transition-colors ${
+                    paymentMethod === method ? 'ring-2 ring-yellow-400' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  {method === 'dinheiro' && '💵 Dinheiro'}
+                  {method === 'cartao_credito' && '💳 Crédito'}
+                  {method === 'cartao_debito' && '💳 Débito'}
+                  {method === 'pix' && '📱 PIX'}
+                  {method === 'multiple' && '🔄 Múltiplos'}
+                </button>
+              ))}
+            </div>
+
+            {paymentMethod === 'dinheiro' && (
+              <div className="mb-4">
+                <label className="block mb-2 font-semibold">Valor recebido</label>
+                <input
+                  type="number"
+                  value={received}
+                  onChange={(e) => setReceived(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600"
+                  placeholder="0.00"
+                />
+                {change > 0 && (
+                  <div className="mt-2 text-green-400 font-bold">
+                    Troco: {formatCurrency(change)}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button onClick={onClose} className="flex-1 py-3 rounded-lg font-semibold bg-gray-700">
+                Cancelar
+              </button>
+              <button
+                onClick={() => onConfirm({ method: paymentMethod, received: parseFloat(received), change })}
+                disabled={!paymentMethod}
+                className="flex-1 py-3 rounded-lg font-bold disabled:opacity-50"
+                style={{ backgroundColor: colors.successColor }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      );
+    }
+
+    // Main PDV Component
+    function PDV() {
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+      const [userRole, setUserRole] = useState(null);
+      const [activeTab, setActiveTab] = useState('delivery'); // delivery, mesas, balcao
+      const [config, setConfig] = useState(defaultConfig);
+      const [products, setProducts] = useState([]);
+      const [categories, setCategories] = useState([]);
+      const [orders, setOrders] = useState([]);
+      const [cart, setCart] = useState([]);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('all');
+      const [productModal, setProductModal] = useState(null);
+      const [paymentModal, setPaymentModal] = useState(false);
+      const [selectedOrder, setSelectedOrder] = useState(null);
+      const [soundEnabled, setSoundEnabled] = useState(true);
+      const [selectedTable, setSelectedTable] = useState(null);
+
+      const colors = config.visual;
+      const audioRef = useRef(null);
+
+      useEffect(() => {
+        // Check auth
+        const auth = localStorage.getItem('mh_pdv_auth');
+        if (auth) {
+          const { role, loginTime } = JSON.parse(auth);
+          if (Date.now() - loginTime < 7 * 60 * 60 * 1000) {
+            setIsLoggedIn(true);
+            setUserRole(role);
+          }
+        }
+
+        // Load config
+        const savedConfig = localStorage.getItem('mh_config');
+        if (savedConfig) setConfig({ ...defaultConfig, ...JSON.parse(savedConfig) });
+
+        // Load products
+        const savedProducts = localStorage.getItem('mh_products');
+        if (savedProducts) {
+          setProducts(JSON.parse(savedProducts));
+        } else {
+          setProducts([
+            { id: '1', name: 'X-Bacon Supremo', description: '2 hambúrgueres 150g, bacon, cheddar', price: 32.90, category: 'lanches', images: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200'], order: 0 },
+            { id: '2', name: 'Pizza Calabresa', description: 'Calabresa, cebola, azeitonas', price: 45.90, category: 'pizzas', images: ['https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200'], order: 1 },
+            { id: '3', name: 'Batata com Cheddar', description: 'Batata frita com cheddar', price: 18.90, category: 'salgados', images: ['https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200'], order: 2 },
+            { id: '4', name: 'Coca-Cola 350ml', description: 'Refrigerante gelado', price: 6.00, category: 'bebidas', images: ['https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200'], order: 3 },
+            { id: '5', name: 'X-Salada', description: 'Hambúrguer, alface, tomate', price: 26.90, category: 'lanches', images: ['https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=200'], order: 4 },
+            { id: '6', name: 'Pizza Portuguesa', description: 'Presunto, ovos, cebola', price: 48.90, category: 'pizzas', images: ['https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200'], order: 5 }
+          ]);
+        }
+
+        // Load categories
+        const savedCategories = localStorage.getItem('mh_categories');
+        if (savedCategories) {
+          setCategories(JSON.parse(savedCategories));
+        } else {
+          setCategories([
+            { id: 'lanches', name: '🍔 Lanches' },
+            { id: 'pizzas', name: '🍕 Pizzas' },
+            { id: 'salgados', name: '🍟 Salgados' },
+            { id: 'bebidas', name: '🥤 Bebidas' }
+          ]);
+        }
+
+        // Load orders
+        const savedOrders = localStorage.getItem('mh_pdv_orders');
+        if (savedOrders) setOrders(JSON.parse(savedOrders));
+
+        // Load tables
+        const savedTables = localStorage.getItem('mh_mesas');
+        if (!savedTables) {
+          localStorage.setItem('mh_mesas', JSON.stringify([
+            { id: '1', name: 'Mesa 01', active: false },
+            { id: '2', name: 'Mesa 02', active: false },
+            { id: '3', name: 'Mesa 03', active: false },
+            { id: '4', name: 'Mesa 04', active: false },
+          ]));
+        }
+      }, []);
+
+      // Listen for new orders (simulated)
+      useEffect(() => {
+        const interval = setInterval(() => {
+          const savedOrders = localStorage.getItem('mh_admin_orders');
+          if (savedOrders) {
+            const adminOrders = JSON.parse(savedOrders);
+            setOrders(prev => {
+              const merged = [...prev];
+              adminOrders.forEach(order => {
+                if (!merged.find(o => o.id === order.id)) {
+                  merged.push({ ...order, createdAt: Date.now() });
+                }
+              });
+              return merged;
+            });
+          }
+        }, 3000);
+        return () => clearInterval(interval);
+      }, []);
+
+      // Save orders
+      useEffect(() => {
+        if (orders.length > 0) localStorage.setItem('mh_pdv_orders', JSON.stringify(orders));
+      }, [orders]);
+
+      // Play sound for new orders
+      useEffect(() => {
+        const activeOrders = orders.filter(o => o.status === 'novo');
+        if (activeOrders.length > 0 && soundEnabled) {
+          // Play notification sound
+          const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbqWEyM2CfutvDgmE1NWCfutvDgmE1NWCfutvDgmE1NWCfutvDgmE1NWCfutvDgmE1NWCfutvDgmE1NWCf');
+          audio.play().catch(() => {});
+        }
+      }, [orders.length, soundEnabled]);
+
+      // Keyboard shortcuts
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'F2') { e.preventDefault(); setActiveTab('delivery'); }
+          if (e.key === 'F3') { e.preventDefault(); setActiveTab('mesas'); }
+          if (e.key === 'F4') { e.preventDefault(); setActiveTab('balcao'); }
+          if (e.key === 'F8') { e.preventDefault(); handleFinalize(); }
+          if (e.key === 'Escape') {
+            setProductModal(null);
+            setPaymentModal(false);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, []);
+
+      const handleLogout = () => {
+        localStorage.removeItem('mh_pdv_auth');
+        setIsLoggedIn(false);
+      };
+
+      const addToCart = (product) => {
+        setCart([...cart, product]);
+      };
+
+      const removeFromCart = (index) => {
+        setCart(cart.filter((_, i) => i !== index));
+      };
+
+      const updateQuantity = (index, delta) => {
+        setCart(cart.map((item, i) => {
+          if (i === index) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty, totalPrice: item.price * newQty } : item;
+          }
+          return item;
+        }));
+      };
+
+      const cartTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
+      const updateOrderStatus = (orderId, newStatus) => {
+        setOrders(orders.map(o => 
+          o.id === orderId ? { ...o, status: newStatus, statusHistory: [...(o.statusHistory || []), { status: newStatus, time: Date.now() }] } : o
+        ));
+      };
+
+      const handleFinalize = () => {
+        if (cart.length === 0) return;
+        setPaymentModal(true);
+      };
+
+      const confirmPayment = (payment) => {
+        const order = {
+          id: Date.now().toString().slice(-6),
+          items: cart,
+          total: cartTotal,
+          payment: payment.method,
+          status: 'pago',
+          createdAt: Date.now(),
+          customer: { name: selectedTable ? `${selectedTable.name} (Mesa)` : 'Balcão' }
+        };
+
+        // Add to sales
+        const sales = JSON.parse(localStorage.getItem('mh_vendas') || '[]');
+        sales.push(order);
+        localStorage.setItem('mh_vendas', JSON.stringify(sales));
+
+        // Clear cart
+        setCart([]);
+        setPaymentModal(false);
+        setSelectedOrder(null);
+
+        // Print receipt (simulated)
+        if (window.confirm('Imprimir cupom?')) {
+          window.print();
+        }
+      };
+
+      const handleDeliveryPrint = (order) => {
+        window.print();
+      };
+
+      const filteredProducts = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+      });
+
+      const activeOrders = orders.filter(o => !['finalizado', 'cancelado'].includes(o.status));
+      const deliveryOrders = activeOrders.filter(o => o.type === 'entrega' || !o.type);
+      const tableOrders = activeOrders.filter(o => o.type === 'mesa');
+      const balcaoCart = cart;
+
+      const renderStatusButtons = (order) => {
+        const currentIndex = order.status ? statusOrder.indexOf(order.status) : -1;
+
+        return (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {statusOrder.map((status, index) => (
+              <button
+                key={status}
+                onClick={() => updateOrderStatus(order.id, status)}
+                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  index === currentIndex 
+                    ? 'neon-glow text-white' 
+                    : index < currentIndex 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-gray-700 text-gray-500'
+                }`}
+                style={{ 
+                  backgroundColor: index === currentIndex ? getStatusColor(status) : undefined,
+                  borderColor: index === currentIndex ? getStatusColor(status) : undefined,
+                  borderWidth: index === currentIndex ? '2px' : undefined
+                }}
+              >
+                {statusLabels[status]}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                if (confirm('Cancelar pedido?')) {
+                  updateOrderStatus(order.id, 'cancelado');
+                }
+              }}
+              className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-500 hover:bg-red-600"
+            >
+              Cancelar
+            </button>
+          </div>
+        );
+      };
+
+      if (!isLoggedIn) {
+        return <Login onLogin={(role) => { setIsLoggedIn(true); setUserRole(role); }} />;
+      }
+
+      return (
+        <div className="h-screen flex flex-col" style={{ backgroundColor: colors.bgColor }}>
+          {/* Header */}
+          <header className="h-14 flex items-center justify-between px-4" style={{ backgroundColor: colors.cardColor }}>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ backgroundColor: colors.primaryColor }}>
+                MH
+              </div>
+              <div>
+                <h1 className="font-bold">{config.store.name}</h1>
+                <p className="text-xs text-gray-400">PDV - {userRole === 'admin' ? 'Administrador' : 'Caixa'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="p-2 rounded-lg hover:bg-white/10"
+                style={{ color: soundEnabled ? colors.successColor : '#6b7280' }}
+              >
+                {soundEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+              </button>
+              <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-red-500/20 text-red-400">
+                <LogOut size={20} />
+              </button>
+            </div>
+          </header>
+
+          {/* Tabs */}
+          <div className="h-12 flex items-center px-4 gap-2" style={{ backgroundColor: colors.cardColor }}>
+            <button
+              onClick={() => setActiveTab('delivery')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
+                activeTab === 'delivery' ? 'bg-purple-600' : 'hover:bg-white/10'
+              }`}
+            >
+              <Truck size={18} />
+              Delivery (F2)
+              {deliveryOrders.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 rounded-full text-xs" style={{ backgroundColor: colors.primaryColor }}>
+                  {deliveryOrders.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('mesas')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
+                activeTab === 'mesas' ? 'bg-purple-600' : 'hover:bg-white/10'
+              }`}
+            >
+              <Utensils size={18} />
+              Mesas (F3)
+            </button>
+            <button
+              onClick={() => setActiveTab('balcao')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
+                activeTab === 'balcao' ? 'bg-purple-600' : 'hover:bg-white/10'
+              }`}
+            >
+              <Store size={18} />
+              Balcão (F4)
+            </button>
+          </div>
+
+          {/* Main Content - 3 Columns */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left - Orders List */}
+            <div className="w-80 overflow-y-auto p-4" style={{ backgroundColor: '#16213e' }}>
+              <h3 className="font-bold mb-4 flex items-center gap-2">
+                <Clock size={18} />
+                {activeTab === 'delivery' && 'Pedidos Delivery'}
+                {activeTab === 'mesas' && 'Mesas'}
+                {activeTab === 'balcao' && 'Carrinho'}
+              </h3>
+
+              {activeTab === 'delivery' && (
+                <div className="space-y-3">
+                  {deliveryOrders.length === 0 ? (
+                    <p className="text-gray-400 text-center py-8">Nenhum pedido</p>
+                  ) : (
+                    deliveryOrders.map(order => (
+                      <motion.div
+                        key={order.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`p-4 rounded-lg cursor-pointer transition-all ${
+                          selectedOrder?.id === order.id ? 'ring-2 ring-yellow-400' : ''
+                        }`}
+                        style={{ backgroundColor: colors.cardColor }}
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold">#{order.id}</span>
+                          <OrderTimer startTime={order.createdAt} />
+                        </div>
+                        <div className="text-sm text-gray-400 mb-2">
+                          {order.customer?.name || 'Cliente'}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">{order.items?.length || 0} itens</span>
+                          <span className="font-bold" style={{ color: colors.highlightColor }}>
+                            {formatCurrency(order.total)}
+                          </span>
+                        </div>
+                        {selectedOrder?.id === order.id && renderStatusButtons(order)}
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'mesas' && (
+                <div className="grid grid-cols-2 gap-3">
+                  {JSON.parse(localStorage.getItem('mh_mesas') || '[]').map(table => (
+                    <button
+                      key={table.id}
+                      onClick={() => setSelectedTable(table)}
+                      className={`p-4 rounded-lg font-semibold transition-all ${
+                        selectedTable?.id === table.id ? 'ring-2 ring-yellow-400' : ''
+                      }`}
+                      style={{ 
+                        backgroundColor: table.active ? colors.dangerColor : colors.cardColor 
+                      }}
+                    >
+                      {table.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === 'balcao' && (
+                <div className="space-y-2">
+                  {cart.map((item, index) => (
+                    <div key={index} className="p-3 rounded-lg flex items-center gap-3" style={{ backgroundColor: colors.cardColor }}>
+                      <img src={item.images?.[0]} alt="" className="w-12 h-12 rounded object-cover" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate">{item.name}</div>
+                        <div className="text-sm text-gray-400">
+                          {item.quantity}x {formatCurrency(item.price)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => updateQuantity(index, -1)} className="p-1 rounded bg-gray-700">
+                          <Minus size={14} />
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => updateQuantity(index, 1)} className="p-1 rounded bg-gray-700">
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      <button onClick={() => removeFromCart(index)} className="p-1 text-red-400">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Center - Products */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {activeTab !== 'balcao' && (
+                <>
+                  {/* Search and Categories */}
+                  <div className="flex gap-4 mb-4">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Buscar produtos..."
+                        className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-yellow-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Categories */}
+                  <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
+                    <button
+                      onClick={() => setSelectedCategory('all')}
+                      className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${
+                        selectedCategory === 'all' ? '' : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ 
+                        backgroundColor: selectedCategory === 'all' ? colors.primaryColor : 'rgba(255,255,255,0.1)' 
+                      }}
+                    >
+                      Todos
+                    </button>
+                    {categories.map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`px-4 py-2 rounded-full font-semibold whitespace-nowrap ${
+                          selectedCategory === cat.id ? '' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        style={{ 
+                          backgroundColor: selectedCategory === cat.id ? colors.primaryColor : 'rgba(255,255,255,0.1)' 
+                        }}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Products Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {filteredProducts.map(product => (
+                  <motion.button
+                    key={product.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setProductModal(product)}
+                    className="p-3 rounded-lg text-left transition-all hover:ring-2 hover:ring-yellow-400"
+                    style={{ backgroundColor: colors.cardColor }}
+                  >
+                    <img
+                      src={product.images?.[0] || 'https://via.placeholder.com/150'}
+                      alt={product.name}
+                      className="w-full h-32 object-cover rounded-lg mb-2"
+                    />
+                    <div className="font-semibold text-sm mb-1 line-clamp-2">{product.name}</div>
+                    <div className="text-lg font-bold" style={{ color: colors.highlightColor }}>
+                      {formatCurrency(product.price)}
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Item Livre */}
+              {activeTab === 'balcao' && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => {
+                    const name = prompt('Nome do produto:');
+                    if (name) {
+                      const price = parseFloat(prompt('Preço:'));
+                      if (!isNaN(price)) {
+                        addToCart({
+                          id: Date.now().toString(),
+                          name,
+                          price,
+                          quantity: 1,
+                          totalPrice: price,
+                          images: ['https://via.placeholder.com/150?text=Livre']
+                        });
+                      }
+                    }
+                  }}
+                  className="mt-4 p-4 rounded-lg border-2 border-dashed flex items-center justify-center gap-2"
+                  style={{ borderColor: colors.primaryColor }}
+                >
+                  <Plus size={24} />
+                  <span>Item Livre</span>
+                </motion.button>
+              )}
+            </div>
+
+            {/* Right - Cart/Payment */}
+            <div className="w-80 flex flex-col" style={{ backgroundColor: '#16213e' }}>
+              <div className="p-4 border-b border-white/10">
+                <h3 className="font-bold flex items-center gap-2">
+                  <ShoppingCart size={18} />
+                  Resumo
+                </h3>
+              </div>
+
+              <div className="flex-1 p-4">
+                {(activeTab === 'balcao' || selectedOrder) && (
+                  <div className="space-y-2">
+                    {(activeTab === 'balcao' ? cart : selectedOrder?.items || []).map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
+                        <img src={item.images?.[0]} alt="" className="w-12 h-12 rounded object-cover" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm truncate">{item.name}</div>
+                          <div className="text-xs text-gray-400">
+                            {item.quantity}x {formatCurrency(item.price)}
+                          </div>
+                        </div>
+                        {activeTab === 'balcao' && (
+                          <button onClick={() => removeFromCart(index)} className="text-red-400">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 border-t border-white/10 space-y-2">
+                <div className="flex justify-between text-gray-400">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(activeTab === 'balcao' ? cartTotal : selectedOrder?.total || 0)}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold pt-2 border-t border-white/10">
+                  <span>Total</span>
+                  <span style={{ color: colors.highlightColor }}>
+                    {formatCurrency(activeTab === 'balcao' ? cartTotal : selectedOrder?.total || 0)}
+                  </span>
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  {activeTab === 'balcao' && (
+                    <button
+                      onClick={handleFinalize}
+                      disabled={cart.length === 0}
+                      className="flex-1 py-3 rounded-lg font-bold disabled:opacity-50"
+                      style={{ backgroundColor: colors.successColor }}
+                    >
+                      Finalizar (F8)
+                    </button>
+                  )}
+                  {selectedOrder && (
+                    <>
+                      <button
+                        onClick={() => handleDeliveryPrint(selectedOrder)}
+                        className="flex-1 py-3 rounded-lg font-semibold bg-blue-500"
+                      >
+                        <Printer size={18} className="inline mr-2" />
+                        Imprimir
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modals */}
+          <AnimatePresence>
+            {productModal && (
+              <ProductModal
+                product={productModal}
+                colors={colors}
+                onClose={() => setProductModal(null)}
+                onAddToCart={addToCart}
+              />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {paymentModal && (
+              <PaymentModal
+                total={cartTotal}
+                colors={colors}
+                onClose={() => setPaymentModal(false)}
+                onConfirm={confirmPayment}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    }
+
+    // Render
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PDV />);
+  </script>
+</body>
+</html>
