@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn(); // For this app, any signed-in user is admin/staff for simplicity in initial setup
+    }
+    
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // Config: Anyone can read, only admin can write
+    match /config/main {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Categories: Anyone can read, only admin can write
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Products: Anyone can read, only admin can write
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders: Anyone can create, only admin can update/delete
+    match /orders/{orderId} {
+      allow read: if true; // Customers need to read to track status
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // History & Canceled: Only admin can access
+    match /history/{orderId} {
+      allow read, write: if isAdmin();
+    }
+    match /canceled/{orderId} {
+      allow read, write: if isAdmin();
+    }
+    match /visitas/{visitaId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+  }
+}

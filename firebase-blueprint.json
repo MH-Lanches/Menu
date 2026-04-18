@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Config": {
+      "title": "Shop Configuration",
+      "description": "General settings for the shop, colors, and WhatsApp template.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "isOpen": { "type": "boolean" },
+        "deliveryFee": { "type": "number" },
+        "minOrder": { "type": "number" },
+        "colors": { "type": "object" },
+        "whatsappTemplate": { "type": "string" },
+        "openingHours": { "type": "object" }
+      }
+    },
+    "Category": {
+      "title": "Product Category",
+      "description": "Categories for organizing the menu.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "order": { "type": "integer" }
+      },
+      "required": ["name"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Individual items on the menu.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "categoryId": { "type": "string" },
+        "images": { "type": "array" },
+        "type": { "type": "string", "enum": ["simple", "half", "multi"] },
+        "isPaused": { "type": "boolean" },
+        "isPromotion": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" },
+        "options": { "type": "array" }
+      },
+      "required": ["name", "price", "categoryId"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer orders from the site or PDV.",
+      "type": "object",
+      "properties": {
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["new", "production", "ready", "delivery", "delivered", "paid", "canceled", "finished"] },
+        "type": { "type": "string", "enum": ["delivery", "pickup", "table", "counter"] },
+        "address": { "type": "object" },
+        "payment": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/config/main": { "schema": "Config", "description": "Global settings" },
+    "/categories/{categoryId}": { "schema": "Category", "description": "Menu categories" },
+    "/products/{productId}": { "schema": "Product", "description": "Menu items" },
+    "/orders/{orderId}": { "schema": "Order", "description": "Active and completed orders" },
+    "/history/{orderId}": { "schema": "Order", "description": "Completed sales history" },
+    "/canceled/{orderId}": { "schema": "Order", "description": "Canceled orders history" }
+  }
+}
